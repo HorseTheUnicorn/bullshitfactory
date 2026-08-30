@@ -185,6 +185,7 @@ const AUDIENCE_CHAT_MIN_INTERVAL_MS = Math.max(750, Math.min(15_000, Number(proc
 const GENERATED_MUSIC_ROOT = path.join(DATA_ROOT, 'music', 'stable-audio-3');
 const CONTINUOUS_BUFFER_SECONDS = Math.max(300, Math.min(1800, Number(process.env.BF_CONTINUOUS_BUFFER_SECONDS || 900)));
 const CONTINUOUS_REFILL_TRIGGER_SECONDS = Math.max(120, Math.min(CONTINUOUS_BUFFER_SECONDS - 60, Number(process.env.BF_CONTINUOUS_REFILL_TRIGGER_SECONDS || 300)));
+const CONTINUOUS_DURATION_WEIGHTS = Object.freeze(normalizeContinuousDurationWeights(process.env.BF_CONTINUOUS_DURATION_WEIGHTS || 'short:0.22,medium:0.60,long:0.18'));
 
 const VOICE_BY_CHARACTER = Object.freeze({
   rookboss: 'rookboss',
@@ -320,6 +321,7 @@ function defaultState() {
       completedCount: 0,
       lastEpisodeId: null,
       lastGenerationWho: null,
+      lastGenerationDurationPreset: null,
       lastError: null,
     },
     generationSelection: {
@@ -542,6 +544,7 @@ async function loadState() {
     if (!['idle', 'running', 'stopping', 'error'].includes(state.continuousGeneration.status)) state.continuousGeneration.status = 'idle';
     if (!state.continuousGeneration.request || typeof state.continuousGeneration.request !== 'object') state.continuousGeneration.request = null;
     state.continuousGeneration.completedCount = Math.max(0, Math.round(safeNumber(state.continuousGeneration.completedCount, 0)));
+    state.continuousGeneration.lastGenerationDurationPreset = ['short', 'medium', 'long'].includes(state.continuousGeneration.lastGenerationDurationPreset) ? state.continuousGeneration.lastGenerationDurationPreset : null;
     if (state.continuousGeneration.status === 'stopping') {
       state.continuousGeneration.status = 'idle';
       state.continuousGeneration.runId = null;
@@ -4939,6 +4942,42 @@ const OPENING_SECONDS = 3;
 
 const EPISODE_DURATION_PRESETS = Object.freeze({ short: 1, medium: 3, long: 5 });
 
+function normalizeContinuousDurationWeights(value) {
+  const defaults = { short: 0.22, medium: 0.60, long: 0.18 };
+  const parsed = { ...defaults };
+  if (typeof value === 'string') {
+    for (const item of value.split(',')) {
+      const match = item.trim().match(/^(short|medium|long)\s*:\s*(-?\d+(?:\.\d+)?)$/iu);
+      if (match) parsed[match[1].toLowerCase()] = Math.max(0, Number(match[2]));
+    }
+  } else if (value && typeof value === 'object') {
+    for (const preset of ['short', 'medium', 'long']) {
+      if (Object.prototype.hasOwnProperty.call(value, preset)) parsed[preset] = Math.max(0, safeNumber(value[preset], defaults[preset]));
+    }
+  }
+  const total = Object.values(parsed).reduce((sum, weight) => sum + weight, 0);
+  if (!Number.isFinite(total) || total <= 0) return defaults;
+  return Object.fromEntries(Object.entries(parsed).map(([preset, weight]) => [preset, weight / total]));
+}
+
+function selectContinuousDurationPreset(seed = 1, previousPreset = null, weights = CONTINUOUS_DURATION_WEIGHTS) {
+  const normalizedWeights = normalizeContinuousDurationWeights(weights);
+  const available = ['short', 'medium', 'long']
+    .map((preset) => ({ preset, weight: normalizedWeights[preset] }))
+    .filter((entry) => entry.weight > 0);
+  const candidates = available.filter((entry) => entry.preset !== previousPreset);
+  const pool = candidates.length ? candidates : available;
+  const total = pool.reduce((sum, entry) => sum + entry.weight, 0);
+  if (!pool.length || total <= 0) return 'medium';
+  const fraction = (Math.abs(Math.floor(safeNumber(seed, 1))) % 1000003) / 1000003;
+  let cursor = fraction * total;
+  for (const entry of pool) {
+    cursor -= entry.weight;
+    if (cursor < 0) return entry.preset;
+  }
+  return pool.at(-1).preset;
+}
+
 function episodeDurationSeconds(body = {}) {
   const custom = safeNumber(body.customDurationSeconds, 0);
   if (custom > 0) return clamp(Math.round(custom), 60, 3600);
@@ -5107,7 +5146,7 @@ async function generateEpisode(body = {}, options = {}) {
     createdAt: nowIso(),
     segmentIds: [],
     mode: orangeIdiotOnly ? 'orange-idiot-only' : 'ensemble',
-    generation: { who: generationWho, requestedWho: generationWhoRequest || generationWho, when: generationWhen, where: requestedWhere, durationPreset: String(body.durationPreset || "").trim().toLowerCase() || null, musicMode: episodeMusicMode },
+    generation: { who: generationWho, requestedWho: generationWhoRequest || generationWho, when: generationWhen, where: requestedWhere, durationPreset: String(body.durationPreset || "").trim().toLowerCase() || null, requestedDurationPreset: String(body.generationDurationPresetRequest || body.durationPreset || "").trim().toLowerCase() || null, musicMode: episodeMusicMode },
     orangeIdiot: orangeIdiotRequested
       ? {
         included: true,
@@ -5371,6 +5410,9 @@ function continuousGenerationStatus() {
     completedCount: Math.max(0, Math.round(safeNumber(current.completedCount, 0))),
     lastEpisodeId: current.lastEpisodeId || null,
     lastGenerationWho: current.lastGenerationWho === 'orange' ? 'orange' : current.lastGenerationWho === 'cast' ? 'cast' : null,
+    lastGenerationDurationPreset: ['short', 'medium', 'long'].includes(current.lastGenerationDurationPreset) ? current.lastGenerationDurationPreset : null,
+    requestedDurationPreset: ['auto', 'short', 'medium', 'long'].includes(current.request?.durationPreset) ? current.request.durationPreset : null,
+    durationMix: CONTINUOUS_DURATION_WEIGHTS,
     lastError: current.lastError || null,
   };
 }
@@ -5382,9 +5424,9 @@ function normalizeContinuousGenerationRequest(body = {}) {
   const generationWhen = ['now', 'random'].includes(requestedWhen) ? requestedWhen : 'now';
   const requestedWhere = String(body.generationWhere || body.where || '').trim().toLowerCase();
   const generationWhere = requestedWhere && FACTORY_SCENES.some((scene) => scene.id === requestedWhere) ? requestedWhere : 'auto';
-  const durationPreset = ['short', 'medium', 'long'].includes(String(body.durationPreset || '').trim().toLowerCase())
+  const durationPreset = ['auto', 'short', 'medium', 'long'].includes(String(body.durationPreset || '').trim().toLowerCase())
     ? String(body.durationPreset).trim().toLowerCase()
-    : 'medium';
+    : 'auto';
   const manualSpeech = String(body.orangeIdiotSpeechText || body.tvSpeechText || '').replace(/\s+/gu, ' ').trim().slice(0, ORANGE_IDIOT_MAX_SPEECH_CHARACTERS);
   const title = stripText(body.title, 120);
   const speechDuration = Math.max(0, Math.round(safeNumber(body.orangeIdiotSpeechDurationSeconds, 0)));
@@ -5412,10 +5454,15 @@ async function runContinuousGeneration(runId, request) {
       let record;
       const seed = seedFor('continuous-episode:' + runId + ':' + attempt + ':' + Date.now());
       const selectedWho = selectGenerationWho(request.generationWho, seed, state.generationSelection);
+      const selectedDurationPreset = request.durationPreset === 'auto'
+        ? selectContinuousDurationPreset(seed, state.continuousGeneration.lastGenerationDurationPreset)
+        : request.durationPreset;
       const payload = {
         ...request,
         generationWho: selectedWho,
         generationWhoRequest: request.generationWho,
+        durationPreset: selectedDurationPreset,
+        generationDurationPresetRequest: request.durationPreset,
         autoPublish: true,
         publishToPublic: true,
         queueForContinuous: true,
@@ -5428,6 +5475,7 @@ async function runContinuousGeneration(runId, request) {
       }));
       state.continuousGeneration.activeJobId = record.jobId;
       state.continuousGeneration.lastGenerationWho = selectedWho;
+      state.continuousGeneration.lastGenerationDurationPreset = selectedDurationPreset;
       await persistState();
       const completed = await record.completion;
       if (state?.continuousGeneration?.runId !== runId) break;
@@ -5508,6 +5556,7 @@ async function startContinuousGeneration(body = {}) {
     completedCount: 0,
     lastEpisodeId: null,
     lastGenerationWho: null,
+    lastGenerationDurationPreset: null,
     lastError: null,
   };
   logEvent('continuous-generation-started', 'Continuous generation will publish validated episodes to the public website playlist until stopped by the operator.', { who: request.generationWho, durationPreset: request.durationPreset });
@@ -5667,7 +5716,7 @@ async function createFallbackMedia() {
   return { videoFile: relativeRuntimePath(videoPath), audioFile: relativeRuntimePath(audioPath), posterFile: relativeRuntimePath(posterPath), durationSeconds: 30 };
 }
 
-async function fillPlaylist(targetSeconds) {
+async function fillPlaylist(targetSeconds, { publishedOnly = false } = {}) {
   const inventory = approvedInventory();
   const fallback = await createFallbackMedia();
   const queue = [];
@@ -5677,7 +5726,7 @@ async function fillPlaylist(targetSeconds) {
   const recentlyPlayed = new Set(state.playHistory.slice(-8).map((item) => item.segmentId));
   const candidates = [
     ...publishedEpisodes().map((episode) => ({ ...episode, playlistSource: 'published-episode', videoFile: episode.videoFile || episode.files?.video, audioFile: episode.audioFile || null, posterFile: episode.posterFile || episode.files?.poster })),
-    ...inventory.map((item) => ({ ...item, playlistSource: 'approved-segment' })),
+    ...(publishedOnly ? [] : inventory.map((item) => ({ ...item, playlistSource: 'approved-segment' }))),
   ].sort((a, b) => Number(recentlyPlayed.has(a.id)) - Number(recentlyPlayed.has(b.id)) || String(a.lastPlayedAt || '').localeCompare(String(b.lastPlayedAt || '')));
   while (accumulated < targetSeconds) {
     const remaining = targetSeconds - accumulated;
@@ -5729,7 +5778,7 @@ async function startSession(body) {
   }
   const targetSeconds = mode === "continuous" ? CONTINUOUS_BUFFER_SECONDS : requestedMinutes * 60;
   const sessionId = "session-" + Date.now() + "-" + Math.random().toString(16).slice(2, 8);
-  const queue = await fillPlaylist(targetSeconds);
+  const queue = await fillPlaylist(targetSeconds, { publishedOnly: mode === "continuous" });
   state.session = { id: sessionId, mode, requestedMinutes, targetSeconds, bufferTargetSeconds: mode === "continuous" ? CONTINUOUS_BUFFER_SECONDS : targetSeconds, queue, createdAt: nowIso(), handoffRequested: false, refillJobId: null, lastRefillAt: null };
   state.control = { status: "running", mode, paused: false, sessionId, requestedMinutes, targetSeconds, elapsedSeconds: 0, currentIndex: 0, startedAt: nowIso(), updatedAt: nowIso() };
   logEvent(mode === "continuous" ? "continuous-started" : "session-started", requestedMinutes + " minutes queued" + (mode === "continuous" ? " as a rolling buffer" : ""), { sessionId, mode, blocks: queue.length, fallbackBlocks: queue.filter((item) => item.source === "fallback").length });
@@ -5780,10 +5829,19 @@ async function updateControl(action) {
   } else if (action === "restart") {
     if (!state.session) throw new Error("There is no active session.");
     if (state.control.status === "restarting") return state.control;
+    state.control.elapsedSeconds = 0;
+    state.control.currentIndex = 0;
+    if (state.session.mode === "continuous") {
+      const queue = await fillPlaylist(CONTINUOUS_BUFFER_SECONDS, { publishedOnly: true });
+      const targetSeconds = Number(queue.at(-1)?.endSeconds || CONTINUOUS_BUFFER_SECONDS);
+      state.session = { ...state.session, queue, targetSeconds, bufferTargetSeconds: CONTINUOUS_BUFFER_SECONDS, handoffRequested: false, refillJobId: null, lastRefillAt: null };
+      state.control.targetSeconds = targetSeconds;
+      logEvent("feed-restart-queued", "Playback restart rebuilt the public playlist from its first publishable cut.", { sessionId: state.session.id, blocks: queue.length, fallbackBlocks: queue.filter((item) => item.source === "fallback").length });
+    }
     state.control.status = "restarting";
     state.control.paused = true;
     state.control.restartRequested = true;
-    logEvent("feed-restart-requested", "The feed restart was requested; the preserved queue will resume after the controller health check.");
+    logEvent("feed-restart-requested", "The feed restart was requested; playback will resume from the first publishable cut after the controller health check.");
     await persistState();
     setTimeout(() => process.exit(75), 250);
   } else if (action === "handoff") {
@@ -6044,6 +6102,7 @@ async function statusPayload() {
     catalog: productionCatalogSummary({ castCount: resources.catalog.activeCastCount || resources.catalog.characters?.length || 0, sceneCount: FACTORY_SCENES.length }),
     control: state.control,
     continuousGeneration: continuousGenerationStatus(),
+    continuousDurationMix: CONTINUOUS_DURATION_WEIGHTS,
     playlist: playlistStatus(),
     session: state.session ? { ...state.session, queue: state.session.queue.slice(0, 120) } : null,
     episodes: { total: state.episodes.length, review: state.episodes.filter((episode) => episode.state === 'ready-for-review').length, published: state.episodes.filter((episode) => episode.state === 'published').length },
@@ -6749,6 +6808,9 @@ export {
   episodeDurationSeconds,
   resolveGenerationWho,
   selectGenerationWho,
+  normalizeContinuousDurationWeights,
+  selectContinuousDurationPreset,
+  CONTINUOUS_DURATION_WEIGHTS,
   evaluateWritingCandidate,
   productionCatalogSummary,
   renderPixelGameFontText,

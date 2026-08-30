@@ -2615,7 +2615,7 @@ h1 em, h2 em, .eyebrow, .note-index, .scene-cue span, .dossier-relationships > s
   display: grid;
   inset: 0;
   justify-items: center;
-  pointer-events: none;
+  pointer-events: auto;
   position: absolute;
   z-index: 2;
 }
@@ -2641,6 +2641,20 @@ h1 em, h2 em, .eyebrow, .note-index, .scene-cue span, .dossier-relationships > s
 }
 .bf-public-autoplay-placeholder b { color: var(--public-paper); font-size: 16px; letter-spacing: .08em; }
 .bf-public-autoplay-placeholder span { color: var(--public-amber); font-size: 8px; letter-spacing: .08em; }
+.bf-public-play-button {
+  background: var(--public-amber);
+  border: 2px solid var(--public-paper);
+  color: var(--public-black);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  padding: 8px 12px;
+  position: relative;
+  text-transform: uppercase;
+}
+.bf-public-play-button:hover { background: var(--public-paper); }
 .bf-public-player-copy { background: linear-gradient(90deg, rgb(5 11 10 / 86%), transparent 75%); bottom: 0; display: grid; gap: 8px; left: 0; padding: 15px; position: absolute; right: 0; top: 0; align-content: end; }
 .bf-public-warmup-copy {
   align-content: center;

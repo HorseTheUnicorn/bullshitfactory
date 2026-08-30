@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { factoryBrandAssets, factoryCast } from '../lib/bullshit-factory';
 
@@ -91,6 +91,7 @@ export default function BullshitFactoryLanding() {
   const [chatStatus, setChatStatus] = useState('CHAT IS OPEN / SUGGESTIONS ARE OPTIONAL');
   const [chatBusy, setChatBusy] = useState(false);
   const [chatClientId, setChatClientId] = useState('');
+  const playerRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -189,6 +190,17 @@ export default function BullshitFactoryLanding() {
     }
   }
 
+  async function playContinuousPlayer() {
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      await player.play();
+      setPlayerPlaying(true);
+    } catch {
+      setPlayerPlaying(false);
+    }
+  }
+
   const continuousGenerationActive = ['running', 'stopping'].includes(String(continuousGeneration?.status || ''));
   const continuousPlaybackActive = Boolean(playlist?.running || continuousGenerationActive);
   const continuousEpisodeId = continuousPlaybackActive
@@ -230,6 +242,7 @@ export default function BullshitFactoryLanding() {
             {selectedEpisode ? (
               <video
                 key={selectedEpisode.id}
+                ref={playerRef}
                 autoPlay={continuousPlaybackActive}
                 className="bf-public-media"
                 controls
@@ -255,8 +268,9 @@ export default function BullshitFactoryLanding() {
                 <img src={factoryBrandAssets.titleScreen} alt="" />
                 <div>
                   <b>BULLSHIT FACTORY</b>
-                  <span>CONTINUOUS FEED / PRESS PLAY OR WAIT FOR THE NEXT CUT</span>
+                  <span>CONTINUOUS FEED / AUDIO AUTOPLAY BLOCKED UNTIL YOU START IT</span>
                 </div>
+                <button className="bf-public-play-button" onClick={() => void playContinuousPlayer()} type="button">PLAY WITH SOUND</button>
               </div>
             )}
             {!selectedEpisode && (
