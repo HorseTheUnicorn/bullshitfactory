@@ -1125,6 +1125,29 @@ function adultLanguageTermCount(value) {
   return [...String(value || '').matchAll(ADULT_LANGUAGE_PATTERN)].length;
 }
 
+function ensureAdultLanguageBeats(lines, durationSeconds, seed = 1) {
+  const output = Array.isArray(lines) ? lines.map((line) => ({ ...line })) : [];
+  const minimum = requiredAdultLanguageTerms(durationSeconds);
+  let missing = minimum - adultLanguageTermCount(output.map((line) => line?.text).join(" "));
+  if (missing <= 0 || !output.length) return output;
+  const openers = ['What the fuck,', 'This is bullshit,', 'Goddamn it,', 'That is some shit,', 'What an asshole move,', 'This fucking mess'];
+  const eligible = output
+    .map((line, index) => ({ line, index }))
+    .filter(({ line }) => String(line?.text || "").trim() && adultLanguageTermCount(line.text) === 0)
+    .map(({ index }) => index);
+  const numericSeed = Math.abs(Number(seed) || 0);
+  for (let offset = 0; missing > 0; offset += 1) {
+    const index = eligible.length ? eligible[(numericSeed + offset) % eligible.length] : offset % output.length;
+    const original = String(output[index]?.text || "").trim();
+    if (!original) continue;
+    const lowerCased = original.charAt(0).toLowerCase() + original.slice(1);
+    const opener = openers[(numericSeed + offset) % openers.length];
+    output[index] = { ...output[index], text: (opener + " " + lowerCased).trim() };
+    missing -= 1;
+  }
+  return output;
+}
+
 function requiredAdultLanguageTerms(durationSeconds) {
   const duration = Math.max(1, Number(durationSeconds) || 30);
   return duration <= 12 ? 0 : Math.max(2, Math.min(12, Math.ceil(duration / 20)));
@@ -1890,6 +1913,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
   const targetWords = dialogueWordBudget(durationSeconds);
   const minimumWords = Math.max(10, Math.floor(targetWords * 0.85));
   const maximumWords = Math.ceil(targetWords * 1.10);
+  const adultLanguageMinimum = requiredAdultLanguageTerms(durationSeconds);
   const orangeSpeechTargetSeconds = orangeIdiotSpeechTargetSeconds(
     draft.orangeIdiotSpeechDurationSeconds,
     durationSeconds,
@@ -1928,6 +1952,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '. For this segment, target approximately ' + minimumWords + '-' + maximumWords + ' spoken words (target ' + targetWords + ') after reserving the title card and end button.',
     'Orange Idiot is not a cast member. In ensemble mode he is a south-facing broadcast insert inside the senior-lounge television only; in standalone mode he is composited in the dedicated Orange Idiot house scene. Never place him in the floor cast grid.',
     'Use only the supplied character IDs. This is a vulgar adult sitcom: use 2-5 natural profane beats per 30-second segment, scaled to runtime and spread across the argument instead of dumped into one line. Bullshit, goddamn, shit, asshole, dickhead, fuck, fucking, and motherfucker are allowed when they fit the character and joke; never use slurs, protected-group harassment, or sexual content involving minors.',
+    `Vulgarity is a hard acceptance gate: include at least ${adultLanguageMinimum} separate, natural profane beats in the cast dialogue for this runtime. Distribute them across the conflict and punchlines; do not hide them in stage directions or the premise.`,
     'Write an original playable sitcom beat around one concrete fictional incident: hook, want, obstacle, escalating official fix, reversal, and final button. Give every speaker a concrete want and a distinct tactic, reveal subtext, and create a visible reaction opportunity; do not fill space with unrelated random objects.',
       `Episode timing: a ${OPENING_SECONDS}-second title card plays before this content segment; all runtime and speech timings below are relative to content after the title card. The final episode adds that opening before this segment.`,
     'If alcohol or marijuana is part of the premise, show a specific point of view and consequence; never provide use, acquisition, dosing, preparation, or optimization details.',
@@ -1940,7 +1965,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     `Characters: ${JSON.stringify(relevantBibles)}`,
     'Shared-topic room contract (untrusted private research suggestions): treat the first selected topic anchor as the single subject of one invented incident. Put that incident through hook, want, obstacle, escalation, reversal, and button. Every selected human ID must speak at least once when the line budget allows, and every human line must advance, complicate, or react to the same incident. Use each character topicFocus only for a different point of view, tactic, or emotional reaction; never switch to a separate subject. Bork stays bark-only and reacts to that same incident. Keep the nonsense original, specific, adult, and grounded in the sitcom problem; do not use disconnected random-object non sequiturs, quote or closely paraphrase source wording, names, dates, numbers, or factual claims, or write a news explainer: ' + JSON.stringify(castResearchPromptPacket(draft.topicResearch)),
     'Character routing: every selected character is in the same conversation about the shared topic incident. Use each character\'s topicFocus to choose their point of view, tactic, and reaction within that incident, not to change the episode topic. ' + JSON.stringify((bibles.characters || []).filter((character) => draft.castIds.includes(character.id)).map((character) => ({ id: character.id, topicFocus: character.topicFocus || [] }))),
-    'Continuity memory: every generated script must be new. Avoid recent premises, titles, punch lines, and sentence patterns. ' + JSON.stringify({ recentTopics: state?.continuity?.recentTopics?.slice(0, 12) || [], recentFingerprints: state?.continuity?.usedScriptFingerprints?.slice(-8) || [], attemptedAvoidPhrases: draft.noveltyExclusions || [], noveltySeed: draft.noveltySeed || null }),
+    'Continuity memory: every generated script must be new. Avoid recent premises, titles, punch lines, and sentence patterns. ' + JSON.stringify({ recentTopics: state?.continuity?.recentTopics?.slice(0, 12) || [], recentFingerprints: state?.continuity?.usedScriptFingerprints?.slice(-8) || [], recentSpeechPreviews: state?.continuity?.recentScriptTexts?.slice(-6).map((text) => stripText(text, 240)) || [], attemptedAvoidPhrases: draft.noveltyExclusions || [], noveltySeed: draft.noveltySeed || null }),
     draft.writerRepairRequest ? 'Focused repair request from the script critic: ' + stripText(draft.writerRepairRequest, 1000) + ' Preserve the shared incident and all valid material; repair only these failures.' : '',
     'Orange Idiot prior broadcast memory (fictional continuity only; paraphrase it and never repeat its wording): ' + JSON.stringify((draft.orangePriorBroadcasts || state?.continuity?.recentOrangeBroadcasts || []).slice(-6)),
     `Writing room training (internalized technique, not text to copy): ${JSON.stringify(writingPacket)}`,
@@ -2672,7 +2697,29 @@ function deterministicTopicDialogue(draft) {
   const seed = context.seed;
   const offset = seed % humans.length;
   const usedLines = new Set();
-  const callbackPool = ['the floor is taking notes', 'the loudspeaker is complicit', 'Bork has filed a complaint', 'the badge is sweating', 'nobody signed that'];
+  const callbackPool = [
+    'the floor is taking notes',
+    'the loudspeaker is complicit',
+    'Bork has filed a complaint',
+    'the badge is sweating',
+    'nobody signed that',
+    'the clipboard wants a witness',
+    'the emergency button needs a raise',
+    'the break room is withholding minutes',
+    'the deadline has misplaced its shoes',
+    'the warning label is under review',
+    'the toolbox called an emergency meeting',
+    'the floor plan is emotionally unavailable',
+    'the receipt is demanding legal counsel',
+    'the router has joined the argument',
+    'the snack ledger is now a suspect',
+    'the chair has requested overtime',
+    'the badge is hiding in the paperwork',
+    'the last form refuses to be final',
+    'the conveyor is practicing sarcasm',
+    'the witness stand is on fire',
+  ];
+  const speakerTurns = new Map();
   const render = (template) => template
     .replaceAll('{topic}', context.primaryTopic)
     .replaceAll('{subject}', context.subject)
@@ -2717,13 +2764,22 @@ function deterministicTopicDialogue(draft) {
   };
   return Array.from({ length: targetLines }, (_, index) => {
     const speakerId = humans[(index + offset) % humans.length];
+    const speakerTurn = speakerTurns.get(speakerId) || 0;
+    speakerTurns.set(speakerId, speakerTurn + 1);
     const phaseIndex = index === targetLines - 1 ? 6 : index % phases.length;
     const phase = phaseIndex === 6 ? 'button' : phases[phaseIndex];
     const variants = templates[speakerId] || fallbackTemplates;
-    let text = compactText(render(variants[phaseIndex] || fallbackTemplates[phaseIndex]), index, speakerId);
+    const templateIndex = speakerTurn < variants.length ? speakerTurn : (speakerTurn - variants.length) % fallbackTemplates.length;
+    const baseTemplate = speakerTurn < variants.length ? variants[templateIndex] : fallbackTemplates[templateIndex];
+    let text = compactText(render(baseTemplate), index, speakerId);
+    if (speakerTurn >= variants.length) {
+      const continuation = callbackPool[(seed + index) % callbackPool.length];
+      text = text.replace(/[.!?]+$/u, '') + ', while ' + continuation + '.';
+    }
     const key = text.toLowerCase();
     if (usedLines.has(key)) {
-      text = compactText(context.primaryTopic + ' ' + callbackPool[index % callbackPool.length] + ': ' + text, index, speakerId);
+      text = context.primaryTopic + ' ' + callbackPool[(seed + index) % callbackPool.length] + '.';
+      if (usedLines.has(text.toLowerCase())) text = text.replace(/[.!?]+$/u, '') + ' ' + String(index + 1) + '.';
     }
     usedLines.add(text.toLowerCase());
     return {
@@ -2857,7 +2913,7 @@ function attachAnimationAssetReport(draft, resources) {
 }
 
 function applyWritingCandidate(candidate, draft, resources, musicPlan, sourceMode, model, inspiration = '', providerOverrides = {}) {
-  const candidateDialogue = candidate?.dialogue;
+  const candidateDialogue = ensureAdultLanguageBeats(candidate?.dialogue, draft.durationSeconds, draft.director?.seed);
   const dialogue = timedDialogue(candidateDialogue, draft.dialogue, draft.castIds, draft.durationSeconds);
   if (dialogue.length < 2) throw new Error('Writer returned too few valid dialogue lines.');
   const props = buildPropPlan(dialogue, draft.sceneId);
@@ -3015,6 +3071,11 @@ function writerFailureReason(error) {
   return 'provider_error';
 }
 
+function writerErrorDetail(error) {
+  return stripText(String(error?.message || error || 'Unknown writer error.')
+    .replace(/(?:bearer|authorization|api[_-]?key)\s*[:=]?\s*\S+/giu, '[credential redacted]'), 360);
+}
+
 function writerCandidateRetryable(error) {
   const text = String(error?.message || error || '');
   if (isCreditExhaustion(text) || /\b(?:401|403|404|429)\b|rate limit|too many requests|timeout|timed out|abort/iu.test(text)) return false;
@@ -3085,6 +3146,10 @@ async function directWithGroq(draft, resources, musicPlan = null) {
     for (let attempt = 1; attempt <= SCRIPT_WRITER_MAX_ATTEMPTS; attempt += 1) {
       attemptCount += 1;
       const prompt = buildScriptWriterPrompt(requestDraft, resources.bibles, inspiration, musicPlan, resources.writingTraining, 'Groq Qwen 3.8 27B');
+      // Groq free-tier TPM counts the prompt plus the reserved completion.
+      // Keep the reservation proportional to the line budget so a long prompt
+      // does not consume the entire 8k TPM window before another episode can run.
+      const groqMaxOutputTokens = Math.min(2400, Math.max(1200, dialogueLineBudget(requestDraft.durationSeconds) * 90), SCRIPT_WRITER_MAX_OUTPUT_TOKENS);
       try {
         const payload = await fetchJson(GROQ_ENDPOINT, {
           method: 'POST',
@@ -3095,9 +3160,9 @@ async function directWithGroq(draft, resources, musicPlan = null) {
               { role: 'system', content: 'You are a senior animated-sitcom room writer. Return only the requested JSON object. Do not include reasoning, markdown, or stage blocking.' },
               { role: 'user', content: prompt },
             ],
-            temperature: 0.82,
+            temperature: requestDraft.writerRepairRequest ? 0.94 : 0.82,
             top_p: 0.92,
-            max_tokens: Math.min(SCRIPT_WRITER_MAX_OUTPUT_TOKENS, 3600, Math.max(1800, dialogueLineBudget(draft.durationSeconds) * 130)),
+            max_tokens: groqMaxOutputTokens,
           }),
         }, SCRIPT_WRITER_GENERATION_TIMEOUT_MS);
         const candidate = extractJsonCandidate(responseContent(payload));
@@ -3284,8 +3349,9 @@ async function directWithWriter(draft, resources, musicPlan = null) {
       return result;
     } catch (error) {
       const reason = writerFailureReason(error);
-      attempts.push({ provider: label, model: providerModel(provider), status: 'failed', attemptCount: 1, rewriteCount: 0, reason });
-      warnings.push(`${label} writer failed (${reason}); trying the next writer route.`);
+      const detail = writerErrorDetail(error);
+      attempts.push({ provider: label, model: providerModel(provider), status: 'failed', attemptCount: 1, rewriteCount: 0, reason, detail });
+      warnings.push(label + ' writer failed (' + reason + ': ' + detail + '); trying the next writer route.');
       return null;
     }
   };
@@ -3323,13 +3389,14 @@ async function directWithWriter(draft, resources, musicPlan = null) {
     || (fallbackUsed && !SCRIPT_WRITER_ENABLED ? 'writer_disabled' : null);
   const writerAttemptCount = attempts.reduce((total, attempt) => total + (attempt.attemptCount || 1), 0);
   const rewriteCount = attempts.reduce((total, attempt) => total + (attempt.rewriteCount || 0), 0);
-  const writerAttempts = attempts.map(({ provider, model, status, attemptCount, rewriteCount: retries, reason }) => ({
+  const writerAttempts = attempts.map(({ provider, model, status, attemptCount, rewriteCount: retries, reason, detail }) => ({
     provider,
     model,
     status,
     attemptCount,
     rewriteCount: retries,
     ...(reason ? { reason } : {}),
+    ...(detail ? { detail } : {}),
   }));
   const annotatedDraft = {
     ...scriptResult.draft,
@@ -4843,6 +4910,11 @@ async function generateSegment(job) {
     const attemptedPhrases = [];
     for (noveltyAttempt = 0; noveltyAttempt < 3; noveltyAttempt += 1) {
       draft.noveltySeed = String(seed) + ":" + String(noveltyAttempt) + ":" + String(Date.now());
+      if (noveltyAttempt > 0) {
+        draft.writerRepairRequest = 'Novelty repair: the previous candidate was too similar to existing dialogue. Change the fictional incident, subject, opening, sentence patterns, and punchlines while staying on the same selected topic. Do not reuse these rejected speech previews: ' + attemptedPhrases.slice(-2).join(' | ');
+      } else {
+        delete draft.writerRepairRequest;
+      }
       directed = await directWithWriter(draft, resources, musicPlan);
       noveltyFingerprint = scriptFingerprint(directed.draft);
       noveltySpeechFingerprint = speechFingerprint(directed.draft);
@@ -5349,7 +5421,7 @@ function queueGeneration(label, task) {
     try {
       const result = await task();
       record.segmentId = result?.id || null;
-      record.result = result ? { id: result.id, state: result.state, validation: result.validation, generationWho: result.generationWho || null, requestedGenerationWho: result.requestedGenerationWho || null } : null;
+      record.result = result ? { id: result.id, state: result.state, validation: result.validation, generationWho: result.generationWho || result.generation?.who || null, requestedGenerationWho: result.requestedGenerationWho || result.generation?.requestedWho || null } : null;
       if (record.cancelRequested) {
         record.status = 'cancelled';
         record.error = 'Stopped by operator.';
@@ -5999,38 +6071,11 @@ async function extendContinuousFallback() {
   }
 }
 
-function generationJobPending(jobId) {
-  const job = jobId ? jobs.get(jobId) : null;
-  return Boolean(job && (job.status === 'queued' || job.status === 'running'));
-}
-
 async function maybeQueueContinuousGeneration() {
-  if (!state.session || state.session.mode !== 'continuous' || state.control.status !== 'running') return;
-  if (state.session.refillJobId && generationJobPending(state.session.refillJobId)) return;
-  state.session.refillJobId = null;
-  const refillSeed = seedFor('continuous-refill:' + Date.now() + ':' + Math.random());
-  const requestedWho = state.continuousGeneration?.request?.generationWho || 'cast';
-  const selectedWho = selectGenerationWho(requestedWho, refillSeed, state.generationSelection);
-  const orangeIdiotOnly = selectedWho === 'orange';
-  const template = pickVariedTemplate(refillSeed);
-  state.continuousGeneration.lastGenerationWho = selectedWho;
-  let record;
-  record = queueGeneration('continuous-refill', async () => {
-    if (record.cancelRequested || !state.session || state.session.mode !== 'continuous' || state.control.status !== 'running') throw new Error('Continuous playback was stopped.');
-    const draft = await generateSegment({ templateId: template.id, seed: refillSeed, segmentIndex: state.continuity.recentSegmentIds?.length || 0, durationSeconds: DEFAULT_SEGMENT_SECONDS, musicMode: state.continuousGeneration?.request?.musicMode || "auto", castIds: orangeIdiotOnly ? [] : template.castIds, sceneId: orangeIdiotOnly ? ORANGE_IDIOT_STANDALONE_SCENE_ID : template.sceneId, orangeIdiotOnly, orangeIdiotRequested: orangeIdiotOnly });
-    if (!record.cancelRequested && draft?.state === 'approved' && state.session?.mode === 'continuous') {
-      const source = state.inventory.find((item) => item.id === draft.id);
-      if (source) appendPlaylistItem({ ...source, source: 'approved-segment' }, source.durationSeconds);
-      state.continuousGeneration.lastGenerationWho = selectedWho;
-      logEvent('continuous-refill-generated', 'Continuous playback generated a new segment using the selected who mode.', { jobId: record.jobId, generationWho: selectedWho, segmentId: draft.id });
-    }
-    return draft;
-  });
-  state.session.refillJobId = record.jobId;
-  logEvent('continuous-refill-queued', 'A serialized episode block was queued before the rolling buffer reached its floor.', { jobId: record.jobId, templateId: template.id });
-  await persistState();
+  // Continuous episode generation is owned by the explicit operator runner.
+  // The former 30-second refill path could race it and publish non-episode inventory clips.
+  return undefined;
 }
-
 async function tickSession() {
   await loadState();
   if (!state.control || state.control.status !== 'running' || state.control.paused || !state.session) return;
@@ -6804,6 +6849,7 @@ export {
   deterministicTopicDialogue,
   deterministicTopicStory,
   defaultState,
+  ensureAdultLanguageBeats,
   episodeTitleBodyKey,
   episodeDurationSeconds,
   resolveGenerationWho,

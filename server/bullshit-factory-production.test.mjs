@@ -6,8 +6,13 @@ import {
   buildGoblinPrompt,
   buildScriptWriterPrompt,
   buildSegmentDraft,
+  deterministicTopicDialogue,
+  timedDialogue,
+  ensureAdultLanguageBeats,
   episodeTitleBodyKey,
   episodeDurationSeconds,
+  normalizeContinuousDurationWeights,
+  selectContinuousDurationPreset,
   resolveGenerationWho,
   selectGenerationWho,
   evaluateWritingCandidate,
@@ -42,6 +47,7 @@ test('the provider prompts keep script writing and animation direction separate'
   const animationPrompt = buildAnimationDirectorPrompt(draft, { bibles: { characters: [] }, animationTraining: {} }, { selectedTrack: { id: 'bf-theme-main' } });
   assert.match(scriptPrompt, /Groq Qwen 3\.8 27B/i);
   assert.match(scriptPrompt, /Gemini is the animation director/i);
+  assert.match(scriptPrompt, /recentSpeechPreviews/i);
   assert.match(animationPrompt, /primary animation director/i);
   assert.match(animationPrompt, /never output x\/y pixels/i);
   assert.match(animationPrompt, /locked script/i);
@@ -77,6 +83,31 @@ test('topic quality gate accepts contextual reactions to one shared incident', (
   assert.equal(evaluation.checks.find((check) => check.id === 'topic-speaker-coverage')?.pass, true);
 });
 
+test('cast dialogue repair fills the runtime-scaled vulgarity floor', () => {
+  const repaired = ensureAdultLanguageBeats(
+    Array.from({ length: 12 }, (_, index) => ({ speakerId: index % 2 ? 'kernelkline' : 'rookboss', text: 'The server changed the rule again.' })),
+    180,
+    17,
+  );
+  const profaneWords = ['bullshit', 'shit', 'fuck', 'goddamn', 'asshole', 'dickhead'];
+  const profaneBeats = repaired.filter((line) => profaneWords.some((word) => line.text.toLowerCase().includes(word))).length;
+  assert.ok(profaneBeats >= 9, 'expected at least 9 profane beats, got ' + profaneBeats);
+});
+test('deterministic fallback keeps enough unique dialogue after collision repair', () => {
+  const draft = buildSegmentDraft({ templateId: 'old-timer-override', seed: 2000338723, durationSeconds: 57, castIds: ['magsrust', 'kernelkline', 'karen', 'bork'] });
+  const lines = deterministicTopicDialogue(draft);
+  const timed = timedDialogue(lines, draft.dialogue, draft.castIds, draft.durationSeconds);
+  assert.equal(lines.length, 6);
+  assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
+  assert.ok(timed.length >= 6, 'collision repair must survive timeline filtering');
+});
+
+test('long deterministic fallback rotates per-speaker turns without repeating lines', () => {
+  const draft = buildSegmentDraft({ templateId: 'break-policy', seed: 77123, durationSeconds: 180, castIds: ['sudsmcgee', 'karen', 'bork'] });
+  const lines = deterministicTopicDialogue(draft);
+  assert.ok(lines.length >= 18, 'expected the long fallback to scale to at least 18 lines');
+  assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
+});
 test('deterministic drafts carry a complete writing beat sheet', () => {
   const draft = buildSegmentDraft({ templateId: 'break-policy', seed: 42, durationSeconds: 30, castIds: ['rookboss', 'sudsmcgee'] });
   assert.deepEqual(draft.story.beats.map((beat) => beat.id), ['hook', 'want', 'obstacle', 'escalation', 'reversal', 'button']);
@@ -231,6 +262,13 @@ test('random who selection persists a fair alternation for repeated dashboard re
   assert.equal(selectionState.lastWho, 'cast');
   assert.equal(selectGenerationWho('orange', 2, selectionState), 'orange');
   assert.equal(selectGenerationWho('cast', 2, selectionState), 'cast');
+});
+
+test('continuous duration weights normalize and avoid immediate repeats', () => {
+  assert.deepEqual(normalizeContinuousDurationWeights('short:2,medium:6,long:2'), { short: 0.2, medium: 0.6, long: 0.2 });
+  assert.deepEqual(normalizeContinuousDurationWeights({ short: 0, medium: 0, long: 0 }), { short: 0.22, medium: 0.6, long: 0.18 });
+  assert.equal(selectContinuousDurationPreset(17, 'short', { short: 1, medium: 0, long: 0 }), 'short');
+  assert.notEqual(selectContinuousDurationPreset(17, 'medium', { short: 0.5, medium: 0.5, long: 0 }), 'medium');
 });
 
 test('episode presets map to the final short, standard, and extended lengths', () => {

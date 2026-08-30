@@ -194,6 +194,9 @@ export default function BullshitFactoryLanding() {
     const player = playerRef.current;
     if (!player) return;
     try {
+      if (player.ended || (Number.isFinite(player.duration) && player.duration > 0 && player.currentTime >= player.duration - 0.05)) {
+        player.currentTime = 0;
+      }
       await player.play();
       setPlayerPlaying(true);
     } catch {
@@ -210,6 +213,16 @@ export default function BullshitFactoryLanding() {
     if (continuousPlaybackActive) return episodes.find((episode) => episode.id === continuousEpisodeId) || null;
     return episodes.find((episode) => episode.id === selectedId) || episodes[0] || null;
   }, [continuousEpisodeId, continuousPlaybackActive, episodes, selectedId]);
+  const selectedEpisodeId = selectedEpisode?.id || '';
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player || !selectedEpisodeId || !continuousPlaybackActive) return;
+    if (player.ended || (Number.isFinite(player.duration) && player.duration > 0 && player.currentTime >= player.duration - 0.05)) {
+      player.currentTime = 0;
+    }
+    void player.play().then(() => setPlayerPlaying(true)).catch(() => setPlayerPlaying(false));
+  }, [continuousPlaybackActive, playlist?.current?.segmentId, selectedEpisodeId]);
 
   function advanceContinuousPlayer() {
     if (!continuousPlaybackActive) return;
