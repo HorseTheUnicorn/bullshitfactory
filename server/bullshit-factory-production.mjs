@@ -1726,10 +1726,18 @@ async function reserveCastTopicResearch(seed = 1, allowedTopics = []) {
   const topics = preferredTopics.length
     ? [...preferredTopics, ...allTopics.filter((topic) => !preferred.has(topic))]
     : allTopics;
-  const start = preferredTopics.length ? 0 : (topics.length ? Math.abs(Math.floor(Number(seed) || 1)) % topics.length : 0);
+  const preferredCount = preferredTopics.length;
+  const rotationPool = preferredCount ? preferredTopics : topics;
+  const start = rotationPool.length ? Math.abs(Math.floor(Number(seed) || 1)) % rotationPool.length : 0;
+  const rotatedPreferred = rotationPool.length
+    ? [...rotationPool.slice(start), ...rotationPool.slice(0, start)]
+    : [];
+  const selectionOrder = preferredCount
+    ? [...rotatedPreferred, ...topics.filter((topic) => !preferred.has(topic))]
+    : rotatedPreferred;
   const selected = [];
-  for (let offset = 0; offset < topics.length && selected.length < 3; offset += 1) {
-    const topic = topics[(start + offset) % topics.length];
+  for (const topic of selectionOrder) {
+    if (selected.length >= 3) break;
     const pool = pools[topic];
     const item = poolRemainingItems(pool)[0];
     if (!item) continue;
@@ -2484,6 +2492,49 @@ const DETERMINISTIC_TOPIC_SUBJECTS = Object.freeze({
   factory: ['the factory clipboard', 'the conveyor permit', 'the emergency work order'],
 });
 
+const DETERMINISTIC_TOPIC_SUBJECT_DETAILS = Object.freeze([
+  'with a red receipt',
+  'wearing a paper badge',
+  'under a fake deadline',
+  'carrying a wet signature',
+  'on a crooked schedule',
+  'with two emergency stamps',
+  'inside a borrowed folder',
+  'guarded by a sleepy barcode',
+  'after a hostile handoff',
+  'with a suspicious warranty',
+  'behind a locked lunchbox',
+  'under fluorescent weather',
+  'with a counterfeit apology',
+  'inside the wrong spreadsheet',
+  'after a ceremonial reboot',
+  'wearing the break room key',
+  'with a disputed timestamp',
+  'near the unpaid alarm',
+  'under a tiny union flag',
+  'with an expired password',
+  'inside a rotating clipboard',
+  'after the memo sneezed',
+  'with a borrowed megaphone',
+  'on the unofficial conveyor',
+  'under a nervous spotlight',
+  'with an angry footnote',
+  'inside a folding rule',
+  'after a premature toast',
+  'with a cardboard witness',
+  'behind a sarcastic button',
+  'under a temporary law',
+  'with a fake emergency',
+  'inside a damp manifest',
+  'after the buzzer resigned',
+  'with a missing middle name',
+  'on a probationary pallet',
+  'under a management moon',
+  'with a loose stamp',
+  'inside the apology drawer',
+  'after a budget hiccup',
+]);
+
 function deterministicTopicContext(draft) {
   const fallbackTopics = [draft.category || 'factory', ...(Array.isArray(draft.topicFocus) ? draft.topicFocus : [])];
   const topics = researchTopicsFromPacket(draft.topicResearch || {}, fallbackTopics).slice(0, 12);
@@ -2536,7 +2587,7 @@ function deterministicTopicContext(draft) {
     primaryTopic,
     primaryKeywords: researchTopicKeywords(primaryTopic),
     seed,
-    subject: pick(subjects, 7),
+    subject: pick(subjects, 7) + ' ' + pick(DETERMINISTIC_TOPIC_SUBJECT_DETAILS, 71),
     action,
     consequence,
     reversal,
@@ -2570,7 +2621,9 @@ function deterministicTopicDialogue(draft) {
   const phases = ['hook', 'want', 'obstacle', 'escalation', 'reversal', 'reaction'];
   const targetLines = Math.max(humans.length, Math.min(dialogueLineBudget(draft.durationSeconds), minimumDialogueLines(draft.durationSeconds)));
   const targetWords = dialogueWordBudget(draft.durationSeconds);
-  const maxWordsPerLine = Math.max(8, Math.floor((targetWords * 0.96) / targetLines));
+  // Leave headroom for the incident-specific subject detail while keeping
+  // every deterministic line inside the long-slot measured deadline.
+  const maxWordsPerLine = Math.max(8, Math.floor((targetWords * 0.82) / targetLines));
   const templates = {
     rookboss: [
       'The {topic} bulletin promoted {subject}, and that is {adult}.',
@@ -4809,6 +4862,20 @@ function hasUsedScriptFingerprint(fingerprint, speechHash = '') {
   );
 }
 
+function repeatedDialogueLineKeys(draft) {
+  const normalizeLine = (value) => canonicalNoveltyText(value);
+  const previous = new Set(
+    (state?.continuity?.recentScriptTexts || [])
+      .flatMap((text) => String(text || '').split('|'))
+      .map(normalizeLine)
+      .filter((line) => line.length >= 24),
+  );
+  return [...new Set(spokenEvents(draft)
+    .filter((event) => !['bork', ORANGE_IDIOT_ID].includes(event.speakerId))
+    .map((event) => normalizeLine(event.text))
+    .filter((line) => line.length >= 24 && previous.has(line)))];
+}
+
 function speechShingles(value, size = 6) {
   const tokens = canonicalNoveltyText(value).split(' ').filter(Boolean);
   const shingles = new Set();
@@ -4826,7 +4893,9 @@ function isNearDuplicateSpeech(draft) {
     let shared = 0;
     for (const shingle of current) if (previous.has(shingle)) shared += 1;
     const ratio = shared / Math.max(1, Math.min(current.size, previous.size));
-    if (shared >= 2 && ratio >= 0.34) return true;
+    // Two shared scaffolding phrases are common in a fixed-format sitcom.
+    // Require a stronger overlap after exact script/line checks have run.
+    if (shared >= 3 && ratio >= 0.34) return true;
   }
   return false;
 }
@@ -4918,16 +4987,18 @@ async function generateSegment(job) {
       directed = await directWithWriter(draft, resources, musicPlan);
       noveltyFingerprint = scriptFingerprint(directed.draft);
       noveltySpeechFingerprint = speechFingerprint(directed.draft);
+      const repeatedLineKeys = repeatedDialogueLineKeys(directed.draft);
       const repeated = hasUsedScriptFingerprint(noveltyFingerprint, noveltySpeechFingerprint)
         || isNearDuplicateSpeech(directed.draft)
         || attemptedFingerprints.includes(noveltyFingerprint)
-        || attemptedSpeechFingerprints.includes(noveltySpeechFingerprint);
+        || attemptedSpeechFingerprints.includes(noveltySpeechFingerprint)
+        || repeatedLineKeys.length > 0;
       if (draft.orangeIdiotSpeechLocked || !repeated) break;
       attemptedFingerprints.push(noveltyFingerprint);
       attemptedSpeechFingerprints.push(noveltySpeechFingerprint);
       attemptedPhrases.push(scriptSpeechText(directed.draft).slice(0, 1200));
       draft.noveltyExclusions = attemptedPhrases.slice(-3);
-      logEvent("script-novelty-retry", "The writer returned repeated or near-duplicate speech; requesting a fresh premise, source result, and wording.", { templateId: template.id, attempt: noveltyAttempt + 1, nearDuplicate: isNearDuplicateSpeech(directed.draft) });
+      logEvent("script-novelty-retry", "The writer returned repeated or near-duplicate speech; requesting a fresh premise, source result, and wording.", { templateId: template.id, attempt: noveltyAttempt + 1, nearDuplicate: isNearDuplicateSpeech(directed.draft), repeatedLineCount: repeatedLineKeys.length });
       if (noveltyAttempt === 2) throw new Error("Writer repeated a previous or near-duplicate script after three novelty attempts.");
     }
     if (!directed) throw new Error("No script writer result was produced.");
@@ -6274,6 +6345,9 @@ async function publishEpisode(episodeId) {
   state.episodes = state.episodes.map((record) => record.id === published.id ? { ...record, state: published.state, publishedAt: published.publishedAt } : record);
   logEvent('episode-published', published.title, { episodeId: published.id });
   await persistState();
+  // A newly published cut must enter an existing continuous playlist exactly
+  // once, including when it was published manually from the dashboard.
+  if (state.session?.mode === 'continuous') await queueEpisode(published.id);
   return published;
 }
 
