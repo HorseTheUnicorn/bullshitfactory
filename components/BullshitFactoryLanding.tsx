@@ -247,14 +247,14 @@ export default function BullshitFactoryLanding() {
     <main className="bf-public-page">
       <div className="bf-public-scanlines" aria-hidden="true" />
       <header className="bf-public-header">
-        <Link className="bf-public-brand" href="/" aria-label="Bullshit Factory home">
+        <Link className="bf-public-brand" href="/" prefetch={false} aria-label="Bullshit Factory home">
           <span className="bf-public-mark">BF</span>
           <span><strong>BULLSHIT FACTORY</strong><small>16-BIT NONSENSE NETWORK</small></span>
         </Link>
         <div className="bf-public-header-right">
           <span className="bf-public-signal"><i aria-hidden="true" /> {service}</span>
           <a href="#episodes">EPISODES</a>
-          <Link href="/admin">ADMIN</Link>
+          <Link href="/admin" prefetch={false}>ADMIN</Link>
         </div>
       </header>
 
