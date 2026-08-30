@@ -319,6 +319,7 @@ function defaultState() {
       stoppedAt: null,
       completedCount: 0,
       lastEpisodeId: null,
+      lastGenerationWho: null,
       lastError: null,
     },
     inventory: [],
@@ -4606,6 +4607,15 @@ function canonicalNoveltyText(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/giu, ' ').trim();
 }
 
+function episodeTitleBodyKey(value) {
+  const withoutPrefix = String(value || '').trim()
+    .replace(/^bullshit factory\s*(?:#\s*)?\d+\s*(?:\p{Dash_Punctuation}\s*)?/iu, '')
+    .replace(/^bullshit factory\s*(?:\p{Dash_Punctuation}|:)\s*/iu, '')
+    .replace(/^bullshit factory\s+/iu, '');
+  return canonicalNoveltyText(withoutPrefix);
+}
+
+
 function existingEpisodeTitleKeys() {
   const keys = new Set(
     (Array.isArray(state?.episodes) ? state.episodes : [])
@@ -4619,9 +4629,27 @@ function existingEpisodeTitleKeys() {
   return keys;
 }
 
+function existingEpisodeTitleBodyKeys() {
+  return new Set([
+    ...(Array.isArray(state?.episodes) ? state.episodes : []).map((episode) => episode?.title),
+    ...(Array.isArray(state?.continuity?.usedEpisodeTitleKeys) ? state.continuity.usedEpisodeTitleKeys : []),
+  ].map((title) => episodeTitleBodyKey(title)).filter(Boolean));
+}
+
+
+function resolveGenerationWho(value, seed = 1, previousWho = null) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'orange') return 'orange';
+  if (normalized !== 'random') return 'cast';
+  const candidate = Math.abs(Math.floor(safeNumber(seed, 1))) % 2 === 0 ? 'orange' : 'cast';
+  if (previousWho === candidate) return candidate === 'orange' ? 'cast' : 'orange';
+  return candidate;
+}
+
 function uniqueEpisodeTitle(candidate, generationWho = 'cast') {
   const base = stripText(candidate, 120) || 'Bullshit Factory: Untitled Factory Incident';
   const used = existingEpisodeTitleKeys();
+  const usedTitleBodies = existingEpisodeTitleBodyKeys();
   const baseWithoutPrefix = base
     .replace(/^bullshit factory\s*:\s*/iu, '')
     .replace(/^bullshit factory\s*#\s*\d+\s*[—:-]?\s*/iu, '')
@@ -4634,15 +4662,43 @@ function uniqueEpisodeTitle(candidate, generationWho = 'cast') {
     .map((episode) => titleNumberFrom(episode?.title))
     .reduce((highest, value) => Math.max(highest, Number.isFinite(value) ? value : 0), 0);
   let number = Math.max(1, Math.round(safeNumber(state?.continuity?.nextEpisodeNumber, 1)), highestExistingNumber + 1);
+  const titleVariants = [
+    'The Memo Bites Back',
+    'Break Room Rebuttal',
+    'The Addendum Escapes',
+    'Overtime Has Notes',
+    'Nobody Read the Addendum',
+    'Floor-Level Fallout',
+    'The Printer Knows',
+    'A Shift Too Far',
+  ];
+  let titleBody = baseWithoutPrefix;
+  if (usedTitleBodies.has(episodeTitleBodyKey(titleBody))) {
+    for (const suffix of titleVariants) {
+      const candidateBody = stripText(baseWithoutPrefix + ' - ' + suffix, 110);
+      if (!usedTitleBodies.has(episodeTitleBodyKey(candidateBody))) {
+        titleBody = candidateBody;
+        break;
+      }
+    }
+    if (usedTitleBodies.has(episodeTitleBodyKey(titleBody))) {
+      let suffixNumber = 1;
+      do {
+        titleBody = stripText(baseWithoutPrefix + ' - Incident ' + String(suffixNumber), 110);
+        suffixNumber += 1;
+      } while (usedTitleBodies.has(episodeTitleBodyKey(titleBody)));
+    }
+  }
   const usedTitleKeys = new Set(used);
   let next = '';
   do {
     const prefix = 'Bullshit Factory #' + String(number).padStart(3, '0') + ' — ';
-    next = stripText(prefix + baseWithoutPrefix, 120);
+    next = stripText(prefix + titleBody, 120);
     number += 1;
-  } while (usedTitleKeys.has(canonicalNoveltyText(next)));
+  } while (usedTitleKeys.has(canonicalNoveltyText(next)) || usedTitleBodies.has(episodeTitleBodyKey(next)));
   const nextKey = canonicalNoveltyText(next);
   usedTitleKeys.add(nextKey);
+  usedTitleBodies.add(episodeTitleBodyKey(next));
   if (state?.continuity) {
     state.continuity.nextEpisodeNumber = number;
     state.continuity.usedEpisodeTitleKeys = [...usedTitleKeys].slice(-5000);
@@ -4996,13 +5052,14 @@ async function generateEpisode(body = {}, options = {}) {
   const seed = safeNumber(body.seed, seedFor("episode:" + Date.now()));
   const episodeMusicMode = normalizeEpisodeMusicMode(body.musicMode);
   const requestedWho = String(body.generationWho || body.who || '').trim().toLowerCase();
+  const generationWhoRequest = String(body.generationWhoRequest || requestedWho).trim().toLowerCase();
   const explicitWho = ['cast', 'orange', 'random'].includes(requestedWho);
   let generationWho = explicitWho ? requestedWho : "";
   if (!generationWho) {
     const oldMode = String(body.orangeIdiotMode || '').trim().toLowerCase();
     generationWho = body.orangeIdiotOnly === true || oldMode === 'standalone' || body.includeOrangeIdiot === true || Boolean(String(body.orangeIdiotSpeechText || body.tvSpeechText || '').trim()) ? (body.orangeIdiotOnly === true || oldMode === 'standalone' ? 'orange' : 'cast') : 'cast';
   }
-  if (generationWho === 'random') generationWho = Math.abs(Math.floor(seed)) % 2 === 0 ? 'orange' : 'cast';
+  generationWho = resolveGenerationWho(generationWho, seed);
   const generationWhen = ['now', 'random'].includes(String(body.generationWhen || body.when || '').trim().toLowerCase()) ? String(body.generationWhen || body.when).trim().toLowerCase() : 'now';
   const requestedWhere = String(body.generationWhere || body.where || '').trim().toLowerCase() || 'auto';
   const validFactoryScene = (value) => FACTORY_SCENES.some((scene) => scene.id === value);
@@ -5033,7 +5090,7 @@ async function generateEpisode(body = {}, options = {}) {
     createdAt: nowIso(),
     segmentIds: [],
     mode: orangeIdiotOnly ? 'orange-idiot-only' : 'ensemble',
-    generation: { who: generationWho, requestedWho: requestedWho || generationWho, when: generationWhen, where: requestedWhere, durationPreset: String(body.durationPreset || "").trim().toLowerCase() || null, musicMode: episodeMusicMode },
+    generation: { who: generationWho, requestedWho: generationWhoRequest || generationWho, when: generationWhen, where: requestedWhere, durationPreset: String(body.durationPreset || "").trim().toLowerCase() || null, musicMode: episodeMusicMode },
     orangeIdiot: orangeIdiotRequested
       ? {
         included: true,
@@ -5162,6 +5219,8 @@ async function generateEpisode(body = {}, options = {}) {
       manifestFile: relativeRuntimePath(path.join(episodeDirectory, 'manifest.json')),
       createdAt: manifest.createdAt,
       publishedAt: null,
+      generationWho: manifest.generation?.who || generationWho,
+      requestedGenerationWho: manifest.generation?.requestedWho || generationWho,
     };
     state.episodes = [...state.episodes.filter((episode) => episode.id !== episodeId), record].slice(-MAX_EPISODES);
     logEvent('episode-approved', manifest.title, { episodeId, durationSeconds: media.duration, segments: drafts.length, musicProviders: manifest.providers.music, openingSeconds: OPENING_SECONDS, generationWho });
@@ -5234,7 +5293,7 @@ function queueGeneration(label, task) {
     try {
       const result = await task();
       record.segmentId = result?.id || null;
-      record.result = result ? { id: result.id, state: result.state, validation: result.validation } : null;
+      record.result = result ? { id: result.id, state: result.state, validation: result.validation, generationWho: result.generationWho || null, requestedGenerationWho: result.requestedGenerationWho || null } : null;
       if (record.cancelRequested) {
         record.status = 'cancelled';
         record.error = 'Stopped by operator.';
@@ -5294,6 +5353,7 @@ function continuousGenerationStatus() {
     stoppedAt: current.stoppedAt || null,
     completedCount: Math.max(0, Math.round(safeNumber(current.completedCount, 0))),
     lastEpisodeId: current.lastEpisodeId || null,
+    lastGenerationWho: current.lastGenerationWho === 'orange' ? 'orange' : current.lastGenerationWho === 'cast' ? 'cast' : null,
     lastError: current.lastError || null,
   };
 }
@@ -5333,12 +5393,16 @@ async function runContinuousGeneration(runId, request) {
   try {
     while (state?.continuousGeneration?.runId === runId && state.continuousGeneration.status === 'running') {
       let record;
+      const seed = seedFor('continuous-episode:' + runId + ':' + attempt + ':' + Date.now());
+      const selectedWho = resolveGenerationWho(request.generationWho, seed, state.continuousGeneration.lastGenerationWho);
       const payload = {
         ...request,
+        generationWho: selectedWho,
+        generationWhoRequest: request.generationWho,
         autoPublish: true,
         publishToPublic: true,
         queueForContinuous: true,
-        seed: seedFor('continuous-episode:' + runId + ':' + attempt + ':' + Date.now()),
+        seed,
       };
       record = queueGeneration('continuous-episode', () => generateEpisode(payload, {
         shouldCancel: () => record.cancelRequested === true
@@ -5346,6 +5410,7 @@ async function runContinuousGeneration(runId, request) {
           || state?.continuousGeneration?.status !== 'running',
       }));
       state.continuousGeneration.activeJobId = record.jobId;
+      state.continuousGeneration.lastGenerationWho = selectedWho;
       await persistState();
       const completed = await record.completion;
       if (state?.continuousGeneration?.runId !== runId) break;
@@ -5355,7 +5420,9 @@ async function runContinuousGeneration(runId, request) {
         state.continuousGeneration.completedCount += 1;
         state.continuousGeneration.lastEpisodeId = completed.segmentId || completed.result.id || null;
         state.continuousGeneration.lastError = null;
-        logEvent('continuous-episode-published', 'Continuous generation published an episode to the public website playlist.', { episodeId: state.continuousGeneration.lastEpisodeId, count: state.continuousGeneration.completedCount });
+        const generationWho = completed.result?.generationWho === 'orange' ? 'orange' : completed.result?.generationWho === 'cast' ? 'cast' : selectedWho;
+        state.continuousGeneration.lastGenerationWho = generationWho;
+        logEvent('continuous-episode-published', 'Continuous generation published an episode to the public website playlist.', { episodeId: state.continuousGeneration.lastEpisodeId, count: state.continuousGeneration.completedCount, generationWho });
       } else {
         state.continuousGeneration.lastError = completed.error || 'The continuous episode did not publish.';
         logEvent('continuous-generation-failed', state.continuousGeneration.lastError, { jobId: completed.jobId || null });
@@ -5423,6 +5490,7 @@ async function startContinuousGeneration(body = {}) {
     stoppedAt: null,
     completedCount: 0,
     lastEpisodeId: null,
+    lastGenerationWho: null,
     lastError: null,
   };
   logEvent('continuous-generation-started', 'Continuous generation will publish validated episodes to the public website playlist until stopped by the operator.', { who: request.generationWho, durationPreset: request.durationPreset });
@@ -5865,14 +5933,20 @@ async function maybeQueueContinuousGeneration() {
   if (!state.session || state.session.mode !== 'continuous' || state.control.status !== 'running') return;
   if (state.session.refillJobId && generationJobPending(state.session.refillJobId)) return;
   state.session.refillJobId = null;
-  const template = pickVariedTemplate((state.continuity.recentSegmentIds?.length || 0) + Date.now());
+  const refillSeed = seedFor('continuous-refill:' + Date.now() + ':' + Math.random());
+  const selectedWho = resolveGenerationWho(state.continuousGeneration?.request?.generationWho || 'cast', refillSeed, state.continuousGeneration?.lastGenerationWho);
+  const orangeIdiotOnly = selectedWho === 'orange';
+  const template = pickVariedTemplate(refillSeed);
+  state.continuousGeneration.lastGenerationWho = selectedWho;
   let record;
   record = queueGeneration('continuous-refill', async () => {
     if (record.cancelRequested || !state.session || state.session.mode !== 'continuous' || state.control.status !== 'running') throw new Error('Continuous playback was stopped.');
-    const draft = await generateSegment({ templateId: template.id, seed: Date.now(), segmentIndex: state.continuity.recentSegmentIds?.length || 0, durationSeconds: DEFAULT_SEGMENT_SECONDS, musicMode: state.continuousGeneration?.request?.musicMode || "auto", castIds: template.castIds, sceneId: template.sceneId });
+    const draft = await generateSegment({ templateId: template.id, seed: refillSeed, segmentIndex: state.continuity.recentSegmentIds?.length || 0, durationSeconds: DEFAULT_SEGMENT_SECONDS, musicMode: state.continuousGeneration?.request?.musicMode || "auto", castIds: orangeIdiotOnly ? [] : template.castIds, sceneId: orangeIdiotOnly ? ORANGE_IDIOT_STANDALONE_SCENE_ID : template.sceneId, orangeIdiotOnly, orangeIdiotRequested: orangeIdiotOnly });
     if (!record.cancelRequested && draft?.state === 'approved' && state.session?.mode === 'continuous') {
       const source = state.inventory.find((item) => item.id === draft.id);
       if (source) appendPlaylistItem({ ...source, source: 'approved-segment' }, source.durationSeconds);
+      state.continuousGeneration.lastGenerationWho = selectedWho;
+      logEvent('continuous-refill-generated', 'Continuous playback generated a new segment using the selected who mode.', { jobId: record.jobId, generationWho: selectedWho, segmentId: draft.id });
     }
     return draft;
   });
@@ -6653,6 +6727,8 @@ export {
   deterministicTopicDialogue,
   deterministicTopicStory,
   defaultState,
+  episodeTitleBodyKey,
+  resolveGenerationWho,
   evaluateWritingCandidate,
   productionCatalogSummary,
   renderPixelGameFontText,

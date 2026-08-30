@@ -198,6 +198,7 @@ type ProductionSnapshot = {
     stoppedAt?: string | null;
     completedCount?: number;
     lastEpisodeId?: string | null;
+    lastGenerationWho?: 'cast' | 'orange' | null;
     lastError?: string | null;
   };
 
@@ -1114,7 +1115,7 @@ export default function BullshitFactoryDashboard() {
             <button className="bf-button bf-button-danger" disabled={productionBusy || !productionHasContinuousWork} onClick={() => void productionAction('stop-continuous')} type="button">
               {continuousGenerationStatus === 'stopping' ? 'STOPPING BOTH...' : 'STOP GENERATION + PLAYBACK'}
             </button>
-            <span className="bf-generation-note">GENERATOR: {continuousGenerationStatus.toUpperCase()} / {productionStatus?.continuousGeneration?.completedCount || 0} EPISODES PUBLISHED. PLAYLIST: {productionPlaylist?.healthy ? 'HEALTHY' : productionPlaylist?.hasPlaylist ? 'QUEUED / STOPPED' : 'EMPTY'}. Published episodes remain intact.</span>
+            <span className="bf-generation-note">GENERATOR: {continuousGenerationStatus.toUpperCase()} / {productionStatus?.continuousGeneration?.completedCount || 0} EPISODES PUBLISHED. LAST WHO: {(productionStatus?.continuousGeneration?.lastGenerationWho || 'NONE').toUpperCase()}. PLAYLIST: {productionPlaylist?.healthy ? 'HEALTHY' : productionPlaylist?.hasPlaylist ? 'QUEUED / STOPPED' : 'EMPTY'}. Published episodes remain intact.</span>
           </div>
           <section className="bf-playlist-console" aria-label="Continuous website playlist">
             <div className="bf-playlist-console-heading">

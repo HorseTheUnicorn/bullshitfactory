@@ -6,6 +6,8 @@ import {
   buildGoblinPrompt,
   buildScriptWriterPrompt,
   buildSegmentDraft,
+  episodeTitleBodyKey,
+  resolveGenerationWho,
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
@@ -192,4 +194,30 @@ test('animation direction cannot mutate the approved script', () => {
   assert.equal(directed.writing.animationDirector.provider, 'gemini');
   assert.equal(directed.motion.scriptLocked, true);
   assert.ok(directed.motion.assetNeeds.length > 0);
+
+});
+
+test('episode title novelty ignores numbering and show prefix', () => {
+  assert.equal(
+    episodeTitleBodyKey('Bullshit Factory #008 - The Wellness Memo Is Mostly Vibes'),
+    episodeTitleBodyKey('Bullshit Factory #012 - The Wellness Memo Is Mostly Vibes'),
+  );
+  assert.equal(
+    episodeTitleBodyKey('Bullshit Factory: The Wellness Memo Is Mostly Vibes'),
+    'the wellness memo is mostly vibes',
+  );
+});
+
+test('continuous random mode chooses a new who mode and honors fixed modes', () => {
+  assert.equal(resolveGenerationWho('random', 2), 'orange');
+  assert.equal(resolveGenerationWho('random', 2, 'orange'), 'cast');
+  let previousWho = null;
+  const sequence = [];
+  for (let index = 0; index < 6; index += 1) {
+    previousWho = resolveGenerationWho('random', 2, previousWho);
+    sequence.push(previousWho);
+  }
+  assert.deepEqual(sequence, ['orange', 'cast', 'orange', 'cast', 'orange', 'cast']);
+  assert.equal(resolveGenerationWho('orange', 2), 'orange');
+  assert.equal(resolveGenerationWho('cast', 2), 'cast');
 });

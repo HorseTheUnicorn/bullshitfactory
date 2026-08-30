@@ -233,7 +233,7 @@ export default function BullshitFactoryLanding() {
                 autoPlay={continuousPlaybackActive}
                 className="bf-public-media"
                 controls
-                muted={continuousPlaybackActive}
+                volume={1}
                 onEnded={advanceContinuousPlayer}
                 onError={() => setPlayerPlaying(false)}
                 onLoadStart={() => setPlayerPlaying(false)}
