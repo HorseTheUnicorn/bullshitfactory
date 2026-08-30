@@ -5932,9 +5932,11 @@ async function updateControl(action) {
 }
 
 function maybeMarkPlayed(item) {
-  if (!item || item.source !== 'approved-segment') return;
+  if (!item || !['approved-segment', 'published-episode'].includes(item.source)) return;
   const record = state.inventory.find((candidate) => candidate.id === item.segmentId);
   if (record) record.lastPlayedAt = nowIso();
+  const episode = state.episodes.find((candidate) => candidate.id === item.segmentId);
+  if (episode) episode.lastPlayedAt = nowIso();
   state.playHistory.push({ segmentId: item.segmentId, playedAt: nowIso(), sessionId: state.session?.id || null });
   if (state.playHistory.length > 200) state.playHistory.splice(0, state.playHistory.length - 200);
 }
@@ -6062,8 +6064,32 @@ async function queueEpisode(episodeId) {
 
 async function extendContinuousFallback() {
   if (!state.session || state.session.mode !== 'continuous') return;
-  const fallback = await createFallbackMedia();
+  const playedAt = new Map(state.playHistory.slice(-200).map((item) => [item.segmentId, item.playedAt]));
+  const published = publishedEpisodes()
+    .map((episode) => ({
+      id: episode.id,
+      title: episode.title || episode.id,
+      category: episode.category || 'published-episode',
+      sceneId: episode.sceneId || 'factory-floor',
+      castIds: episode.castIds || ['bork'],
+      source: 'published-episode',
+      videoFile: episode.videoFile || episode.files?.video,
+      audioFile: episode.audioFile || null,
+      posterFile: episode.posterFile || episode.files?.poster,
+      mediaFile: episode.videoFile || episode.files?.video,
+      durationSeconds: episode.durationSeconds,
+      lastPlayedAt: playedAt.get(episode.id) || episode.lastPlayedAt || null,
+    }))
+    .sort((a, b) => String(a.lastPlayedAt || '').localeCompare(String(b.lastPlayedAt || '')));
   let remaining = Math.max(300, Math.round(CONTINUOUS_BUFFER_SECONDS / 2));
+  for (const episode of published) {
+    const duration = Math.max(1, Math.round(Number(episode.durationSeconds || 30)));
+    if (duration > remaining) break;
+    appendPlaylistItem(episode, duration);
+    remaining -= duration;
+  }
+  if (remaining <= 0) return;
+  const fallback = await createFallbackMedia();
   while (remaining > 0) {
     const duration = Math.min(Number(fallback.durationSeconds), remaining);
     appendPlaylistItem({ id: 'fallback-factory-loop', title: 'Factory fallback loop', category: 'fallback', sceneId: 'factory-floor', castIds: ['bork'], source: 'fallback', ...fallback }, duration);

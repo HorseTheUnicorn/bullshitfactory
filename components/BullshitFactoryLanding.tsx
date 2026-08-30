@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { factoryBrandAssets, factoryCast } from '../lib/bullshit-factory';
 
@@ -84,6 +84,7 @@ export default function BullshitFactoryLanding() {
   const [playlist, setPlaylist] = useState<PublicPlaylist | null>(null);
   const [continuousGeneration, setContinuousGeneration] = useState<{ status?: string } | null>(null);
   const [playerPlaying, setPlayerPlaying] = useState(false);
+  const [playerNeedsSound, setPlayerNeedsSound] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [chatName, setChatName] = useState('');
@@ -190,19 +191,31 @@ export default function BullshitFactoryLanding() {
     }
   }
 
-  async function playContinuousPlayer() {
+  const playContinuousPlayer = useCallback(async () => {
     const player = playerRef.current;
     if (!player) return;
+    if (player.ended || (Number.isFinite(player.duration) && player.duration > 0 && player.currentTime >= player.duration - 0.05)) {
+      player.currentTime = 0;
+    }
     try {
-      if (player.ended || (Number.isFinite(player.duration) && player.duration > 0 && player.currentTime >= player.duration - 0.05)) {
-        player.currentTime = 0;
-      }
+      player.muted = false;
       await player.play();
       setPlayerPlaying(true);
+      setPlayerNeedsSound(false);
     } catch {
-      setPlayerPlaying(false);
+      try {
+        // Chrome blocks audible autoplay on a fresh visit. Keep the channel
+        // visibly moving and let the viewer grant sound with one click.
+        player.muted = true;
+        await player.play();
+        setPlayerPlaying(true);
+        setPlayerNeedsSound(true);
+      } catch {
+        setPlayerPlaying(false);
+        setPlayerNeedsSound(false);
+      }
     }
-  }
+  }, [])
 
   const continuousGenerationActive = ['running', 'stopping'].includes(String(continuousGeneration?.status || ''));
   const continuousPlaybackActive = Boolean(playlist?.running || continuousGenerationActive);
@@ -218,11 +231,8 @@ export default function BullshitFactoryLanding() {
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !selectedEpisodeId || !continuousPlaybackActive) return;
-    if (player.ended || (Number.isFinite(player.duration) && player.duration > 0 && player.currentTime >= player.duration - 0.05)) {
-      player.currentTime = 0;
-    }
-    void player.play().then(() => setPlayerPlaying(true)).catch(() => setPlayerPlaying(false));
-  }, [continuousPlaybackActive, playlist?.current?.segmentId, selectedEpisodeId]);
+    void playContinuousPlayer();
+  }, [continuousPlaybackActive, playlist?.current?.segmentId, playContinuousPlayer, selectedEpisodeId]);
 
   function advanceContinuousPlayer() {
     if (!continuousPlaybackActive) return;
@@ -261,10 +271,25 @@ export default function BullshitFactoryLanding() {
                 controls
                 volume={1}
                 onEnded={advanceContinuousPlayer}
-                onError={() => setPlayerPlaying(false)}
-                onLoadStart={() => setPlayerPlaying(false)}
-                onPause={() => setPlayerPlaying(false)}
-                onPlaying={() => setPlayerPlaying(true)}
+                onError={() => {
+                  setPlayerPlaying(false);
+                  setPlayerNeedsSound(false);
+                }}
+                onLoadStart={() => {
+                  setPlayerPlaying(false);
+                  setPlayerNeedsSound(false);
+                }}
+                onCanPlay={() => {
+                  if (continuousPlaybackActive && !playerPlaying) void playContinuousPlayer();
+                }}
+                onPause={() => {
+                  setPlayerPlaying(false);
+                  setPlayerNeedsSound(false);
+                }}
+                onPlaying={() => {
+                  setPlayerPlaying(true);
+                  setPlayerNeedsSound(playerRef.current?.muted === true);
+                }}
                 playsInline
                 preload="metadata"
                 poster={selectedEpisode.media.poster}
@@ -276,12 +301,17 @@ export default function BullshitFactoryLanding() {
             ) : (
               <img className="bf-public-media" src={factoryBrandAssets.titleScreen} alt="Bullshit Factory title card" />
             )}
-            {selectedEpisode && continuousPlaybackActive && !playerPlaying && (
+            {selectedEpisode && continuousPlaybackActive && playerPlaying && playerNeedsSound && (
+              <button className="bf-public-audio-unlock" onClick={() => void playContinuousPlayer()} type="button">
+                UNMUTE / PLAY SOUND
+              </button>
+            )}
+            {selectedEpisode && continuousPlaybackActive && !playerPlaying && !playerNeedsSound && (
               <div className="bf-public-autoplay-placeholder" aria-live="polite">
                 <img src={factoryBrandAssets.titleScreen} alt="" />
                 <div>
                   <b>BULLSHIT FACTORY</b>
-                  <span>CONTINUOUS FEED / AUDIO AUTOPLAY BLOCKED UNTIL YOU START IT</span>
+                  <span>CONTINUOUS FEED / PRESS PLAY TO START SOUND</span>
                 </div>
                 <button className="bf-public-play-button" onClick={() => void playContinuousPlayer()} type="button">PLAY WITH SOUND</button>
               </div>
