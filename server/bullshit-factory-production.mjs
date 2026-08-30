@@ -4934,17 +4934,17 @@ async function generateSegment(job) {
   }
 }
 
-const EPISODE_MINUTES = Object.freeze([1, 3, 5, 10, 15, 20, 30, 45, 60]);
+const EPISODE_MINUTES = Object.freeze([1, 3, 5]);
 const OPENING_SECONDS = 3;
 
-const EPISODE_DURATION_PRESETS = Object.freeze({ short: 1, medium: 5, long: 15 });
+const EPISODE_DURATION_PRESETS = Object.freeze({ short: 1, medium: 3, long: 5 });
 
 function episodeDurationSeconds(body = {}) {
   const custom = safeNumber(body.customDurationSeconds, 0);
   if (custom > 0) return clamp(Math.round(custom), 60, 3600);
   const preset = String(body.durationPreset || '').trim().toLowerCase();
   if (Object.prototype.hasOwnProperty.call(EPISODE_DURATION_PRESETS, preset)) return EPISODE_DURATION_PRESETS[preset] * 60;
-  const requested = safeNumber(body.duration, 5);
+  const requested = safeNumber(body.duration, 3);
   const bounded = clamp(Math.round(requested), 1, 60);
   return (EPISODE_MINUTES.reduce((best, option) => Math.abs(option - bounded) < Math.abs(best - bounded) ? option : best, EPISODE_MINUTES[0])) * 60;
 }
@@ -6746,6 +6746,7 @@ export {
   deterministicTopicStory,
   defaultState,
   episodeTitleBodyKey,
+  episodeDurationSeconds,
   resolveGenerationWho,
   selectGenerationWho,
   evaluateWritingCandidate,

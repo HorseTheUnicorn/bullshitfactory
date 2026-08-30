@@ -278,8 +278,8 @@ function isPlayableEpisode(episode: ProductionEpisode) {
 
 const EPISODE_DURATION_PRESETS: Array<{ value: GenerationDurationPreset; label: string }> = [
   { value: 'short', label: 'SHORT / 1 MINUTE' },
-  { value: 'medium', label: 'MEDIUM / 5 MINUTES' },
-  { value: 'long', label: 'LONG / 15 MINUTES' },
+  { value: 'medium', label: 'STANDARD / 3 MINUTES' },
+  { value: 'long', label: 'EXTENDED / 5 MINUTES' },
 ];
 const GENERATION_WHO_OPTIONS: Array<{ value: GenerationWho; label: string }> = [
   { value: 'cast', label: 'THE FULL CAST' },

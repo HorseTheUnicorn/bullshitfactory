@@ -7,7 +7,7 @@ The project is designed to run on the production host at `.76` and to keep the W
 ## What it does
 
 - Generates on-demand cast episodes or standalone Orange Idiot broadcasts.
-- Supports short, medium, and long episode presets.
+- Supports Short (1 minute), Standard (3 minutes), and Extended (5 minutes) episode presets; Standard is the default.
 - Uses a 3-second original opening title card before the episode content.
 - Renders a locked 384x216 pixel presentation at 12 frames per second.
 - Places characters, props, reactions, captions, and purposeful motion from a validated timeline.
@@ -50,7 +50,7 @@ The admin dashboard is protected by the single-user admin gate. It can:
 
 - Generate a review episode or publish directly to the website playlist.
 - Choose cast, Orange Idiot, or random cast/Orange programming.
-- Choose where and when generation should be staged, plus a short/medium/long duration.
+- Choose where and when generation should be staged, plus Short (1 minute), Standard (3 minutes), or Extended (5 minutes); Standard is the default.
 - Start and stop continuous generation independently from playback.
 - Verify playlist health, inspect the last resolved random mode, and remove queued items.
 - Review writer, animation, audio, quarantine, and publishing logs.

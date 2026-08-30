@@ -7,6 +7,7 @@ import {
   buildScriptWriterPrompt,
   buildSegmentDraft,
   episodeTitleBodyKey,
+  episodeDurationSeconds,
   resolveGenerationWho,
   selectGenerationWho,
   evaluateWritingCandidate,
@@ -230,4 +231,13 @@ test('random who selection persists a fair alternation for repeated dashboard re
   assert.equal(selectionState.lastWho, 'cast');
   assert.equal(selectGenerationWho('orange', 2, selectionState), 'orange');
   assert.equal(selectGenerationWho('cast', 2, selectionState), 'cast');
+});
+
+test('episode presets map to the final short, standard, and extended lengths', () => {
+  assert.equal(episodeDurationSeconds({ durationPreset: 'short' }), 60);
+  assert.equal(episodeDurationSeconds({ durationPreset: 'medium' }), 180);
+  assert.equal(episodeDurationSeconds({ durationPreset: 'long' }), 300);
+  assert.equal(episodeDurationSeconds({}), 180);
+  assert.equal(episodeDurationSeconds({ duration: 15 }), 300);
+  assert.equal(episodeDurationSeconds({ duration: 60 }), 300);
 });
