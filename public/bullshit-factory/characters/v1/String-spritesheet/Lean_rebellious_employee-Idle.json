@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "249affc9-2212-4e43-9728-ee7af471224c",
+    "name": "Idle",
+    "prompt": "Lean rebellious employee with long messy hair, faded leather vest, black band shirt, ripped gray jeans, heavy boots, wristbands, and a worn red electric guitar.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Lean_rebellious_employee-Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Energetic performance loop with foot tapping, shoulder bouncing, headbanging, guitar strumming, boot stomping, a dramatic rock pose, and a sudden musical freeze.\n",
+        "animation_group_id": "9229676c-09d4-468f-ac0a-a0d12ad687c9",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T13:08:44.147862+00:00"
+}

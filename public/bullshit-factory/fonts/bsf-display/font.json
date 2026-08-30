@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "displayName": "Bullshit Factory supplied display font",
+  "source": "ChatGPT Image Aug 29, 2026, 09_24_18 AM.png",
+  "extraction": {
+    "alphaThreshold": 64,
+    "rows": [
+      {
+        "directory": "uppercase",
+        "count": 26
+      },
+      {
+        "directory": "lowercase",
+        "count": 26
+      },
+      {
+        "directory": "digits",
+        "count": 10
+      }
+    ]
+  }
+}

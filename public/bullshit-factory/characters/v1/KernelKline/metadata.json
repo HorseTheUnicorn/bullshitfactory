@@ -1,0 +1,72 @@
+{
+  "group_id": "99a86abc-b08e-4f14-854e-f87092ebd437",
+  "states": [
+    {
+      "character": {
+        "id": "c35fa41f-094b-435f-8abd-798f3b809532",
+        "name": "Idle",
+        "prompt": "Nervous thin systems administrator with oversized glasses, messy hair, faded green hoodie, cargo pants, headset, tangled cables, old laptop, and restless wide eyes.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:30:48.464956+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Hunched_typing_loop_with_finger_twitching_rapid_he": {
+            "south": [
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_000.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_001.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_002.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_003.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_004.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_005.png",
+              "Idle/animations/Hunched_typing_loop_with_finger_twitching_rapid_he/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T12:38:28.227499"
+}

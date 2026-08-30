@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-08-28T15:37:24.254Z",
+  "endpoint": "https://api.pixellab.ai/v2",
+  "sourceStyle": "Bullshit Factory muted early-2000s 16-bit art direction; title, scene, prop, and font assets are separate reviewable inputs.",
+  "replace": false,
+  "requestedConcurrency": 8,
+  "completed": [
+    {
+      "kind": "scene",
+      "id": "marina-slip",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/marina-slip.png"
+    },
+    {
+      "kind": "scene",
+      "id": "arcade-closet",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/arcade-closet.png"
+    },
+    {
+      "kind": "scene",
+      "id": "employee-bar",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/employee-bar.png"
+    },
+    {
+      "kind": "scene",
+      "id": "roof-antenna",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/roof-antenna.png"
+    },
+    {
+      "kind": "scene",
+      "id": "senior-lounge",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/senior-lounge.png"
+    },
+    {
+      "kind": "prop",
+      "id": "crt-keyboard",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/crt-keyboard.png"
+    },
+    {
+      "kind": "title",
+      "id": "title-screen",
+      "width": 384,
+      "height": 216,
+      "file": "/bullshit-factory/title/title-screen.png"
+    },
+    {
+      "kind": "prop",
+      "id": "ashtray-joint",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/ashtray-joint.png"
+    },
+    {
+      "kind": "prop",
+      "id": "rope-coil",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/rope-coil.png"
+    },
+    {
+      "kind": "prop",
+      "id": "rock-speaker",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/rock-speaker.png"
+    },
+    {
+      "kind": "prop",
+      "id": "old-cane",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/old-cane.png"
+    },
+    {
+      "kind": "prop",
+      "id": "beer-mug",
+      "width": 64,
+      "height": 64,
+      "file": "/bullshit-factory/props/beer-mug.png"
+    },
+    {
+      "kind": "font",
+      "id": "terminal",
+      "glyphPx": 8,
+      "atlasWidth": 64,
+      "atlasHeight": 80,
+      "ttf": "/bullshit-factory/fonts/terminal/bullshit-factory-terminal.ttf",
+      "atlas": "/bullshit-factory/fonts/terminal/bullshit-factory-terminal-atlas.png"
+    },
+    {
+      "kind": "font",
+      "id": "title",
+      "glyphPx": 16,
+      "atlasWidth": 128,
+      "atlasHeight": 160,
+      "ttf": "/bullshit-factory/fonts/title/bullshit-factory-title.ttf",
+      "atlas": "/bullshit-factory/fonts/title/bullshit-factory-title-atlas.png"
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}

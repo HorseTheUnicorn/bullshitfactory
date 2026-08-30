@@ -1,0 +1,24 @@
+[Unit]
+Description=Bullshit Factory optional YouTube live-chat suggestion bridge
+After=network-online.target bullshit-factory-production.service
+Wants=network-online.target bullshit-factory-production.service
+
+[Service]
+Type=simple
+User=goblin
+Group=goblin
+WorkingDirectory=/home/goblin/cave/bullshit-factory
+EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node server/bullshit-factory-youtube-bridge.mjs
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/home/goblin/cave/bullshit-factory
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

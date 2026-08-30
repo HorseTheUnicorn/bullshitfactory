@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "40202d73-5cde-4fb2-b251-b80f93dc39ae",
+    "name": "Idle",
+    "prompt": "Young overwhelmed delivery worker wearing an oversized yellow safety vest, gray hoodie, cargo pants, work sneakers, crooked ID badge, barcode scanner, and a battered cardboard box.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Young_overwhelmed_delive-Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Cautious loop with nervous steps, double-takes, box tilting, dodging imaginary hazards, startled recoil, confused shrugging, and gradually copying the factory workers\u2019 attitude.\n",
+        "animation_group_id": "7a27da63-949c-4abd-8297-8aac52d04392",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T13:16:27.971193+00:00"
+}

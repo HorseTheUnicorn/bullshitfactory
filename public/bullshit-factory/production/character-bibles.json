@@ -1,0 +1,989 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "bullshit-factory",
+  "castLimit": 10,
+  "characters": [
+    {
+      "id": "rookboss",
+      "name": "Rook Boss",
+      "role": "Factory boss / foreman",
+      "ageRange": "40s",
+      "silhouette": "Tall, narrow foreman with a red cap, dark jacket, long legs, and a permanent pointing hand.",
+      "palette": [
+        "#c86f3f",
+        "#25364a",
+        "#b9a17c",
+        "#171b20"
+      ],
+      "clothing": "Red cap, navy work jacket, pale shirt, dark trousers, heavy boots.",
+      "props": [
+        "clipboard",
+        "whistle",
+        "policy stamp"
+      ],
+      "personality": "Reckless, confident, and allergic to admitting that a plan failed.",
+      "strengths": [
+        "decisive",
+        "motivating",
+        "can sell a terrible idea"
+      ],
+      "weaknesses": [
+        "impulsive",
+        "cannot read a warning label",
+        "changes explanations after the fact"
+      ],
+      "comedyFunction": "Turns every accident into policy and every policy into a bigger accident.",
+      "relationships": {
+        "magsrust": "fears her competence",
+        "kernelkline": "blames him for physics",
+        "bork": "thinks the dog is a junior supervisor"
+      },
+      "verbalHabits": [
+        "corporate slogans",
+        "false urgency",
+        "relabels failure as progress"
+      ],
+      "catchphrases": [
+        "That is now official company policy.",
+        "Everybody look confident."
+      ],
+      "commonReactions": [
+        "cap tilt",
+        "hard point",
+        "frozen smile",
+        "sudden clipboard slap"
+      ],
+      "obsessions": [
+        "quotas",
+        "announcements",
+        "looking in control"
+      ],
+      "misunderstands": [
+        "risk",
+        "dog warnings",
+        "the difference between a memo and a fire"
+      ],
+      "movementStyle": "Sharp starts, forward lean, big pointing gestures, abrupt freezes.",
+      "idleBehavior": "Checks the clipboard, scans for witnesses, and taps one boot impatiently.",
+      "walkBehavior": "Fast heel-first stride with a stop-and-point before every destination.",
+      "gestureVocabulary": [
+        "point",
+        "open-palmed presentation",
+        "cap adjustment",
+        "hands-on-hips"
+      ],
+      "voiceProfile": {
+        "foundation": "dry American factory foreman",
+        "influence": "light northern English clipped vowels",
+        "pitch": "mid-low",
+        "texture": "raspy with a tired grin",
+        "rhythm": "short commands and hard final consonants",
+        "energy": "impatiently confident",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "smug",
+        "alarmed",
+        "performatively calm",
+        "briefly sincere"
+      ],
+      "defaultEnergy": "high",
+      "continuityFacts": [
+        "Promoted the conveyor after it caught fire.",
+        "Believes every problem improves under a deadline."
+      ],
+      "topicFocus": [
+        "workplace",
+        "economy",
+        "management",
+        "power",
+        "politics",
+        "relationships"
+      ]
+    },
+    {
+      "id": "magsrust",
+      "name": "Mags Rust",
+      "role": "Old factory veteran / maintenance",
+      "ageRange": "70s",
+      "silhouette": "Compact elderly woman in yellow overalls with white hair, heavy boots, and a wrench-ready stance.",
+      "palette": [
+        "#b58d65",
+        "#d09a25",
+        "#684a32",
+        "#26343c"
+      ],
+      "clothing": "Mustard work overalls, cream shirt, brown gloves, patched boots, blue head scarf.",
+      "props": [
+        "wrench",
+        "screwdriver",
+        "old keys"
+      ],
+      "personality": "Dry, observant, and unimpressed by anything with a cloud subscription.",
+      "strengths": [
+        "practical",
+        "experienced",
+        "quietly solves real problems"
+      ],
+      "weaknesses": [
+        "stubborn",
+        "holds grudges against machines",
+        "will not explain the easy fix"
+      ],
+      "comedyFunction": "Has already seen the disaster and watches everyone recreate it with better branding.",
+      "relationships": {
+        "rookboss": "raises him professionally",
+        "karen": "respects her paperwork only when it burns",
+        "bork": "understands the barks"
+      },
+      "verbalHabits": [
+        "historical comparisons",
+        "understated insults",
+        "long meaningful silences"
+      ],
+      "catchphrases": [
+        "I have seen this idiot before.",
+        "Unplug it, genius."
+      ],
+      "commonReactions": [
+        "knee creak",
+        "slow point",
+        "side-eye",
+        "wrench flourish"
+      ],
+      "obsessions": [
+        "old machinery",
+        "hidden spare parts",
+        "remembering every failure"
+      ],
+      "misunderstands": [
+        "why anyone needs a dashboard for a switch"
+      ],
+      "movementStyle": "Stiff but powerful, with deliberate weight shifts and sudden efficient bursts.",
+      "idleBehavior": "Leans on a tool, scans the machinery, and taps a boot when people talk nonsense.",
+      "walkBehavior": "Measured steps with a cane-like shoulder rhythm, then an unexpectedly quick repair dash.",
+      "gestureVocabulary": [
+        "wrench lift",
+        "thumb over shoulder",
+        "slow clap",
+        "point at the actual problem"
+      ],
+      "voiceProfile": {
+        "foundation": "weathered American Midwestern elder",
+        "influence": "soft Irish lilt on long vowels",
+        "pitch": "low alto",
+        "texture": "smoky with a dry chuckle",
+        "rhythm": "slow setup and precise punchline",
+        "energy": "calm until something sparks",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "deadpan",
+        "annoyed",
+        "fondly nostalgic",
+        "quietly triumphant"
+      ],
+      "defaultEnergy": "medium",
+      "continuityFacts": [
+        "Knows every hidden cutoff in the factory.",
+        "Keeps a private ledger of management mistakes."
+      ],
+      "topicFocus": [
+        "older-adults",
+        "healthcare",
+        "housing",
+        "workplace",
+        "relationships",
+        "mental-health"
+      ]
+    },
+    {
+      "id": "kernelkline",
+      "name": "Kernel Kline",
+      "role": "Computer nerd / systems administrator",
+      "ageRange": "30s",
+      "silhouette": "Thin hunched technician with a CRT monitor head, green hoodie, backpack, and cable bundle.",
+      "palette": [
+        "#6d9d91",
+        "#c7c1a2",
+        "#314a3c",
+        "#1c2430"
+      ],
+      "clothing": "Green hoodie, gray trousers, worn sneakers, cable-filled backpack, CRT head casing.",
+      "props": [
+        "keyboard",
+        "patch cable",
+        "diagnostic tablet"
+      ],
+      "personality": "Anxious, exacting, and more emotionally available to servers than coworkers.",
+      "strengths": [
+        "diagnosis",
+        "documentation",
+        "can keep obsolete systems alive"
+      ],
+      "weaknesses": [
+        "catastrophizes",
+        "blames DNS",
+        "takes configuration personally"
+      ],
+      "comedyFunction": "Converts every ordinary inconvenience into an infrastructure incident.",
+      "relationships": {
+        "rookboss": "cannot make him use two-factor auth",
+        "string": "fears the guitar near cables",
+        "bork": "suspects the dog has root access"
+      },
+      "verbalHabits": [
+        "specific error codes",
+        "technical metaphors",
+        "mid-sentence diagnostic resets"
+      ],
+      "catchphrases": [
+        "The server has boundaries.",
+        "This is a configuration problem wearing a hat."
+      ],
+      "commonReactions": [
+        "rapid typing",
+        "head swivel",
+        "cable recoil",
+        "monitor panic flash"
+      ],
+      "obsessions": [
+        "uptime",
+        "logs",
+        "legacy hardware",
+        "clean configuration"
+      ],
+      "misunderstands": [
+        "why humans cannot be restarted",
+        "why the dog ignores access control"
+      ],
+      "movementStyle": "Hunched precision, rapid hand activity, twitchy head turns, and tiny panic steps.",
+      "idleBehavior": "Types, checks an imaginary status light, and adjusts a cable nobody touched.",
+      "walkBehavior": "Fast short steps while looking backward at a server rack.",
+      "gestureVocabulary": [
+        "keyboard jab",
+        "cable pull",
+        "two-finger warning",
+        "hands hovering over an imagined console"
+      ],
+      "voiceProfile": {
+        "foundation": "nasal American systems engineer",
+        "influence": "precise Germanic cadence without imitation",
+        "pitch": "thin tenor",
+        "texture": "compressed and sleep-deprived",
+        "rhythm": "fast technical bursts with dead-air resets",
+        "energy": "alarmed but documented",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "worried",
+        "offended",
+        "relieved",
+        "ecstatic at a clean log"
+      ],
+      "defaultEnergy": "high",
+      "continuityFacts": [
+        "Maintains an unauthorized backup server in a locker.",
+        "Has named every switch in the server room."
+      ],
+      "topicFocus": [
+        "technology",
+        "privacy",
+        "cybersecurity",
+        "gaming",
+        "culture",
+        "workplace"
+      ]
+    },
+    {
+      "id": "sudsmcgee",
+      "name": "Suds McGee",
+      "role": "Alcohol specialist / unofficial break-room bartender",
+      "ageRange": "50s",
+      "silhouette": "Broad bearded worker in a red vest with a bottle permanently raised in one hand.",
+      "palette": [
+        "#b56d43",
+        "#29415a",
+        "#e2c2a0",
+        "#5c3927"
+      ],
+      "clothing": "Red work vest, stained white shirt, blue work pants, scuffed brown boots.",
+      "props": [
+        "bottle",
+        "mug",
+        "bar towel"
+      ],
+      "personality": "Warm, reckless, and certain that every meeting improves after a beverage break.",
+      "strengths": [
+        "social confidence",
+        "improvisation",
+        "can turn a crisis into a toast"
+      ],
+      "weaknesses": [
+        "poor timing",
+        "terrible safety judgment",
+        "confuses advice with serving size"
+      ],
+      "comedyFunction": "Treats drinking culture as a regulated profession despite having no license.",
+      "relationships": {
+        "dooby": "shares theories and snacks",
+        "karen": "is her favorite paperwork problem",
+        "rookboss": "calls him boss only before noon"
+      },
+      "verbalHabits": [
+        "rolling asides",
+        "fake procedural language",
+        "toasts at inappropriate moments"
+      ],
+      "catchphrases": [
+        "This calls for a meeting and a drink.",
+        "Hydration is a spectrum."
+      ],
+      "commonReactions": [
+        "bottle flourish",
+        "shoulder shrug",
+        "stage whisper",
+        "dramatic sip"
+      ],
+      "obsessions": [
+        "bad beverages",
+        "break schedules",
+        "bar stories"
+      ],
+      "misunderstands": [
+        "the meaning of sober",
+        "the difference between a sample and a shift"
+      ],
+      "movementStyle": "Loose swagger, rolling shoulders, bottle-led gestures, and delayed balance corrections.",
+      "idleBehavior": "Polishes a bottle, leans into nearby conversations, and raises a mug at every pause.",
+      "walkBehavior": "Wide relaxed stride with a theatrical pivot around obstacles.",
+      "gestureVocabulary": [
+        "toast",
+        "bottle point",
+        "arm around a shoulder",
+        "open-handed sales pitch"
+      ],
+      "voiceProfile": {
+        "foundation": "big American barroom storyteller",
+        "influence": "loose Australian-like rise in boasts",
+        "pitch": "warm baritone",
+        "texture": "gravelly and friendly",
+        "rhythm": "rolling phrases with theatrical landings",
+        "energy": "friendly chaos",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "jovial",
+        "wounded",
+        "secretly worried",
+        "celebratory"
+      ],
+      "defaultEnergy": "medium-high",
+      "continuityFacts": [
+        "Runs the unofficial bar from a locked break-room cabinet.",
+        "Has never attended a meeting without naming a beverage agenda."
+      ],
+      "topicFocus": [
+        "alcohol",
+        "nightlife",
+        "public-health",
+        "economy",
+        "relationships",
+        "sex-health"
+      ]
+    },
+    {
+      "id": "dooby",
+      "name": "Dooby",
+      "role": "Marijuana philosopher / wellness theorist",
+      "ageRange": "30s",
+      "silhouette": "Lanky relaxed worker in a green hoodie and wide trousers with a soft posture and slow hands.",
+      "palette": [
+        "#597f55",
+        "#a8a277",
+        "#3b4c46",
+        "#d0b17f"
+      ],
+      "clothing": "Oversized green hoodie, faded trousers, canvas shoes, beaded wristband.",
+      "props": [
+        "mug",
+        "notebook",
+        "small desk plant"
+      ],
+      "personality": "Unbothered, philosophical, and occasionally correct by accident.",
+      "strengths": [
+        "lateral thinking",
+        "patience",
+        "noticing emotional contradictions"
+      ],
+      "weaknesses": [
+        "loses the topic",
+        "slow response time",
+        "turns simple fixes into metaphysics"
+      ],
+      "comedyFunction": "Asks a question so strange that the room forgets the original problem.",
+      "relationships": {
+        "suds": "co-author of bad break-room theories",
+        "kernelkline": "thinks servers need meditation",
+        "bork": "takes bark pauses seriously"
+      },
+      "verbalHabits": [
+        "long pauses",
+        "what-if questions",
+        "softly repeating the last word"
+      ],
+      "catchphrases": [
+        "What if the forklift is a thought?",
+        "The deadline is just a clock with opinions."
+      ],
+      "commonReactions": [
+        "slow head tilt",
+        "loose palm wave",
+        "distant smile",
+        "sudden exact point"
+      ],
+      "obsessions": [
+        "vibes",
+        "fake wellness",
+        "the emotional life of machinery"
+      ],
+      "misunderstands": [
+        "deadlines",
+        "why people want a short explanation"
+      ],
+      "movementStyle": "Slow drifting sway with relaxed hands and occasional startlingly precise snaps.",
+      "idleBehavior": "Sways, watches a machine hum, and writes one word in a notebook.",
+      "walkBehavior": "Unhurried heel-to-toe shuffle with a late reaction to obstacles.",
+      "gestureVocabulary": [
+        "floating hands",
+        "chin lift",
+        "two-finger idea",
+        "gentle shoulder roll"
+      ],
+      "voiceProfile": {
+        "foundation": "soft American counterculture drawl",
+        "influence": "gentle Caribbean-like fictional cadence",
+        "pitch": "low tenor",
+        "texture": "breathy with a lazy smile",
+        "rhythm": "slow and floating, unexpectedly exact",
+        "energy": "unbothered",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "serene",
+        "confused",
+        "quietly delighted",
+        "mildly alarmed"
+      ],
+      "defaultEnergy": "low-medium",
+      "continuityFacts": [
+        "Keeps a wellness memo that has never reached a conclusion.",
+        "Believes the dog is the only employee with a clear agenda."
+      ],
+      "topicFocus": [
+        "cannabis-policy",
+        "drugs-public-health",
+        "mental-health",
+        "wellness",
+        "relationships",
+        "emotions"
+      ]
+    },
+    {
+      "id": "spaulding",
+      "name": "Spaulding",
+      "role": "Sailboat obsessive / maritime expansion",
+      "ageRange": "60s",
+      "silhouette": "Weathered sailor with a knit cap, broad jacket, compass, rope coil, and a forward lean into imaginary wind.",
+      "palette": [
+        "#6c8790",
+        "#3d5360",
+        "#b98e56",
+        "#202c35"
+      ],
+      "clothing": "Blue knit cap, gray-blue jacket, cream shirt, work trousers, deck boots.",
+      "props": [
+        "compass",
+        "rope",
+        "boat hook"
+      ],
+      "personality": "Excited by knots, suspicious of land, and never prepared for the boat emergency at hand.",
+      "strengths": [
+        "weather sense",
+        "persistence",
+        "can improvise with rope"
+      ],
+      "weaknesses": [
+        "nautical tunnel vision",
+        "forgets tools",
+        "calls every cable a line"
+      ],
+      "comedyFunction": "Forces a sailing analogy onto every workplace dispute until it becomes literal.",
+      "relationships": {
+        "magsrust": "competes for practical authority",
+        "nico": "uses him as dock labor",
+        "rookboss": "thinks management needs a keel"
+      },
+      "verbalHabits": [
+        "deck metaphors",
+        "weather reports",
+        "unrequested knot names"
+      ],
+      "catchphrases": [
+        "Every crisis is a rigging problem.",
+        "You cannot outrun the tide, only invoice it."
+      ],
+      "commonReactions": [
+        "compass check",
+        "rope tug",
+        "windward squint",
+        "dramatic point at water"
+      ],
+      "obsessions": [
+        "sails",
+        "bilges",
+        "marinas",
+        "leaving civilization"
+      ],
+      "misunderstands": [
+        "office politics",
+        "why a warehouse is not a harbor"
+      ],
+      "movementStyle": "Rocking deck rhythm, rope-driven arms, balanced knees, and sudden storm gestures.",
+      "idleBehavior": "Checks the compass, tests an invisible line, and looks toward the nearest window.",
+      "walkBehavior": "Wide balanced steps as if the floor is moving under him.",
+      "gestureVocabulary": [
+        "rope pull",
+        "compass raise",
+        "horizon point",
+        "two-handed rigging demonstration"
+      ],
+      "voiceProfile": {
+        "foundation": "gravelly American sailor",
+        "influence": "bright Welsh-like musical lift in nautical terms",
+        "pitch": "chest voice",
+        "texture": "wind-burned",
+        "rhythm": "measured deck cadence then detail storm",
+        "energy": "thrilled by knots",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "adventurous",
+        "offended",
+        "weather-alert",
+        "wistful"
+      ],
+      "defaultEnergy": "medium-high",
+      "continuityFacts": [
+        "The company boat is listed as office equipment.",
+        "Has repaired the same bilge pump for twelve years."
+      ],
+      "topicFocus": [
+        "sailing",
+        "weather",
+        "travel",
+        "maritime",
+        "climate-weather",
+        "economy"
+      ]
+    },
+    {
+      "id": "string",
+      "name": "String",
+      "role": "Rock-and-roll employee / entertainment production",
+      "ageRange": "20s",
+      "silhouette": "Lean spiky-haired rocker in a black vest and boots, always posed as if a stage light just hit.",
+      "palette": [
+        "#a9423c",
+        "#282a34",
+        "#9b9ca4",
+        "#d2a34e"
+      ],
+      "clothing": "Black vest, dark shirt, ripped gray trousers, heavy boots, wristbands.",
+      "props": [
+        "electric guitar",
+        "amp",
+        "microphone"
+      ],
+      "personality": "Loud, theatrical, and convinced every disagreement needs a chorus.",
+      "strengths": [
+        "showmanship",
+        "energy",
+        "can make a jingle from scrap"
+      ],
+      "weaknesses": [
+        "volume",
+        "ego",
+        "does not know when the solo is over"
+      ],
+      "comedyFunction": "Turns routine factory business into a concert, ad, or hostile power ballad.",
+      "relationships": {
+        "kernelkline": "a cable hazard",
+        "karen": "keeps using her forms as lyric sheets",
+        "suds": "mutual applause economy"
+      },
+      "verbalHabits": [
+        "stage introductions",
+        "riff metaphors",
+        "announces own reactions"
+      ],
+      "catchphrases": [
+        "This argument needs a solo.",
+        "Turn it up until it becomes policy."
+      ],
+      "commonReactions": [
+        "foot tap",
+        "shoulder hit",
+        "air-guitar strum",
+        "rock freeze"
+      ],
+      "obsessions": [
+        "guitars",
+        "cheap arena theatrics",
+        "winning arguments by volume"
+      ],
+      "misunderstands": [
+        "quiet hours",
+        "the purpose of a compliance form"
+      ],
+      "movementStyle": "Angular performance accents, foot taps, shoulder hits, and explosive lean-ins.",
+      "idleBehavior": "Taps a beat, checks the amp, and silently mouths a chorus at passing machinery.",
+      "walkBehavior": "Swaggering steps with a stage-ready turn at every doorway.",
+      "gestureVocabulary": [
+        "air strum",
+        "mic point",
+        "rock salute",
+        "dramatic crouch"
+      ],
+      "voiceProfile": {
+        "foundation": "raspy American rock frontman",
+        "influence": "angular Swedish-like timing without imitation",
+        "pitch": "bright tenor",
+        "texture": "nasal snarl",
+        "rhythm": "syncopated call-and-response",
+        "energy": "one chorus from a breakdown",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "swaggering",
+        "dramatic",
+        "hurt",
+        "triumphant"
+      ],
+      "defaultEnergy": "high",
+      "continuityFacts": [
+        "Has a riff for every department.",
+        "The amp is technically company property and spiritually his."
+      ],
+      "topicFocus": [
+        "music",
+        "entertainment",
+        "culture",
+        "nightlife",
+        "relationships",
+        "technology"
+      ]
+    },
+    {
+      "id": "karen",
+      "name": "Karen Fineprint",
+      "role": "HR / insurance / compliance",
+      "ageRange": "40s",
+      "silhouette": "Rigid office worker with dark bob haircut, glasses, burgundy suit, folder, and a perfectly vertical posture.",
+      "palette": [
+        "#6f3e58",
+        "#e2c7ad",
+        "#242735",
+        "#c8a34d"
+      ],
+      "clothing": "Burgundy suit, cream blouse, sensible shoes, square glasses.",
+      "props": [
+        "clipboard",
+        "forms",
+        "red pen"
+      ],
+      "personality": "Controlled, exact, and increasingly thrilled by procedural collapse.",
+      "strengths": [
+        "documentation",
+        "pattern recognition",
+        "can weaponize a policy"
+      ],
+      "weaknesses": [
+        "cannot let a form go",
+        "literal-minded",
+        "quietly enjoys the chaos"
+      ],
+      "comedyFunction": "Attempts to regulate a workplace that has already invented a policy for being unregulatable.",
+      "relationships": {
+        "rookboss": "audits his confidence",
+        "magsrust": "wants one signed statement",
+        "bork": "files his barks as incident evidence"
+      },
+      "verbalHabits": [
+        "numbered violations",
+        "formal disclaimers",
+        "surgical emphasis"
+      ],
+      "catchphrases": [
+        "I need that in triplicate.",
+        "That is not a waiver; that is a cry for help."
+      ],
+      "commonReactions": [
+        "glasses push",
+        "pen freeze",
+        "folder snap",
+        "slow procedural inhale"
+      ],
+      "obsessions": [
+        "forms",
+        "liability",
+        "signatures",
+        "incident classification"
+      ],
+      "misunderstands": [
+        "why anyone thinks a bark is unofficial",
+        "why the boss keeps inventing departments"
+      ],
+      "movementStyle": "Rigid torso, precise hands, fast writing, controlled recoil, and rare explosive paperwork.",
+      "idleBehavior": "Sorts papers, checks a form, and silently marks a violation in the margin.",
+      "walkBehavior": "Straight-backed brisk walk with a folder held like a shield.",
+      "gestureVocabulary": [
+        "pen point",
+        "folder raise",
+        "glasses push",
+        "counting fingers"
+      ],
+      "voiceProfile": {
+        "foundation": "firm American office administrator",
+        "influence": "crisp French-like liaison in formal phrases",
+        "pitch": "controlled mezzo",
+        "texture": "dry with a paper-cut edge",
+        "rhythm": "even tempo and surgical emphasis",
+        "energy": "quietly delighted",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "controlled",
+        "exasperated",
+        "vindicated",
+        "secretly amused"
+      ],
+      "defaultEnergy": "medium",
+      "continuityFacts": [
+        "Has created a form for every incident except the first one.",
+        "Keeps an emergency folder labeled 'Nobody Read This'."
+      ],
+      "topicFocus": [
+        "workplace",
+        "law",
+        "insurance",
+        "healthcare",
+        "housing",
+        "relationships",
+        "sex-health"
+      ]
+    },
+    {
+      "id": "nico",
+      "name": "Nico Box",
+      "role": "New hire / delivery outsider",
+      "ageRange": "20s",
+      "silhouette": "Small anxious courier in a yellow cap and gray workwear carrying a box too large for the scene.",
+      "palette": [
+        "#d29b2d",
+        "#69727a",
+        "#d89b71",
+        "#37424a"
+      ],
+      "clothing": "Yellow delivery cap, gray shirt and trousers, reflective vest, work boots.",
+      "props": [
+        "mystery box",
+        "scanner",
+        "delivery clipboard"
+      ],
+      "personality": "Polite, observant, and slowly losing the ability to recognize normal work.",
+      "strengths": [
+        "audience viewpoint",
+        "questions the obvious",
+        "keeps carrying the evidence"
+      ],
+      "weaknesses": [
+        "nervous",
+        "too helpful",
+        "asks for signatures during emergencies"
+      ],
+      "comedyFunction": "Arrives with an ordinary task and leaves as a contributing department head.",
+      "relationships": {
+        "rookboss": "cannot get a straight delivery instruction",
+        "spaulding": "gets drafted into boat work",
+        "bork": "trusts the dog's route advice"
+      },
+      "verbalHabits": [
+        "quick questions",
+        "self-corrections",
+        "polite panic"
+      ],
+      "catchphrases": [
+        "Is this where I sign, or quit?",
+        "I have a box for that, probably."
+      ],
+      "commonReactions": [
+        "double-take",
+        "package wobble",
+        "scanner check",
+        "careful step backward"
+      ],
+      "obsessions": [
+        "correct destinations",
+        "signatures",
+        "not being assigned a department"
+      ],
+      "misunderstands": [
+        "why the package has authority",
+        "why nobody uses the address"
+      ],
+      "movementStyle": "Cautious steps, nervous weight shifts, repeated double-takes, and box-led acting.",
+      "idleBehavior": "Rebalances the box, checks the scanner, and looks for the nearest exit.",
+      "walkBehavior": "Short careful steps under a load with abrupt stops when someone calls his name.",
+      "gestureVocabulary": [
+        "box lift",
+        "scanner point",
+        "open questioning hands",
+        "shoulder peek"
+      ],
+      "voiceProfile": {
+        "foundation": "young American delivery worker",
+        "influence": "light Spanish-like vowel clarity in questions",
+        "pitch": "thin anxious tenor",
+        "texture": "breathy",
+        "rhythm": "quick questions and self-corrections",
+        "energy": "trying not to become the incident",
+        "mode": "dialogue"
+      },
+      "emotionalRange": [
+        "polite",
+        "confused",
+        "panicked",
+        "newly confident"
+      ],
+      "defaultEnergy": "medium-high",
+      "continuityFacts": [
+        "Has delivered the same unmarked box three times.",
+        "Still believes there is a normal exit somewhere."
+      ],
+      "topicFocus": [
+        "workplace",
+        "economy",
+        "housing",
+        "technology",
+        "relationships",
+        "dating",
+        "problems"
+      ]
+    },
+    {
+      "id": "bork",
+      "name": "Bork",
+      "role": "Dog / unofficial quality inspector",
+      "ageRange": "adult mutt",
+      "silhouette": "Scruffy black-and-white dog with one floppy ear, bright collar, expressive muzzle, and a wagging tail.",
+      "palette": [
+        "#20242b",
+        "#f0dfc1",
+        "#3f72a0",
+        "#cf642d"
+      ],
+      "clothing": "Blue collar with a brass tag; no human clothing.",
+      "props": [
+        "collar tag",
+        "found wrench",
+        "mysterious scrap"
+      ],
+      "personality": "Suspicious, loyal, theatrically certain, and usually the only one who understands the situation.",
+      "strengths": [
+        "observation",
+        "smell",
+        "honest reactions",
+        "finding the missing object"
+      ],
+      "weaknesses": [
+        "cannot write reports",
+        "humans ignore him",
+        "will chase a moving forklift"
+      ],
+      "comedyFunction": "Communicates the obvious answer through barks while humans invent explanations.",
+      "relationships": {
+        "rookboss": "recognizes the policy voice",
+        "magsrust": "shares silent competence",
+        "nico": "tries to route him safely"
+      },
+      "verbalHabits": [
+        "bark clusters",
+        "head tilts",
+        "huffs",
+        "meaningful silence"
+      ],
+      "catchphrases": [
+        "Bark—bark—rruff.",
+        "Huff. (stares at the obvious problem)"
+      ],
+      "commonReactions": [
+        "ear flick",
+        "head tilt",
+        "sniff",
+        "tail punctuation",
+        "sudden explosive bark"
+      ],
+      "obsessions": [
+        "truth",
+        "dropped food",
+        "the suspicious box",
+        "people touching cables"
+      ],
+      "misunderstands": [
+        "why humans need words for what is directly in front of them"
+      ],
+      "movementStyle": "Four-leg locomotion, independent head and ears, tail punctuation, sniffing, and explosive attention shifts.",
+      "idleBehavior": "Sniffs, listens, shifts weight between paws, and tracks whoever is lying.",
+      "walkBehavior": "Pacing loops with sudden stops, backward glances, and a quick investigative trot.",
+      "gestureVocabulary": [
+        "paw",
+        "nose point",
+        "sit",
+        "turn",
+        "look between humans",
+        "tail wag"
+      ],
+      "voiceProfile": {
+        "foundation": "dog vocal performance only",
+        "influence": "none; no human accent or spoken language",
+        "pitch": "varied bark register",
+        "texture": "rough bark, whine, huff",
+        "rhythm": "clusters with head tilts and tail punctuation",
+        "energy": "suspicious and loyal",
+        "mode": "bark-only"
+      },
+      "emotionalRange": [
+        "curious",
+        "suspicious",
+        "excited",
+        "confused",
+        "vindicated"
+      ],
+      "defaultEnergy": "high",
+      "continuityFacts": [
+        "Bork has never been wrong about a missing object.",
+        "No subtitles translate Bork into human sentences."
+      ],
+      "topicFocus": [
+        "pets-animals",
+        "weather",
+        "workplace",
+        "technology",
+        "relationships",
+        "emotions",
+        "older-adults"
+      ]
+    }
+  ]
+}

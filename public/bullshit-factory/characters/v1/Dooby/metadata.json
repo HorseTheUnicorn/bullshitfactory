@@ -1,0 +1,72 @@
+{
+  "group_id": "3912665d-7ec1-4e11-ad65-774fb81c36b0",
+  "states": [
+    {
+      "character": {
+        "id": "3124eec1-9db2-4fcb-adb9-bca45d877174",
+        "name": "Idle",
+        "prompt": "Lanky relaxed philosopher with sleepy eyes, faded knit cap, oversized muted cardigan, patched jeans, sandals, beaded bracelet, and a small herbal vaporizer.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:46:05.518077+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Slow_drifting_idle_with_gentle_swaying_long_though": {
+            "south": [
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_000.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_001.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_002.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_003.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_004.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_005.png",
+              "Idle/animations/Slow_drifting_idle_with_gentle_swaying_long_though/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T12:54:04.977848"
+}

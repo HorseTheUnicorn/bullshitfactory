@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "d5877471-924a-44ee-b502-98cdbf675664",
+    "name": "Idle",
+    "prompt": "a very overweight and very orange person with a blonde combover and a turkey gobbler for a neck Talking looking south standing behind a podium built out out of wood scrap and tape that is ontop of a pile of trash",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "a_very_overweight_and_ve-Idle.png",
+    "cell_size": {
+      "width": 84,
+      "height": 84
+    },
+    "sheet_size": {
+      "width": 672,
+      "height": 168
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 5,
+        "animation": "talking with slight arm movement and head bob",
+        "animation_group_id": "1c32f110-7b79-42a8-beb7-a1b79c27f54c",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-29T16:05:39.821170+00:00"
+}

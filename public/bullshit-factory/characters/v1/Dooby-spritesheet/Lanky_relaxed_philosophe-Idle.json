@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "3124eec1-9db2-4fcb-adb9-bca45d877174",
+    "name": "Idle",
+    "prompt": "Lanky relaxed philosopher with sleepy eyes, faded knit cap, oversized muted cardigan, patched jeans, sandals, beaded bracelet, and a small herbal vaporizer.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Lanky_relaxed_philosophe-Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Slow drifting idle with gentle swaying, long thoughtful pauses, loose hand gestures, slow blinking, delayed head turns, a sudden realization pose, and relaxed exhaling.\n",
+        "animation_group_id": "336992da-8533-40fb-8698-890917bf0bca",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T12:54:06.725738+00:00"
+}

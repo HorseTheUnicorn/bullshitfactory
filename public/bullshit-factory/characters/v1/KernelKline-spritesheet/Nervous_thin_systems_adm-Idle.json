@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "c35fa41f-094b-435f-8abd-798f3b809532",
+    "name": "Idle",
+    "prompt": "Nervous thin systems administrator with oversized glasses, messy hair, faded green hoodie, cargo pants, headset, tangled cables, old laptop, and restless wide eyes.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Nervous_thin_systems_adm-Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Hunched typing loop with finger twitching, rapid head snaps toward imaginary alerts, glasses adjustment, cable bounce, nervous pacing, and sudden panic pointing.\n",
+        "animation_group_id": "0efcbb5a-340d-4114-b160-168920701705",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T12:38:28.638662+00:00"
+}

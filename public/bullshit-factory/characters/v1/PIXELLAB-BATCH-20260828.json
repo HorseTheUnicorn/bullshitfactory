@@ -1,0 +1,763 @@
+{
+  "generatedAt": "2026-08-28T19:16:52.794Z",
+  "endpoint": "https://api.pixellab.ai/v2",
+  "model": "animate-with-text-v3",
+  "frameCountRequested": 6,
+  "direction": "south",
+  "budgetCap": 19,
+  "concurrency": 1,
+  "requestedJobs": 19,
+  "completed": [
+    {
+      "characterId": "rookboss",
+      "folder": "RookBoss",
+      "animationId": "pixellab-sit-chair-v2",
+      "action": "Sit in a worn factory chair, lean back like the boss, tap one boot, glance around impatiently, and stand back up.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_000.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_001.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_002.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_003.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_004.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-sit-chair-v2/south/frame_005.png",
+          "width": 92,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "characterId": "rookboss",
+      "folder": "RookBoss",
+      "animationId": "pixellab-phone-call-v2",
+      "action": "Hold a small phone to one ear, pace one step, gesture sharply with the free hand, listen, then deliver an annoyed shrug.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_000.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_001.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_002.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_003.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_004.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/RookBoss/Idle/animations/pixellab-phone-call-v2/south/frame_005.png",
+          "width": 92,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "characterId": "magsrust",
+      "folder": "MagsRust",
+      "animationId": "pixellab-cook-v2",
+      "action": "Cook at a small factory hot plate, stir a dented pot, taste cautiously, wince, and keep stirring with stubborn focus.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_000.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_001.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_002.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_003.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_004.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-cook-v2/south/frame_005.png",
+          "width": 84,
+          "height": 84
+        }
+      ]
+    },
+    {
+      "characterId": "magsrust",
+      "folder": "MagsRust",
+      "animationId": "pixellab-clean-v2",
+      "action": "Clean a grimy work surface with a rag, scrub hard, pause to inspect the rag, sigh, and resume with an irritated shoulder roll.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_000.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_001.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_002.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_003.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_004.png",
+          "width": 84,
+          "height": 84
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-clean-v2/south/frame_005.png",
+          "width": 84,
+          "height": 84
+        }
+      ]
+    },
+    {
+      "characterId": "kernelkline",
+      "folder": "KernelKline",
+      "animationId": "pixellab-use-computer-v2",
+      "action": "Sit at an old computer, type quickly, push the monitor or glasses into place, react to an error, and type again.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-use-computer-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "kernelkline",
+      "folder": "KernelKline",
+      "animationId": "pixellab-run-v2",
+      "action": "Run in place in a panicked but readable sitcom sprint, arms pumping, knees alternating, brief look over one shoulder, then recover.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-run-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "sudsmcgee",
+      "folder": "SudsMcGee",
+      "animationId": "pixellab-sit-chair-v2",
+      "action": "Drop into a bar stool or factory chair, settle heavily, raise the existing drink in a toast, laugh, and bounce back up.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-sit-chair-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "sudsmcgee",
+      "folder": "SudsMcGee",
+      "animationId": "pixellab-phone-call-v2",
+      "action": "Hold a phone to one ear while balancing the existing drink, nod along, wave the free hand, then react with a baffled shrug.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-phone-call-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "dooby",
+      "folder": "Dooby",
+      "animationId": "pixellab-swim-v2",
+      "action": "Swim in place with a goofy dog-paddle-like human stroke, kick both legs, pop up for air, shake off water, and grin; keep the character modestly clothed and fully non-explicit.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-swim-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "dooby",
+      "folder": "Dooby",
+      "animationId": "pixellab-jump-v2",
+      "action": "Crouch, spring into a full-body jump, flail happily at the apex, land with a soft knee bend, and regain balance.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-jump-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "spaulding",
+      "folder": "Spaulding",
+      "animationId": "pixellab-clean-boat-v2",
+      "action": "Clean the side of a small sailboat with a brush, pull a rope, brace against a rocking deck, and give the boat an approving nod.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_000.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_001.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_002.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_003.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_004.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-clean-boat-v2/south/frame_005.png",
+          "width": 92,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "characterId": "spaulding",
+      "folder": "Spaulding",
+      "animationId": "pixellab-slapstick-fight-v2",
+      "action": "Perform a harmless slapstick argument with an unseen opponent: square up, dodge a ridiculous incoming swing, wave both hands, and back away; no injury, weapons, blood, or extra character.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_000.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_001.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_002.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_003.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_004.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-slapstick-fight-v2/south/frame_005.png",
+          "width": 92,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "characterId": "string",
+      "folder": "String",
+      "animationId": "pixellab-rock-dance-v2",
+      "action": "Do a compact rock-and-roll dance in place, stomp alternating feet, pump one fist, lean into the beat, and finish in a cocky stage pose.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-rock-dance-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "string",
+      "folder": "String",
+      "animationId": "pixellab-romantic-comedy-gag-v2",
+      "action": "Play an implied adult romantic-comedy door gag: flirtatious wave, pull an opaque curtain or door closed, comic hearts or a record-scratch beat outside the action, then reappear fully clothed and shrug; no nudity, anatomy, or explicit sexual activity.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-romantic-comedy-gag-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "karen",
+      "folder": "Karen",
+      "animationId": "pixellab-shower-bath-v2",
+      "action": "Take a modest offscreen shower or bath behind an opaque curtain with steam and a towel: scrub hair, peek out, splash once, towel off, and step back out fully clothed; no nudity.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-shower-bath-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "karen",
+      "folder": "Karen",
+      "animationId": "pixellab-toilet-gag-v2",
+      "action": "Perform a non-graphic bathroom stall gag: enter an opaque stall, sit out of view, unroll paper, flush, emerge fully clothed, and give an embarrassed thumbs-up; no bodily detail, nudity, or waste.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-toilet-gag-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "nico",
+      "folder": "Nico",
+      "animationId": "pixellab-cook-v2",
+      "action": "Cook nervously at a small counter, stir a pan, taste it, jump at a sizzling sound, and hurriedly turn the heat down while keeping the same identity and outfit.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-cook-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "nico",
+      "folder": "Nico",
+      "animationId": "pixellab-clean-v2",
+      "action": "Clean a cluttered factory station, pick up one item, dust quickly, sneeze, look guilty, and resume cleaning with cautious little steps.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_000.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_001.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_002.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_003.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_004.png",
+          "width": 88,
+          "height": 88
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-clean-v2/south/frame_005.png",
+          "width": 88,
+          "height": 88
+        }
+      ]
+    },
+    {
+      "characterId": "bork",
+      "folder": "Bork",
+      "animationId": "pixellab-fetch-v2",
+      "action": "Do only normal dog behavior: notice a tossed ball, run with alternating legs, catch or pick it up, return wagging the tail, tilt the head, and sit; no human activities, clothing changes, or human props.",
+      "frameCount": 6,
+      "frames": [
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_000.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_001.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_002.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_003.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_004.png",
+          "width": 92,
+          "height": 92
+        },
+        {
+          "file": "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-fetch-v2/south/frame_005.png",
+          "width": 92,
+          "height": 92
+        }
+      ]
+    }
+  ],
+  "skipped": [],
+  "errors": [],
+  "catalogAdded": [
+    "nico/pixellab-cook-v2",
+    "nico/pixellab-clean-v2",
+    "bork/pixellab-fetch-v2"
+  ],
+  "completedCount": 19,
+  "errorCount": 0,
+  "skippedCount": 0
+}

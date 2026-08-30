@@ -1,0 +1,27 @@
+[Unit]
+Description=Bullshit Factory server-local Kokoro speech service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=goblin
+Group=goblin
+WorkingDirectory=/home/goblin/cave/bullshit-factory
+EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+Environment=BF_TTS_HOST=127.0.0.1
+Environment=BF_TTS_PORT=8798
+Environment=BF_TTS_MODEL_PATH=/home/goblin/cave/models/kokoro/kokoro-v1.0.onnx
+Environment=BF_TTS_VOICES_PATH=/home/goblin/cave/models/kokoro/voices-v1.0.bin
+ExecStart=/home/goblin/cave/.venv/bin/python3 /home/goblin/cave/bullshit-factory/server/bullshit-factory-tts.py
+Restart=on-failure
+RestartSec=8
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/home/goblin/cave/bullshit-factory
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

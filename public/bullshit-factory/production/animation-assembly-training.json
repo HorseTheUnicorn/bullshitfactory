@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "1.2",
+  "name": "Deterministic 16-bit Animation Assembly Engine",
+  "showId": "bullshit-factory",
+  "purpose": "Translate the semantic animation director's scene directions into deterministic, frame-by-frame pixel placement without changing source art assets.",
+  "scope": {
+    "domain": "bullshit-factory",
+    "canvas": {
+      "width": 384,
+      "height": 216,
+      "fps": 12,
+      "maxColors": 64,
+      "grid": "integer-pixels"
+    },
+    "rawArtPolicy": "Do not generate, redesign, recolor, or modify source character art during assembly.",
+    "legacyPolicy": "Reject missing, legacy, or mismatched engine and layout references as unhandled errors."
+  },
+  "anchorContract": {
+    "requiredAnchors": [
+      "feet_anchor",
+      "sprite_pivot",
+      "contact_shadow_anchor"
+    ],
+    "placementRule": "Actor_Render_Y = Current_Walk_Band_Baseline_Y",
+    "pivotRule": "sprite_pivot is locked to feet_anchor",
+    "shadowRule": "contact_shadow_anchor stays bound to the rendered feet position and follows scale changes"
+  },
+  "parserSchema": {
+    "requiredFields": [
+      "character",
+      "location",
+      "walk_band",
+      "near",
+      "action",
+      "clip_action",
+      "line_id",
+      "listener_id",
+      "intent",
+      "reaction",
+      "post_line_reaction",
+      "shot_type",
+      "facing",
+      "start_ms",
+      "end_ms",
+      "purpose"
+    ],
+    "walkBands": [
+      "rear",
+      "middle",
+      "front"
+    ],
+    "actions": [
+      "idle",
+      "listen",
+      "talk",
+      "react",
+      "turn",
+      "point",
+      "present",
+      "lift",
+      "inspect",
+      "type",
+      "drink",
+      "hand_off",
+      "carry",
+      "push",
+      "repair",
+      "look_left",
+      "look_right",
+      "enter",
+      "walk",
+      "stop",
+      "exit",
+      "bark",
+      "wag_tail",
+      "sniff",
+      "shrug",
+      "jump",
+      "recoil",
+      "interact"
+    ]
+  },
+  "executionGraph": [
+    "Resolve location metadata by ID.",
+    "Resolve the requested walk band and its baseline, scale, and horizontal limits.",
+    "Resolve the named near anchor and use it as the destination intent.",
+    "Place the frame from its feet anchor, then derive orientation and integer-pixel motion.",
+    "Sort actors by feet_y and apply declared foreground occlusion after actor layers."
+  ],
+  "layers": {
+    "background": "Walls, machines, doors, and static set dressing.",
+    "midground": "The playable actor walk bands and contact shadows.",
+    "foreground": "Declared occluders such as conveyor faces, desk fronts, and crates."
+  },
+  "walkBands": {
+    "rear": "Upper floor edge, smallest approved scale.",
+    "middle": "Primary floor, standard approved scale.",
+    "front": "Lower floor edge, largest approved scale."
+  },
+  "depthSorting": {
+    "rule": "draw_depth = feet_y",
+    "order": "Lower feet_y draws behind greater feet_y.",
+    "occlusion": "A foreground occluder wins whenever its declared mask covers an actor with a lower depth priority."
+  },
+  "validationCriteria": [
+    {
+      "id": "float-state",
+      "rule": "Reject a feet anchor above the active walk-band baseline."
+    },
+    {
+      "id": "burial-state",
+      "rule": "Reject a feet anchor below the legal floor boundary."
+    },
+    {
+      "id": "wall-tapping",
+      "rule": "Reject a depth assignment that conflicts with the set's vertical layout."
+    },
+    {
+      "id": "foot-sliding",
+      "rule": "Reject movement steps that are not aligned to the authored walk-cycle timing."
+    },
+    {
+      "id": "broken-shadow",
+      "rule": "Reject a contact shadow detached from the feet tracking point."
+    },
+    {
+      "id": "occlusion-overlap",
+      "rule": "Reject an actor drawn over a foreground mask when the actor should be behind it."
+    },
+    {
+      "id": "purposeful-state",
+      "rule": "Every non-idle state names the line, reaction, prop, or transition it serves."
+    },
+    {
+      "id": "timed-state",
+      "rule": "Every state has bounded start/end times and links to its previous/next state."
+    },
+    {
+      "id": "visible-separation",
+      "rule": "Rendered visible alpha bounds never overlap another actor in the same frame."
+    },
+    {
+      "id": "script-lock",
+      "rule": "Animation direction cannot alter approved title, premise, beats, dialogue, bark events, TV interruptions, music, or continuity."
+    },
+    {
+      "id": "listener-intent",
+      "rule": "Every human line names a distinct listener, intent, reaction opportunity, and post-line reaction."
+    },
+    {
+      "id": "prop-relevance",
+      "rule": "Every visible prop is tied to a locked line by an explicit dialogue keyword and recorded purpose."
+    },
+    {
+      "id": "shot-grammar",
+      "rule": "The hook establishes the scene, conflict uses readable two/group shots, reversals show reactions, and the final button holds."
+    },
+    {
+      "id": "motivated-travel",
+      "rule": "Walking, entering, and exiting require a line, reaction, prop, entrance, exit, or transition purpose."
+    },
+    {
+      "id": "asset-needs",
+      "rule": "Every fallback or missing authored action is listed in motion.assetNeeds and is never hidden."
+    }
+  ],
+  "agentBrief": [
+    "Use semantic locations, named anchors, and walk bands; never invent arbitrary world coordinates.",
+    "Use feet anchors rather than canvas centers, heads, or transparent margins for all placement.",
+    "Keep all translation, scale, and sorting values on the integer pixel grid.",
+    "Use authored idle, talk, reaction, bark, and walk clips; do not make the dashboard or live character grid walk by default.",
+    "Keep Bork bark-only and preserve the supplied character identity and silhouette.",
+    "Reject the frame and report the exact validation failure instead of silently compensating."
+  ],
+  "actionRegistry": {
+    "version": "1.1",
+    "actions": [
+      "idle",
+      "listen",
+      "talk",
+      "react",
+      "turn",
+      "point",
+      "present",
+      "lift",
+      "inspect",
+      "type",
+      "drink",
+      "hand_off",
+      "carry",
+      "push",
+      "repair",
+      "look_left",
+      "look_right",
+      "enter",
+      "walk",
+      "stop",
+      "exit",
+      "bark",
+      "wag_tail",
+      "sniff",
+      "shrug",
+      "jump",
+      "recoil",
+      "interact"
+    ],
+    "resolution": "requested clip_action resolves through the per-character CHARACTER-CATALOG actionRegistry; missing exact clips use a recorded verified fallback",
+    "fallbackPolicy": "missing or unverified clips are never silently replaced without fallback metadata"
+  },
+  "stateMachine": {
+    "stateFields": [
+      "id",
+      "actorId",
+      "startMs",
+      "endMs",
+      "action",
+      "clipAction",
+      "lineId",
+      "listenerId",
+      "intent",
+      "reaction",
+      "postLineReaction",
+      "shotType",
+      "anchor",
+      "facing",
+      "prop",
+      "purpose",
+      "priority",
+      "previous",
+      "next"
+    ],
+    "defaultState": "grounded idle when no higher-priority timed cue is active",
+    "transitionPolicy": "talk and bark are locked to measured audio; react/listen states are anchored to the line they serve; walk/enter/exit require a semantic travel cue",
+    "timing": "all times are relative to the content segment; the final media tail is measured from the last audible word with a 30 ms pad"
+  },
+  "shots": {
+    "allowed": [
+      "wide_factory",
+      "wide_scene",
+      "two_shot",
+      "group_shot",
+      "medium_actor",
+      "close_actor",
+      "reaction",
+      "prop_insert",
+      "dog_reaction",
+      "Orange_Idiot_broadcast",
+      "final_button"
+    ],
+    "rule": "shots support readability and purpose; they do not move actors outside the deterministic layout solver"
+  },
+  "collisionPolicy": {
+    "coordinateSpace": "rendered visible alpha bounds",
+    "minimumGapPx": 8,
+    "check": "every rendered frame, including moving frames",
+    "response": "reroute a legal actor path or quarantine the segment with measured collision pairs"
+  }
+}

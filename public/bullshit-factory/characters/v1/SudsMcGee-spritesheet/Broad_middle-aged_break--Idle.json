@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "6955258b-8491-41f8-b066-17b926efa82a",
+    "name": "Idle",
+    "prompt": "Broad middle-aged break-room expert wearing a stained red vest, faded bowling shirt, work pants, scuffed loafers, and a belt full of bottle openers, carrying a metal flask.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Broad_middle-aged_break--Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Loose swaggering idle with bottle-flask flourish, wobbling balance, exaggerated shrugging, belly bounce, confident pointing, and an offbeat toast.\n",
+        "animation_group_id": "50432445-e74b-4d18-b683-b66d37fff276",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T12:43:29.049350+00:00"
+}

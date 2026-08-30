@@ -1,0 +1,349 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "bullshit-factory",
+  "generatedAt": "2026-08-30T18:05:33.574Z",
+  "canvas": {
+    "width": 384,
+    "height": 216,
+    "fps": 12,
+    "maxColors": 64,
+    "scaling": "nearest-neighbor"
+  },
+  "counts": {
+    "characters": 10,
+    "scenes": 11,
+    "approvedMusic": 14
+  },
+  "characters": [
+    {
+      "id": "rookboss",
+      "folder": "RookBoss",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 441,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "magsrust",
+      "folder": "MagsRust",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "kernelkline",
+      "folder": "KernelKline",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "sudsmcgee",
+      "folder": "SudsMcGee",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "dooby",
+      "folder": "Dooby",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "spaulding",
+      "folder": "Spaulding",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "string",
+      "folder": "String",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "karen",
+      "folder": "Karen",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "nico",
+      "folder": "Nico",
+      "rotations": 8,
+      "clips": 73,
+      "frames": 443,
+      "grounded": true,
+      "errors": []
+    },
+    {
+      "id": "bork",
+      "folder": "Bork",
+      "rotations": 8,
+      "clips": 72,
+      "frames": 438,
+      "grounded": true,
+      "errors": []
+    }
+  ],
+  "scenes": [
+    {
+      "id": "factory-floor",
+      "background": "/bullshit-factory/scenes/factory-floor.png",
+      "walkBands": 3,
+      "floorY": 184,
+      "valid": true
+    },
+    {
+      "id": "break-room",
+      "background": "/bullshit-factory/scenes/break-room.png",
+      "walkBands": 3,
+      "floorY": 190,
+      "valid": true
+    },
+    {
+      "id": "server-room",
+      "background": "/bullshit-factory/scenes/server-room.png",
+      "walkBands": 3,
+      "floorY": 193,
+      "valid": true
+    },
+    {
+      "id": "boat-bay",
+      "background": "/bullshit-factory/scenes/boat-bay.png",
+      "walkBands": 3,
+      "floorY": 158,
+      "valid": true
+    },
+    {
+      "id": "loading-dock",
+      "background": "/bullshit-factory/scenes/loading-dock.png",
+      "walkBands": 3,
+      "floorY": 190,
+      "valid": true
+    },
+    {
+      "id": "roof-antenna",
+      "background": "/bullshit-factory/scenes/roof-antenna.png",
+      "walkBands": 3,
+      "floorY": 177,
+      "valid": true
+    },
+    {
+      "id": "employee-bar",
+      "background": "/bullshit-factory/scenes/employee-bar.png",
+      "walkBands": 3,
+      "floorY": 191,
+      "valid": true
+    },
+    {
+      "id": "marina-slip",
+      "background": "/bullshit-factory/scenes/marina-slip.png",
+      "walkBands": 3,
+      "floorY": 178,
+      "valid": true
+    },
+    {
+      "id": "arcade-closet",
+      "background": "/bullshit-factory/scenes/arcade-closet.png",
+      "walkBands": 3,
+      "floorY": 191,
+      "valid": true
+    },
+    {
+      "id": "senior-lounge",
+      "background": "/bullshit-factory/scenes/senior-lounge.png",
+      "walkBands": 3,
+      "floorY": 190,
+      "valid": true
+    },
+    {
+      "id": "orange-idiot-house",
+      "background": "/bullshit-factory/scenes/orange-idiot-house.png",
+      "walkBands": 3,
+      "floorY": 190,
+      "valid": true
+    }
+  ],
+  "music": [
+    {
+      "id": "bf-theme-main",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-intro-01",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-outro-01",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-garage-stomp",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-bar-band-jangle",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-dusty-psych-rock",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-bit-crushed-rock",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-dockside-shanty-rock",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-rust-belt-blues",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-late-night-rock",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-warehouse-pulse",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-corporate-jingle",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-cartoon-drum-break",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-dog-cue",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    }
+  ],
+  "writingTraining": {
+    "schemaVersion": "1.3",
+    "sourceIds": [
+      "altered-state-observation",
+      "sitcom-production-discipline"
+    ],
+    "beatCount": 6,
+    "minimumScore": 8
+  },
+  "animationTraining": {
+    "schemaVersion": "1.2",
+    "requiredAnchors": [
+      "feet_anchor",
+      "sprite_pivot",
+      "contact_shadow_anchor"
+    ],
+    "parserFields": [
+      "character",
+      "location",
+      "walk_band",
+      "near",
+      "action",
+      "clip_action",
+      "line_id",
+      "listener_id",
+      "intent",
+      "reaction",
+      "post_line_reaction",
+      "shot_type",
+      "facing",
+      "start_ms",
+      "end_ms",
+      "purpose"
+    ],
+    "validationIds": [
+      "float-state",
+      "burial-state",
+      "wall-tapping",
+      "foot-sliding",
+      "broken-shadow",
+      "occlusion-overlap",
+      "purposeful-state",
+      "timed-state",
+      "visible-separation",
+      "script-lock",
+      "listener-intent",
+      "prop-relevance",
+      "shot-grammar",
+      "motivated-travel",
+      "asset-needs"
+    ]
+  },
+  "tvOnly": {
+    "id": "orange-idiot",
+    "displayName": "Orange Idiot",
+    "sceneId": "senior-lounge",
+    "standaloneSceneId": "orange-idiot-house",
+    "standaloneBackground": "/bullshit-factory/scenes/orange-idiot-house.png",
+    "view": "south",
+    "preview": "/bullshit-factory/tv/orange-idiot/orange-idiot-south.png",
+    "talkingFrames": [
+      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
+      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
+      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
+      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
+      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
+    ],
+    "mainCast": false
+  },
+  "resolver": {
+    "module": "lib/bullshit-factory-location.mjs",
+    "positionRule": "feet-touch-ground",
+    "depthRule": "feet-y",
+    "noArbitraryWorldCoordinates": true
+  }
+}

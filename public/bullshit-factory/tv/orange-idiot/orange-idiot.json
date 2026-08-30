@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0",
+  "id": "orange-idiot",
+  "displayName": "Orange Idiot",
+  "role": "TV interruption reader",
+  "mainCast": false,
+  "castVisibility": "tv-only",
+  "sceneId": "senior-lounge",
+  "standaloneSceneId": "orange-idiot-house",
+  "standaloneBackground": "/bullshit-factory/scenes/orange-idiot-house.png",
+  "view": "south",
+  "rotationPolicy": "south-only",
+  "preview": "/bullshit-factory/tv/orange-idiot/orange-idiot-south.png",
+  "source": {
+    "sourceFolder": "tv/orange-idiot/assets/orange-idiot/Idle/rotations",
+    "sourceView": "south",
+    "sourceMetadata": "tv/orange-idiot/assets/orange-idiot/metadata.json",
+    "declaredSize": {
+      "width": 64,
+      "height": 64
+    },
+    "exportVersion": "3.1"
+  },
+  "screenBehavior": {
+    "placement": "senior-lounge.television",
+    "standalonePlacement": "orange-idiot-house.center_stage",
+    "appearsOnlyWhen": "an operator selects a TV insert or standalone episode",
+    "standaloneAppearance": "the full cut uses the new house scene with Orange Idiot centered over the source figure; no separate podium background",
+    "never": [
+      "floor placement",
+      "dashboard cast grid",
+      "walk-band placement",
+      "autonomous speech scraping"
+    ]
+  },
+  "voice": {
+    "provider": "kokoro-loopback",
+    "voiceId": "bm_daniel",
+    "mixSources": [
+      "bm_daniel"
+    ],
+    "mixStrategy": "single-stock-voice",
+    "style": "bm_daniel at 0.76x pitch multiplier with shared 1.0 playback speed and measured 129 WPM reference pacing",
+    "accentTarget": "bm_daniel stock voice with Orange Idiot pitch treatment",
+    "authoring": "Kokoro stock voice rendered as one performance with duration-preserving pitch treatment",
+    "pitchMultiplier": 0.76,
+    "speed": 1.0,
+    "speechPolicy": "operator-supplied Trump speech excerpt only; do not fetch or invent speeches",
+    "pacingReferenceWpm": 129
+  },
+  "assetSet": {
+    "rotations": {
+      "east": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-east.png",
+      "north-east": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-north-east.png",
+      "north-west": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-north-west.png",
+      "north": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-north.png",
+      "south-east": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-south-east.png",
+      "south-west": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-south-west.png",
+      "south": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-south.png",
+      "west": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-west.png"
+    },
+    "talking": {
+      "view": "south",
+      "animation": "Idle_custom-talking_with_slight_arm_movement_and_head_bob",
+      "source": "supplied south-facing GIF",
+      "fps": 5,
+      "frameDelayMs": 200,
+      "gif": "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-south.gif",
+      "frames": [
+        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
+        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
+        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
+        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
+        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
+      ]
+    },
+    "spritesheet": {
+      "image": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-spritesheet/orange-idiot-idle.png",
+      "metadata": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-spritesheet/orange-idiot-idle.json"
+    }
+  },
+  "talkingFrames": [
+    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
+    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
+    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
+    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
+    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
+  ],
+  "talkingGif": "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-south.gif",
+  "speed": 1.0,
+  "style": "bm_daniel at 0.76x pitch multiplier with shared 1.0 playback speed and measured 129 WPM reference pacing"
+}

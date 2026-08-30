@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.1",
+  "showId": "bullshit-factory",
+  "status": "production",
+  "canvas": {
+    "width": 384,
+    "height": 216,
+    "fps": 12,
+    "scale": "nearest-neighbor",
+    "maxColors": 64
+  },
+  "castCatalog": "/bullshit-factory/characters/v1/CHARACTER-CATALOG.json",
+  "characterBibles": "/bullshit-factory/production/character-bibles.json",
+  "characterAnchors": "/bullshit-factory/production/character-anchors.json",
+  "animationAssemblyTraining": "/bullshit-factory/production/animation-assembly-training.json",
+  "locationResolver": "lib/bullshit-factory-location.mjs",
+  "musicRights": "/bullshit-factory/music/rights.json",
+  "musicLibrary": "/bullshit-factory/music/library.json",
+  "musicPolicy": {
+    "originalFirstParty": true,
+    "stableAudioLicensedOutput": true,
+    "stableAudioAutoApproved": true,
+    "outsideSearch": "disabled-unless-explicitly-requested"
+  },
+  "stableAudio": {
+    "provider": "stable-audio-3-small-music",
+    "adapter": "http://127.0.0.1:8797",
+    "backend": "tflite-cpu",
+    "source": "local-loopback",
+    "serialized": true,
+    "preGenerationOnly": true,
+    "generationSeconds": 30,
+    "loopedForLongerSegments": true,
+    "autoApproveLicensedOutput": true,
+    "license": "stability-ai-community"
+  },
+  "writer": {
+    "role": "script-writer",
+    "productionProvider": "groq-openai-compatible-api",
+    "model": "openai/gpt-oss-120b",
+    "structuredOutput": "validated-json",
+    "durationScaledDialogue": true,
+    "fallbacks": [
+      "huggingface-nemotron-free-only",
+      "local-goblin",
+      "deterministic-draft"
+    ],
+    "freeTierOnly": true,
+    "noPaidRetry": true,
+    "noLocalModelDownload": true,
+    "credentials": "server-side-only"
+  },
+  "animation": {
+    "role": "semantic-animation-director",
+    "productionProvider": "gemini",
+    "directorModel": "gemini-3-flash-preview",
+    "runtimeProvider": "deterministic-compositor",
+    "runtimeModel": "local-authored-clips",
+    "assetAuthoringProvider": "optional-manual-pixellab",
+    "lockedCatalog": true,
+    "creditsSpentDuringProduction": false,
+    "maxConcurrentAssetJobs": 8
+  },
+  "voice": {
+    "role": "serialized-kokoro-tts",
+    "productionProvider": "kokoro-onnx-loopback",
+    "voiceAuthoringProvider": "kokovoicelab",
+    "authoringMode": "offline-style-vector-interpolation",
+    "productionMode": "load-exported-numpy-bundle",
+    "customVoiceBundle": "/home/goblin/cave/kokovoicelab/exported_voices/bullshit-factory-custom.bin",
+    "stockFallbacks": true,
+    "dogSpeech": "bark-only",
+    "speechSpeed": 1.0,
+    "calibratedWpm": 82,
+    "speedPolicy": "All speaking characters, including Orange Idiot, use the shared 1.0 production speed.",
+    "wordBudgetPolicy": "For a one-minute episode, target roughly 65-70 spoken words after the three-second opening; never truncate speech to fit."
+  },
+  "segmentStates": [
+    "draft",
+    "generating",
+    "rendering",
+    "pending-review",
+    "approved",
+    "quarantined",
+    "failed"
+  ],
+  "pipeline": [
+    "music-preflight",
+    "groq-script",
+    "gemini-animation",
+    "voice",
+    "motion",
+    "render",
+    "validate",
+    "inventory",
+    "schedule",
+    "playout"
+  ],
+  "modes": {
+    "episodeDurationsMinutes": [
+      1,
+      3,
+      5,
+      10,
+      15,
+      20,
+      30,
+      45,
+      60
+    ],
+    "continuous": {
+      "rollingBuffer": true,
+      "maxSingleFileHours": 1
+    }
+  },
+  "runtime": {
+    "generationConcurrency": 1,
+    "musicConcurrency": 1,
+    "preRender": true,
+    "fallbackEnabled": true
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "group_id": "4ee36cf7-74f9-48e2-849d-b663b94a16c9",
+  "states": [
+    {
+      "character": {
+        "id": "bf55b619-ffe4-4341-9478-5bb92d3f8831",
+        "name": "Idle",
+        "prompt": "Strict exhausted compliance officer with short dark bob haircut, square glasses, plum blazer, gray skirt, sensible shoes, clipboard, forms, and a stapler clipped to her belt.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:59:53.373017+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Rigid_idle_loop_with_rapid_writing_glasses_pushing": {
+            "south": [
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_000.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_001.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_002.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_003.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_004.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_005.png",
+              "Idle/animations/Rigid_idle_loop_with_rapid_writing_glasses_pushing/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T13:11:39.259579"
+}

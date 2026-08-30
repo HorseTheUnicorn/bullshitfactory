@@ -1,0 +1,129 @@
+BULLSHIT FACTORY — 16-BIT CHARACTER CONCEPT SETS
+
+These are concept grids for choosing a cast direction. They are not yet
+production-separated sprites or animation rigs.
+
+SET A — GRIMY FACTORY CREW
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Margo Bolt — factory foreman
+2. Grandpa Cogs — elderly retired machinist
+3. Byte — computer systems nerd
+4. Rye Guy — alcohol/break-room specialist
+5. Moss — marijuana philosopher
+6. Captain Brine — sailboat obsessive
+7. Feedback Frankie — rock-and-roll employee
+8. Formica — HR and compliance employee
+9. Nina Newbie — new hire and audience viewpoint
+10. Barkley — bark-only factory dog
+
+SET B — SURREAL MARINA FACTORY
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Boss Calamity — factory manager
+2. Auntie Rivet — elderly machinist
+3. Kernel Kiki — computer systems nerd
+4. Benny Two-Cups — lounge-singer alcohol specialist
+5. Hazy Hazel — marijuana philosopher
+6. Skipper Sal — sailboat fanatic
+7. Riff Rollo — rock-and-roll worker
+8. Ms. Fine Print — compliance officer
+9. Rook — cynical delivery outsider
+10. Mutt — bark-only dockside factory dog
+
+STYLE RULES FOR BOTH SETS
+
+- 16-bit-inspired pixel art
+- Designed as modular, separable character parts later
+- Strong silhouettes and readable poses
+- Distinct movement signature for every character
+- Distinct fictional hybrid voice for every human character
+- The dog never speaks human words
+- The dog communicates through expressive barks and physical acting
+- Keep the brand self-contained and the cast identity specific to Bullshit Factory
+
+SET C — EARLY-2000S CARTOON FACTORY
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Vera Varnish — factory manager
+2. Gramps Gear — elderly mechanic
+3. Patch Cable — computer nerd
+4. Duke Draft — alcohol specialist
+5. Professor Puff — marijuana philosopher
+6. Captain Tackle — sailboat obsessive
+7. Amp Queen — rock-and-roll employee
+8. Madam Policy — HR employee
+9. Newt — nervous new hire
+10. Biscuit — bark-only factory dog
+
+SET D — EARLY-2000S DOCKSIDE CARTOON
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Jett Wobble — factory boss
+2. Gran-Gran Gasket — elderly ex-sailor mechanic
+3. Root Access — computer nerd
+4. Lola Lowball — alcohol specialist and lounge singer
+5. Daze Daisy — marijuana philosopher
+6. Skipper Knots — sailboat fanatic
+7. Static Sally — rock-and-roll drummer
+8. Paper Jam — compliance clerk
+9. Courier Kix — sarcastic outsider
+10. Sprocket — bark-only dock dog
+
+The C and D sheets are the revised early-2000s 16-bit direction. The A and B
+sheets are earlier, more detailed concept directions and should not be treated
+as the preferred style unless deliberately revisited.
+
+SET E — MUTED FACTORY CREW
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Grits — factory boss
+2. Grandma Rivet — elderly mechanic
+3. Modem — computer nerd
+4. Cork — alcohol specialist
+5. Hazel Haze — marijuana philosopher
+6. Captain Nix — sailboat obsessive
+7. Amp — rock employee
+8. Forms — HR employee
+9. Rookie — new hire
+10. Biscuit — bark-only factory dog
+
+SET F — MUTED DOCKSIDE CREW
+Image order: top row left-to-right, then bottom row left-to-right.
+
+1. Rook Boss — factory boss
+2. Nana Weld — elderly sailor-mechanic
+3. Ping Packet — computer nerd
+4. Kegsy — alcohol specialist
+5. Dandelion — marijuana philosopher
+6. Sailor Knot — sailboat obsessive
+7. Buzz Saw — rock employee
+8. Red Tape — HR employee
+9. Parcel — new hire
+10. Tug — bark-only dock dog
+
+The E and F sheets are the simplified, muted, AI-and-Blender-friendly revision.
+They are the current preferred candidates for selection.
+
+FINAL PIXEL REFERENCE
+File: cast-set-f-16bit-pixel-final.png
+
+This is the latest true-pixel revision of the selected Set F cast. It uses a
+fixed nearest-neighbor pixel grid and a restrained palette for the production
+reference. It is still a concept sheet; individual separated sprites and
+animation rigs have not been created.
+
+64-COLOR SPRITE REVISION
+File: cast-set-f-16bit-64color-sprite-final.png
+
+This is the latest strict 16-bit, 64-color pixel-grid revision of selected Set F.
+It is a concept reference only; individual separated sprites and animation rigs
+have not been created.
+
+64-COLOR SPRITE REVISION V2
+File: cast-set-f-16bit-64color-sprite-v2.png
+
+This revision replaces Parcel with Midge Fuse, a pirate-radio / factory scavenger,
+and gives Buzz Saw a non-explicit novelty adult-comedy prop instead of the guitar.
+It remains a concept reference only; individual separated sprites and animation
+rigs have not been created.

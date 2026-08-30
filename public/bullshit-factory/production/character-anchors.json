@@ -1,0 +1,527 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "bullshit-factory",
+  "generatedAt": "2026-08-30T18:05:33.573Z",
+  "anchors": {
+    "rookboss": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 8,
+        "top": 1,
+        "right": 58,
+        "bottom": 63
+      },
+      "feetAnchor": {
+        "x": 33,
+        "y": 63
+      },
+      "groundAnchor": {
+        "x": 33,
+        "y": 63
+      },
+      "spritePivot": {
+        "x": 33,
+        "y": 63
+      },
+      "characterWidth": 51,
+      "characterHeight": 63,
+      "locomotionOrigin": {
+        "x": 33,
+        "y": 63
+      },
+      "interactionAnchor": {
+        "x": 33,
+        "y": 30
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 19,
+          "y": 35
+        },
+        "handRight": {
+          "x": 47,
+          "y": 35
+        },
+        "head": {
+          "x": 33,
+          "y": 12.16
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 33,
+        "y": 63
+      }
+    },
+    "magsrust": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 5,
+        "top": 2,
+        "right": 58,
+        "bottom": 61
+      },
+      "feetAnchor": {
+        "x": 31.5,
+        "y": 61
+      },
+      "groundAnchor": {
+        "x": 31.5,
+        "y": 61
+      },
+      "spritePivot": {
+        "x": 31.5,
+        "y": 61
+      },
+      "characterWidth": 54,
+      "characterHeight": 60,
+      "locomotionOrigin": {
+        "x": 31.5,
+        "y": 61
+      },
+      "interactionAnchor": {
+        "x": 31.5,
+        "y": 30
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 16.659999999999997,
+          "y": 35
+        },
+        "handRight": {
+          "x": 46.34,
+          "y": 35
+        },
+        "head": {
+          "x": 31.5,
+          "y": 12.62
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 31.5,
+        "y": 61
+      }
+    },
+    "kernelkline": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 4,
+        "top": 1,
+        "right": 62,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 33,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 33,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 33,
+        "y": 62
+      },
+      "characterWidth": 59,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 33,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 33,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 16.759999999999998,
+          "y": 34
+        },
+        "handRight": {
+          "x": 49.24,
+          "y": 34
+        },
+        "head": {
+          "x": 33,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 33,
+        "y": 62
+      }
+    },
+    "sudsmcgee": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 14,
+        "top": 1,
+        "right": 48,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 31,
+        "y": 62
+      },
+      "characterWidth": 35,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 31,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 31,
+        "y": 30
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 21.479999999999997,
+          "y": 35
+        },
+        "handRight": {
+          "x": 40.52,
+          "y": 35
+        },
+        "head": {
+          "x": 31,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 31,
+        "y": 62
+      }
+    },
+    "dooby": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 16,
+        "top": 1,
+        "right": 46,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 31,
+        "y": 62
+      },
+      "characterWidth": 31,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 31,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 31,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 22.6,
+          "y": 34
+        },
+        "handRight": {
+          "x": 39.4,
+          "y": 34
+        },
+        "head": {
+          "x": 31,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 31,
+        "y": 62
+      }
+    },
+    "spaulding": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 9,
+        "top": 0,
+        "right": 53,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 31,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 31,
+        "y": 62
+      },
+      "characterWidth": 45,
+      "characterHeight": 63,
+      "locomotionOrigin": {
+        "x": 31,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 31,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 18.68,
+          "y": 34
+        },
+        "handRight": {
+          "x": 43.32,
+          "y": 34
+        },
+        "head": {
+          "x": 31,
+          "y": 11.16
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 31,
+        "y": 62
+      }
+    },
+    "string": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 15,
+        "top": 1,
+        "right": 57,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 36,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 36,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 36,
+        "y": 62
+      },
+      "characterWidth": 43,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 36,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 36,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 24.24,
+          "y": 34
+        },
+        "handRight": {
+          "x": 47.760000000000005,
+          "y": 34
+        },
+        "head": {
+          "x": 36,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 36,
+        "y": 62
+      }
+    },
+    "karen": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 15,
+        "top": 1,
+        "right": 45,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 30,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 30,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 30,
+        "y": 62
+      },
+      "characterWidth": 31,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 30,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 30,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 21.6,
+          "y": 34
+        },
+        "handRight": {
+          "x": 38.4,
+          "y": 34
+        },
+        "head": {
+          "x": 30,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 30,
+        "y": 62
+      }
+    },
+    "nico": {
+      "sourceSize": {
+        "width": 64,
+        "height": 64
+      },
+      "alphaBounds": {
+        "left": 11,
+        "top": 1,
+        "right": 55,
+        "bottom": 62
+      },
+      "feetAnchor": {
+        "x": 33,
+        "y": 62
+      },
+      "groundAnchor": {
+        "x": 33,
+        "y": 62
+      },
+      "spritePivot": {
+        "x": 33,
+        "y": 62
+      },
+      "characterWidth": 45,
+      "characterHeight": 62,
+      "locomotionOrigin": {
+        "x": 33,
+        "y": 62
+      },
+      "interactionAnchor": {
+        "x": 33,
+        "y": 29
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 20.68,
+          "y": 34
+        },
+        "handRight": {
+          "x": 45.32,
+          "y": 34
+        },
+        "head": {
+          "x": 33,
+          "y": 11.98
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 33,
+        "y": 62
+      }
+    },
+    "bork": {
+      "sourceSize": {
+        "width": 92,
+        "height": 92
+      },
+      "alphaBounds": {
+        "left": 14,
+        "top": 17,
+        "right": 58,
+        "bottom": 66
+      },
+      "feetAnchor": {
+        "x": 36,
+        "y": 66
+      },
+      "groundAnchor": {
+        "x": 36,
+        "y": 66
+      },
+      "spritePivot": {
+        "x": 36,
+        "y": 66
+      },
+      "characterWidth": 45,
+      "characterHeight": 50,
+      "locomotionOrigin": {
+        "x": 36,
+        "y": 66
+      },
+      "interactionAnchor": {
+        "x": 36,
+        "y": 46
+      },
+      "propAttachmentAnchors": {
+        "handLeft": {
+          "x": 23.68,
+          "y": 51
+        },
+        "handRight": {
+          "x": 48.32,
+          "y": 51
+        },
+        "head": {
+          "x": 36,
+          "y": 25.82
+        }
+      },
+      "contactShadowAnchor": {
+        "x": 36,
+        "y": 66
+      }
+    }
+  }
+}

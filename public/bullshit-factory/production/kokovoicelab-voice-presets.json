@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "bullshit-factory",
+  "purpose": "Offline KokovoiceLab style-vector presets for the nine speaking cast members.",
+  "tool": {
+    "name": "kokovoicelab",
+    "repository": "https://github.com/RobViren/kokovoicelab",
+    "commit": "58a3182e3bed1378ed1702d6460c80663743b9c7",
+    "role": "offline voice authoring and interpolation; never called per production line"
+  },
+  "output": {
+    "format": "npz",
+    "file": "/home/goblin/cave/kokovoicelab/exported_voices/bullshit-factory-custom.bin"
+  },
+  "presets": [
+    {
+      "name": "rookboss",
+      "source": "am_michael",
+      "target": "bm_george",
+      "factor": 0.25,
+      "gender": "M",
+      "quality": 92,
+      "fallback": "am_michael",
+      "notes": "Firm American base with a dry British foreman edge."
+    },
+    {
+      "name": "magsrust",
+      "source": "af_sarah",
+      "target": "bf_emma",
+      "factor": 0.30,
+      "gender": "F",
+      "quality": 90,
+      "fallback": "af_sarah",
+      "notes": "Weathered American veteran with a clipped British tint."
+    },
+    {
+      "name": "kernelkline",
+      "source": "am_eric",
+      "target": "bm_fable",
+      "factor": 0.45,
+      "gender": "M",
+      "quality": 88,
+      "fallback": "am_eric",
+      "notes": "Nervy technical voice with an unmistakably bookish British lift."
+    },
+    {
+      "name": "sudsmcgee",
+      "source": "am_adam",
+      "target": "bm_lewis",
+      "factor": 0.40,
+      "gender": "M",
+      "quality": 88,
+      "fallback": "am_adam",
+      "notes": "Big relaxed American baritone with a loose British pub character."
+    },
+    {
+      "name": "dooby",
+      "source": "am_echo",
+      "target": "bm_daniel",
+      "factor": 0.50,
+      "gender": "M",
+      "quality": 86,
+      "fallback": "am_echo",
+      "notes": "Soft American conversational delivery pushed toward an odd British haze."
+    },
+    {
+      "name": "spaulding",
+      "source": "am_onyx",
+      "target": "bm_george",
+      "factor": 0.35,
+      "gender": "M",
+      "quality": 88,
+      "fallback": "am_onyx",
+      "notes": "Low eccentric American voice with a salty British sailor color."
+    },
+    {
+      "name": "string",
+      "source": "am_fenrir",
+      "target": "bm_fable",
+      "factor": 0.40,
+      "gender": "M",
+      "quality": 90,
+      "fallback": "am_fenrir",
+      "notes": "Theatrical American rocker with a sharp British stage presence."
+    },
+    {
+      "name": "karen",
+      "source": "af_nicole",
+      "target": "bf_isabella",
+      "factor": 0.45,
+      "gender": "F",
+      "quality": 88,
+      "fallback": "af_nicole",
+      "notes": "Polished American compliance voice with an icy British precision."
+    },
+    {
+      "name": "nico",
+      "source": "am_liam",
+      "target": "bm_daniel",
+      "factor": 0.55,
+      "gender": "M",
+      "quality": 86,
+      "fallback": "am_liam",
+      "notes": "Young American new-hire energy with a slightly displaced British rhythm."
+    }
+  ],
+  "dogPolicy": "bork remains bark-only and uses the approved dog bark asset; no Kokoro speech voice is assigned."
+}

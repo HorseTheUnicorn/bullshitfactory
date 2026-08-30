@@ -1,0 +1,61 @@
+{
+  "character": {
+    "id": "c2ffde22-a43d-4b5c-a4f2-6db608de58c9",
+    "name": "Idle",
+    "prompt": "Scruffy mutt with one floppy ear, one upright ear, blue collar, brass factory tag, oversized paws, expressive eyebrows, and a constantly wagging tail.\n",
+    "size": {
+      "width": 92,
+      "height": 92
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Scruffy_mutt_with_one_fl-Idle.png",
+    "cell_size": {
+      "width": 92,
+      "height": 92
+    },
+    "sheet_size": {
+      "width": 736,
+      "height": 276
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "bark loop with independent head tilts, ear flicks, four-leg shifting, tail wagging, short pacing steps, excited yips, warning growls, and a dramatic \u201ctrying to explain something\u201d pose. The dog makes only barks, yips, growls, whines, and huffs.",
+        "animation_group_id": "2a2b956c-99d6-4e01-a15c-91c75c401944",
+        "direction": "south"
+      },
+      {
+        "row": 2,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "bark loop with independent head tilts, ear flicks, four-leg shifting, tail wagging, short pacing steps, excited yips, warning growls, and a dramatic \u201ctrying to explain something\u201d pose. The dog makes only barks, yips, growls, whines, and huffs._2",
+        "animation_group_id": "eeea7570-36a3-47f0-bab5-91a9b516fc8c",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T13:24:17.389841+00:00"
+}

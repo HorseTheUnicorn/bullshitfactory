@@ -1,0 +1,51 @@
+{
+  "name": "sites-project",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vinext dev",
+    "prebuild": "node scripts/build-bullshit-factory-character-catalog.mjs && node scripts/build-bullshit-factory-runtime.mjs",
+    "build": "vinext build",
+    "test": "node --test *.test.mjs server/*.test.mjs",
+    "start": "vinext start",
+    "assets:build-bullshit-cast": "node scripts/build-bullshit-factory-character-catalog.mjs",
+    "assets:generate-bullshit-pixellab": "node scripts/generate-bullshit-factory-pixellab-assets.mjs",
+    "assets:generate-bullshit-brand": "node scripts/generate-bullshit-factory-brand-assets.mjs",
+    "music:generate-original": "node scripts/generate-bullshit-factory-music-library.mjs",
+    "music:generate-library": "node scripts/generate-bullshit-factory-music-library.mjs",
+    "admin:hash": "node scripts/create-admin-password-hash.mjs",
+    "admin:setup": "node scripts/setup-bullshit-factory-admin.mjs",
+    "assets:verify": "node scripts/build-bullshit-factory-character-catalog.mjs && node scripts/build-bullshit-factory-runtime.mjs",
+    "lint": "eslint app components lib server scripts --ignore-pattern dist --ignore-pattern .next --ignore-pattern .wrangler"
+  },
+  "dependencies": {
+    "next": "16.2.6",
+    "playwright": "1.59.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.54.0",
+    "@cloudflare/workers-types": "^5.20260826.1",
+    "@openai/sites-vite-plugin": "^0.1.0 || ^0.2.0",
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "react-server-dom-webpack": "19.2.6",
+    "sharp": "^0.35.2",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3",
+    "vinext": "1.0.0-beta.3",
+    "vite": "8.0.13",
+    "wrangler": "4.113.0"
+  },
+  "type": "module"
+}

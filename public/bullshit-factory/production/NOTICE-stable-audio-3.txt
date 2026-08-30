@@ -1,0 +1,11 @@
+Bullshit Factory uses the optimized TFLite release of Stable Audio 3 Small-Music from Stability AI.
+
+The model and generated audio are subject to the applicable Stability AI Community License and Acceptable Use Policy. Review the current terms, including eligibility and attribution requirements, before distributing the show:
+
+https://stability.ai/license
+
+The Stable Audio 3 optimized release also includes Google T5Gemma components. Review the applicable Gemma terms bundled with that release:
+
+https://ai.google.dev/gemma/terms
+
+The adapter runs locally on .76, serializes generation, and creates instrumental audio for pre-generation and review. This notice does not replace the current third-party license terms.

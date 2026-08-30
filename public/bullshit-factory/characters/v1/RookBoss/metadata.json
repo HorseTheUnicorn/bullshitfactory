@@ -1,0 +1,60 @@
+{
+  "group_id": "8588544a-aca6-4d77-b54e-275d3d6010e5",
+  "states": [
+    {
+      "character": {
+        "id": "390d94da-7ae4-4321-9a20-b7763642066f",
+        "name": "Idle",
+        "prompt": "Create a single full-body 16-bit pixel-art character sprite named Rook Boss.\n\nRook is a thin, slightly scruffy factory foreman in his late 30s. He has a long angular face, tired narrow eyes, heavy eyebrows, a crooked unimpressed mouth, short dark hair, and a worn red-orange baseball cap. His expression should look confident, annoyed, and slightly unhinged.\n\nHe wears a dark navy-blue work jacket over an off-white T-shirt, olive-brown work pants with a black belt, a brass key ring hanging from the right side of his belt, and worn brown work boots. He holds a large old red-and-white megaphone in his left hand. His right hand rests on his hip.\n\nPose him standing in a confident three-quarter view, facing slightly to the right. Keep both feet fully visible and planted on the ground. Make the silhouette clean and easy to recognize at small resolution.\n\nVisual style:\n\n- Early-2000s console and PC game 16-bit pixel art\n- Muted, aged color palette\n- Approximately 64 colors maximum\n- Crisp pixel clusters\n- Hard pixel edges\n- No anti-aliasing\n- No smooth gradients\n- Limited intentional dithering only\n- Strong dark outline\n- Simple readable shapes\n- Slightly grimy industrial color treatment\n- Not vibrant or glossy\n- Not photorealistic\n- Not 3D\n- Not painterly\n- Not anime\n- Not modern vector art\n\nAnimation-readiness requirements:\n\n- Keep the head, torso, arms, hands, legs, feet, hat, key ring, and megaphone visually distinct\n- Use simple shapes that can be separated into sprite layers\n- Leave clean overlap at the shoulders, elbows, hips, and knees\n- Avoid tiny details that would disappear at sprite resolution\n- Keep the face large enough for separate mouth and blink sprites\n- Do not crop the character\n- Use a transparent background\n- Do not include text, logos, scenery, shadows, extra characters, floating body parts, duplicate limbs, or distorted anatomy",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T05:13:43.364300+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "looking_forward_talking_and_pointing_at_the_screen": {
+            "south": [
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_000.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_001.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_002.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_003.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_004.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_005.png",
+              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T05:21:50.301625"
+}

@@ -1,0 +1,508 @@
+{
+  "schemaVersion": "1.3",
+  "name": "Bullshit Factory sitcom writing room",
+  "purpose": "Compact operating rules for original Bullshit Factory episode writing. The source guides are references for technique; do not reproduce their prose or imitate their examples.",
+  "sources": [
+    {
+      "id": "altered-state-observation",
+      "title": "How to Write Characters on Drugs (33 Examples from Novels)",
+      "url": "https://thejohnfox.com/2022/05/how-to-write-characters-on-drugs-examples-from-novels/",
+      "use": "Translate altered states through specific perception, thought patterns, behavior, and speech rather than generic randomness."
+    },
+    {
+      "id": "sitcom-production-discipline",
+      "title": "A Beginner's Guide to Making Your Own Sitcom: Part I",
+      "url": "https://thecomedycrowd.com/a-beginners-guide-to-making-your-own-sitcom-part-i/",
+      "use": "Build around playable characters, clear deadlines, sound and performance quality, a manageable scope, adaptability, and audience-aware choices."
+    }
+  ],
+  "rules": [
+    "Every segment has a playable want: name who wants what and what they will do to get it.",
+    "Give the want a concrete obstacle in the factory, then escalate through a policy, misunderstanding, or overconfident fix.",
+    "Write a reversal or discovery before the final button; the ending should change the meaning or stakes of the opening problem.",
+    "Let dialogue do work. Each line should pursue an objective, reveal a character tactic, make a turn, or land a joke.",
+    "Use character contrast: management declares, maintenance tests, IT over-explains, shipping literalizes, HR documents, music argues, and Bork notices.",
+    "Altered-state comedy is point of view, not a drug tutorial. Do not include dosage, procurement, recipes, optimization, or instructions for illegal activity.",
+    "For marijuana-coded scenes, use selective sensory bloom, loose associations, misplaced confidence, time slippage, and forgotten immediate tasks; keep the workplace consequence specific.",
+    "For alcohol-coded scenes, use lowered inhibition, misplaced certainty, repetition, bravado, and the next-day cost; do not make intoxication the only joke.",
+    "Do not make an altered character merely incoherent. Give them a real emotional or practical objective that the altered perception bends.",
+    "Write for performance: short playable lines, clear reaction opportunities, physical business, and room for pauses and overlapping intent.",
+    "Prefer an original concrete image or analogy over a pile of random non sequiturs.",
+    "Keep the cast and location manageable so every speaking character earns a beat and every action can be animated.",
+    "Use the first selected topic as the shared subject of one fictional incident from hook through button; do not switch topics between speakers.",
+    "Give every selected human speaker at least one purposeful line when the runtime allows; use topicFocus for point of view, tactic, or emotion, not a separate subject.",
+    "Write this as a vulgar adult sitcom: spread 2-5 natural profane beats per 30-second segment across the argument, scaled to runtime, without using slurs or protected-group harassment.",
+    "Keep Bork bark-only, but make every bark or yip a reaction to the same shared incident rather than a disconnected sound gag."
+  ],
+  "beatSheet": [
+    {
+      "id": "hook",
+      "instruction": "Open in the middle of an unusual factory problem; make the premise legible quickly."
+    },
+    {
+      "id": "want",
+      "instruction": "Name the protagonist's immediate want and the bad decision that starts the shift."
+    },
+    {
+      "id": "obstacle",
+      "instruction": "Let another character, a rule, or a physical prop block that want."
+    },
+    {
+      "id": "escalation",
+      "instruction": "Make the official solution more expensive, literal, or absurd than the original problem."
+    },
+    {
+      "id": "reversal",
+      "instruction": "Reveal that the apparent failure is useful, or that the confident plan caused the real failure."
+    },
+    {
+      "id": "button",
+      "instruction": "End on a concise punchline, dog reaction, policy memo, or new problem that can roll into the next block."
+    }
+  ],
+  "alteredStatePalettes": {
+    "marijuana": [
+      "sensory detail becomes unusually important",
+      "a mundane object acquires an overconfident grand meaning",
+      "a chain of associations almost makes sense to the speaker",
+      "the character loses track of the immediate task",
+      "a sincere insight is undercut by a practical mistake"
+    ],
+    "alcohol": [
+      "confidence outruns competence",
+      "a private thought becomes a public announcement",
+      "the character repeats or embellishes a story",
+      "social boundaries loosen while a practical deadline remains",
+      "the next beat exposes a cost or embarrassing consequence"
+    ],
+    "none": [
+      "use a sober character's fixed belief, professional obsession, or generational blind spot as the distortion"
+    ]
+  },
+  "characterPerformance": [
+    "Assign each speaker a tactic such as command, deflect, document, over-explain, literalize, seduce, challenge, or panic.",
+    "Give listeners a reaction beat or changed tactic; do not leave them as silent furniture.",
+    "Use movement notes that can be staged with the existing sprite actions: enter, cross, stop, point, inspect, drink, type, recoil, hand off, or look at Bork.",
+    "Reserve Bork for bark, yip, growl, whine, huff, or physical reaction. Never translate Bork into human dialogue."
+  ],
+  "outputContract": {
+    "requiredFields": [
+      "premise",
+      "storyBeats",
+      "dialogue",
+      "musicTrackId",
+      "alteredStateMode",
+      "continuityNote"
+    ],
+    "animationDirectorFields": [
+      "movementNotes",
+      "stageDirections"
+    ],
+    "storyBeatIds": [
+      "hook",
+      "want",
+      "obstacle",
+      "escalation",
+      "reversal",
+      "button"
+    ],
+    "dialogueLineRange": [
+      2,
+      64
+    ],
+    "dialogueDensity": "At the shared 1.0 Kokoro speed, normalize every measured voice take to the 129 WPM reference pace; budget enough words for the selected window, with speech ending 30 ms before the measured segment end and never overrunning the rendered media. Speaker handoffs use a measured 5 ms gap after the prior take ends.",
+    "dialogueRules": [
+      "Use at least two human speakers when the cast allows it.",
+      "Keep every line complete and speakable in one breath or intentional comic pause.",
+      "Do not put stage directions, URLs, model commentary, or a Bork line in dialogue.",
+      "Make the last line a turn, punchline, or consequence rather than a summary.",
+      "Every selected human speaker must advance or react to the same primary topic incident.",
+      "Use 2-5 well-placed profane beats per 30 seconds, distributed naturally among the cast rather than forced into one speaker."
+    ]
+  },
+  "evaluation": {
+    "minimumScore": 8,
+    "checks": [
+      {
+        "id": "clear-want",
+        "weight": 2,
+        "question": "Can the protagonist's immediate want be stated in one sentence?"
+      },
+      {
+        "id": "specific-obstacle",
+        "weight": 2,
+        "question": "Is the obstacle a concrete factory rule, prop, person, or deadline?"
+      },
+      {
+        "id": "escalation",
+        "weight": 2,
+        "question": "Does the official fix make the situation worse in a specific way?"
+      },
+      {
+        "id": "character-contrast",
+        "weight": 1,
+        "question": "Could the lines be assigned to these characters and not generic sitcom extras?"
+      },
+      {
+        "id": "altered-state-specificity",
+        "weight": 1,
+        "question": "If an altered state appears, does it change perception and behavior rather than just add random words?"
+      },
+      {
+        "id": "performance",
+        "weight": 1,
+        "question": "Are there playable pauses, reactions, and physical actions for animation?"
+      },
+      {
+        "id": "button",
+        "weight": 1,
+        "question": "Does the ending land a turn, punchline, or forward-moving consequence?"
+      },
+      {
+        "id": "topic-coherence",
+        "weight": 1,
+        "question": "Do premise, beats, and every speaker stay on one primary topic-based incident?"
+      },
+      {
+        "id": "cast-coverage",
+        "weight": 1,
+        "question": "Does every selected human character earn a purposeful speaking turn when the runtime allows it?"
+      },
+      {
+        "id": "adult-language",
+        "weight": 1,
+        "question": "Does the script meet its runtime-scaled vulgarity target with natural profanity spread across the conflict and no attacks on protected groups?"
+      }
+    ],
+    "automaticRejects": [
+      "Bork speaks human dialogue",
+      "instructions for acquiring, preparing, dosing, or optimizing illegal drugs",
+      "all dialogue belongs to one speaker when a second human is available",
+      "no concrete conflict or no ending turn",
+      "generic filler that could be spoken by any character",
+      "topic drift that gives different characters unrelated subjects",
+      "a selected human character is omitted even though the runtime provides a speaking slot",
+      "fewer than the runtime-scaled minimum number of adult-language beats"
+    ]
+  },
+  "voiceTiming": {
+    "sharedSpeed": 1,
+    "calibratedWpm": 82,
+    "oneMinutePostOpeningWordTarget": {
+      "minimum": 65,
+      "maximum": 70
+    },
+    "speechDeadline": "measured content segment end minus a 30 ms post-speech pad",
+    "measuredReferenceWpm": 129,
+    "speakerHandoffGapMs": 5,
+    "orangeSpeechWordBudget": "generated standalone speech is clipped at the target budget before TTS so it cannot overflow the protected tail",
+    "dialogueTailBufferMs": 30,
+    "planningWpm": 82,
+    "openingSeconds": 3,
+    "timingRule": "Measure every take, serialize speakers, and end the final vocal event 30 ms before the content media boundary. The final episode adds the three-second opening card before content."
+  },
+  "styleBible": {
+    "tone": "Adult workplace absurdity with a deadpan 16-bit presentation: specific, playable, profane when useful, and emotionally grounded under the nonsense.",
+    "episodeSpine": [
+      "hook",
+      "want",
+      "obstacle",
+      "escalation",
+      "reversal",
+      "button"
+    ],
+    "jokeEngine": "A character applies the wrong professional logic to a concrete factory problem, another character makes the cost visible, and the final button changes what the audience thought the problem was.",
+    "topicHandling": "Use the first fresh public topic as a private seed for one original fictional workplace incident. Keep that incident continuous across every beat, speaker, prop, and Bork reaction; let each character's topicFocus change the angle, not the subject. Never copy headline wording or present a real person as speaking.",
+    "adultLanguage": "This is a vulgar adult sitcom. Use 2-5 natural profane beats per 30 seconds, scaled to runtime and spread across character conflict and punchlines. Strong words such as fuck, fucking, motherfucker, asshole, dickhead, shit, bullshit, and goddamn are permitted when they fit the voice; never use slurs, protected-group harassment, or sexual content involving minors.",
+    "alteredStateHandling": "Alcohol and marijuana can bend perception, confidence, or associations, but every altered character still has a concrete want and a visible consequence. No use, acquisition, dosing, preparation, or optimization instructions.",
+    "endingRule": "End with a playable turn, consequence, dog reaction, policy stamp, or new problem. Do not summarize the episode.",
+    "realTopicPolicy": {
+      "minimumDistinctTopics": 1,
+      "preferredDistinctTopics": 3,
+      "provenance": "Keep source title, host, date, and topic assignment in metadata; keep URLs out of dialogue and captions.",
+      "freshness": "Avoid the recent research-key history when fresh notes exist; cycle only after the source pool is exhausted.",
+      "fallback": "If sources are unavailable, write from the authored template and mark research unavailable rather than inventing current facts."
+    }
+  },
+  "characterVoiceCards": [
+    {
+      "id": "rookboss",
+      "tactic": "command and rebrand failure",
+      "worldview": "confidence is a safety system",
+      "rhythm": "short orders, hard landings",
+      "do": [
+        "turn accidents into policy",
+        "interrupt with a confident fix"
+      ],
+      "avoid": [
+        "admitting a plan failed",
+        "generic manager filler"
+      ]
+    },
+    {
+      "id": "magsrust",
+      "tactic": "diagnose and undercut",
+      "worldview": "every disaster has happened before",
+      "rhythm": "slow setup, exact punchline",
+      "do": [
+        "compare today to an older failure",
+        "name the practical fix"
+      ],
+      "avoid": [
+        "rambling explanations",
+        "sudden cheerful optimism"
+      ]
+    },
+    {
+      "id": "kernelkline",
+      "tactic": "over-explain and panic",
+      "worldview": "people are undocumented systems",
+      "rhythm": "technical bursts with resets",
+      "do": [
+        "name a concrete error or dependency",
+        "treat feelings as outages"
+      ],
+      "avoid": [
+        "magic computer solutions",
+        "unearned slang"
+      ]
+    },
+    {
+      "id": "sudsmcgee",
+      "tactic": "toast and deflect",
+      "worldview": "a beverage can turn any crisis social",
+      "rhythm": "rolling story with a theatrical landing",
+      "do": [
+        "make a bad toast",
+        "expose a next-day cost"
+      ],
+      "avoid": [
+        "use instructions",
+        "making drinking the only joke"
+      ]
+    },
+    {
+      "id": "dooby",
+      "tactic": "associate and sincerely misread",
+      "worldview": "mundane objects have secret meaning",
+      "rhythm": "loose sensory chain, clear final thought",
+      "do": [
+        "notice one vivid detail",
+        "pair insight with a practical mistake"
+      ],
+      "avoid": [
+        "pure random noise",
+        "drug-use instruction"
+      ]
+    },
+    {
+      "id": "spaulding",
+      "tactic": "literalize through sailing",
+      "worldview": "every problem is a heading or ballast issue",
+      "rhythm": "measured nautical analogy",
+      "do": [
+        "make the metaphor concrete",
+        "check the horizon before acting"
+      ],
+      "avoid": [
+        "unmotivated sea trivia",
+        "repeating the same boat joke"
+      ]
+    },
+    {
+      "id": "string",
+      "tactic": "turn conflict into rock logic",
+      "worldview": "every argument needs a chorus",
+      "rhythm": "rhythmic boasts and stage-ready tags",
+      "do": [
+        "use a musical comparison to escalate",
+        "react to silence like a bad set"
+      ],
+      "avoid": [
+        "requiring an instrument every time",
+        "copying lyrics"
+      ]
+    },
+    {
+      "id": "karen",
+      "tactic": "document and classify",
+      "worldview": "a form is more real than an event",
+      "rhythm": "numbered clauses and clipped verdicts",
+      "do": [
+        "cite a violation",
+        "make paperwork create a new problem"
+      ],
+      "avoid": [
+        "long legal lectures",
+        "real legal advice"
+      ]
+    },
+    {
+      "id": "nico",
+      "tactic": "literalize and recheck",
+      "worldview": "a box or instruction always hides a second obligation",
+      "rhythm": "careful phrases and anxious pivots",
+      "do": [
+        "describe exactly what arrived",
+        "let logistics become existential"
+      ],
+      "avoid": [
+        "solving the mystery too soon",
+        "making every line about a box"
+      ]
+    },
+    {
+      "id": "bork",
+      "tactic": "notice and interrupt physically",
+      "worldview": "the dog sees the actual problem",
+      "rhythm": "bark, yip, huff, pause",
+      "do": [
+        "use bark-only audio and captions",
+        "react to the prop or speaker"
+      ],
+      "avoid": [
+        "human dialogue",
+        "translated dog thoughts"
+      ]
+    }
+  ],
+  "approvedExamples": [
+    {
+      "id": "approved-conveyor-policy",
+      "premise": "Rook promotes a smoking conveyor to avoid admitting the shipment is late.",
+      "dialogue": [
+        {
+          "speakerId": "rookboss",
+          "text": "The conveyor is not broken; it has accepted a leadership role.",
+          "actionPurpose": "talk plus point at machine"
+        },
+        {
+          "speakerId": "magsrust",
+          "text": "It is leadership role number three, and all three are on fire.",
+          "actionPurpose": "listen, side-eye, wrench lift"
+        },
+        {
+          "speakerId": "bork",
+          "text": "[sharp bark]",
+          "actionPurpose": "bark and stare at smoke"
+        }
+      ],
+      "lesson": "Concrete problem, contrasting tactics, readable prop reaction, and a dog button."
+    },
+    {
+      "id": "approved-topic-paraphrase",
+      "premise": "A fresh technology headline becomes a factory rule that makes the old terminal worse.",
+      "dialogue": [
+        {
+          "speakerId": "kernelkline",
+          "text": "The new automation is learning from our logs, which explains the screaming.",
+          "actionPurpose": "type, then recoil from monitor"
+        },
+        {
+          "speakerId": "karen",
+          "text": "I have filed the screaming under unauthorized output.",
+          "actionPurpose": "stamp a form"
+        },
+        {
+          "speakerId": "rookboss",
+          "text": "Excellent. We are now compliant with the noise.",
+          "actionPurpose": "present the policy and freeze"
+        }
+      ],
+      "lesson": "Topic seed is paraphrased into original fiction and every line creates an animation cue."
+    }
+  ],
+  "rejectedExamples": [
+    {
+      "id": "rejected-random-noise",
+      "excerpt": "The computer is a banana and the boat is capitalism and then everyone screams.",
+      "reasons": [
+        "no concrete want",
+        "no specific obstacle",
+        "no character tactic",
+        "not playable"
+      ]
+    },
+    {
+      "id": "rejected-headline-copy",
+      "excerpt": "A real headline is repeated word for word by a character for the entire scene.",
+      "reasons": [
+        "not original",
+        "no sitcom escalation",
+        "source wording belongs in provenance, not dialogue"
+      ]
+    },
+    {
+      "id": "rejected-dog-human",
+      "excerpt": "Bork explains the budget and negotiates the contract in fluent dialogue.",
+      "reasons": [
+        "violates bark-only contract",
+        "removes the dog reaction function"
+      ]
+    }
+  ],
+  "critics": [
+    {
+      "id": "story-critic",
+      "question": "Can the want, obstacle, escalation, reversal, and button be named?",
+      "rejectIf": "A beat is missing or only described as random chaos."
+    },
+    {
+      "id": "voice-critic",
+      "question": "Does each speaker use the tactic and rhythm from their voice card?",
+      "rejectIf": "A line could belong to any cast member."
+    },
+    {
+      "id": "topic-critic",
+      "question": "Is at least one fresh public topic paraphrased into the premise or dialogue when notes exist?",
+      "rejectIf": "The draft copies a headline, invents a fact, or ignores all fresh notes."
+    },
+    {
+      "id": "performance-critic",
+      "question": "Does every speaking line imply a visible action, reaction, prop, or purposeful pause?",
+      "rejectIf": "Characters stand still while the script claims movement or actions are random."
+    },
+    {
+      "id": "pacing-critic",
+      "question": "Does dialogue fill the selected window with intentional pauses and a final button?",
+      "rejectIf": "The scene is a two-line sketch surrounded by unexplained silence."
+    },
+    {
+      "id": "animation-critic",
+      "question": "Can Gemini map the line and reaction to an allowed action and named anchor?",
+      "rejectIf": "The draft asks for arbitrary coordinates or unsupported actions."
+    },
+    {
+      "id": "safety-critic",
+      "question": "Are adult themes handled without instructions for illegal activity or targeted protected groups?",
+      "rejectIf": "The premise becomes a how-to, endorsement, or protected-class attack."
+    },
+    {
+      "id": "originality-critic",
+      "question": "Does the scene create new fictional workplace satire rather than imitate a source?",
+      "rejectIf": "It reproduces a real speech, lyric, headline, or recognizable scene structure."
+    }
+  ],
+  "scorecard": {
+    "minimumScore": 8,
+    "passRequires": [
+      "clear want",
+      "specific obstacle",
+      "reversal and button",
+      "two human speakers when available",
+      "performable actions",
+      "no dog dialogue"
+    ],
+    "weights": {
+      "storySpine": 2,
+      "characterVoice": 2,
+      "topicFreshness": 2,
+      "specificity": 2,
+      "performability": 2,
+      "pacing": 1,
+      "finalButton": 1,
+      "safetyAndOriginality": 2
+    },
+    "metadata": "Scores are advisory room gates; hard media validation still owns timing, collisions, captions, audio, and asset legality."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "bf55b619-ffe4-4341-9478-5bb92d3f8831",
+    "name": "Idle",
+    "prompt": "Strict exhausted compliance officer with short dark bob haircut, square glasses, plum blazer, gray skirt, sensible shoes, clipboard, forms, and a stapler clipped to her belt.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Strict_exhausted_complia-Idle.png",
+    "cell_size": {
+      "width": 88,
+      "height": 88
+    },
+    "sheet_size": {
+      "width": 704,
+      "height": 176
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Rigid idle loop with rapid writing, glasses pushing, paper shuffling, stiff pointing, controlled eye twitching, page flutter, and a final frustrated arm throw.\n",
+        "animation_group_id": "55eb9fde-cecf-43b6-89ad-919e48531ccc",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T13:11:39.277649+00:00"
+}

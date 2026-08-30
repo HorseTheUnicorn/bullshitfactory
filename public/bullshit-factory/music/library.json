@@ -1,0 +1,268 @@
+{
+  "schemaVersion": "1.1",
+  "showId": "bullshit-factory",
+  "generatedAt": "2026-08-28T18:42:49.469Z",
+  "policy": "Original internal masters and local Stable Audio 3 generations are selected by metadata, generated before playout, and retained as reviewable Bullshit Factory assets.",
+  "stableAudio": {
+    "provider": "stable-audio-3-small-music",
+    "backend": "tflite-cpu",
+    "ownership": "Bullshit Factory subject to the Stability AI Community License and AUP",
+    "autoApprove": true,
+    "serialized": true,
+    "preGenerationOnly": true
+  },
+  "tracks": [
+    {
+      "id": "bf-theme-main",
+      "title": "Factory Theme: Nobody Asked",
+      "category": "themes",
+      "mood": "dusty-16-bit-rock",
+      "duration": 32,
+      "energy": 8,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/themes/bf-theme-main.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-intro-01",
+      "title": "Clock In, Regret It",
+      "category": "intros",
+      "mood": "dusty-16-bit-rock",
+      "duration": 8,
+      "energy": 9,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/intros/bf-intro-01.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-outro-01",
+      "title": "Management Has Left the Building",
+      "category": "outros",
+      "mood": "dusty-16-bit-rock",
+      "duration": 10,
+      "energy": 5,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/outros/bf-outro-01.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-garage-stomp",
+      "title": "Garage Stomp",
+      "category": "beds",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 8,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/beds/bf-garage-stomp.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-bar-band-jangle",
+      "title": "Bar Band Jangle",
+      "category": "breakroom",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 6,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/breakroom/bf-bar-band-jangle.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-dusty-psych-rock",
+      "title": "Dusty Psych Rock",
+      "category": "technology",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 6,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/technology/bf-dusty-psych-rock.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-bit-crushed-rock",
+      "title": "Bit-Crushed Rock",
+      "category": "emergency",
+      "mood": "dusty-16-bit-rock",
+      "duration": 30,
+      "energy": 10,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/emergency/bf-bit-crushed-rock.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-dockside-shanty-rock",
+      "title": "Dockside Shanty Rock",
+      "category": "sailing",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 7,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/sailing/bf-dockside-shanty-rock.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-rust-belt-blues",
+      "title": "Rust Belt Blues",
+      "category": "beds",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 4,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/beds/bf-rust-belt-blues.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-late-night-rock",
+      "title": "Late Night Rock",
+      "category": "beds",
+      "mood": "dusty-16-bit-rock",
+      "duration": 45,
+      "energy": 6,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/beds/bf-late-night-rock.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-warehouse-pulse",
+      "title": "Warehouse Pulse",
+      "category": "corporate",
+      "mood": "dusty-16-bit-rock",
+      "duration": 30,
+      "energy": 7,
+      "loopable": true,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/corporate/bf-warehouse-pulse.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-corporate-jingle",
+      "title": "Your Bullshit Is Our Bullshit",
+      "category": "commercials",
+      "mood": "cheap-corporate-confidence",
+      "duration": 9,
+      "energy": 8,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/commercials/bf-corporate-jingle.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-cartoon-drum-break",
+      "title": "Cartoon Drum Break",
+      "category": "stingers",
+      "mood": "dusty-16-bit-rock",
+      "duration": 6,
+      "energy": 10,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/stingers/bf-cartoon-drum-break.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-dog-cue",
+      "title": "Bork Investigates",
+      "category": "dog",
+      "mood": "suspicious-investigation",
+      "duration": 6,
+      "energy": 8,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original procedural composition",
+      "file": "/bullshit-factory/music/dog/bf-dog-cue.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    }
+  ]
+}

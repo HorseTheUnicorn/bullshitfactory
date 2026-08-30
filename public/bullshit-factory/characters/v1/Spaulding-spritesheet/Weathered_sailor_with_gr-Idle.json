@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "54c827d6-d500-405f-b939-e3e6cfa70495",
+    "name": "Idle",
+    "prompt": "Weathered sailor with gray beard, faded navy pea coat, striped shirt, red knit cap, rope coil, brass compass, deck shoes, and permanently windblown hair.",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Weathered_sailor_with_gr-Idle.png",
+    "cell_size": {
+      "width": 92,
+      "height": 92
+    },
+    "sheet_size": {
+      "width": 736,
+      "height": 184
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Rocking-on-a-deck idle with compass checking, rope pulling, horizon pointing, coat flutter, exaggerated balance corrections, and getting briefly tangled in the rope.\n",
+        "animation_group_id": "dc8d74f3-3602-43cf-a59a-23ba0bf51502",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T13:05:55.836176+00:00"
+}

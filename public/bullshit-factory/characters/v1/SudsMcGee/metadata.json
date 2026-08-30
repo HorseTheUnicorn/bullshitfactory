@@ -1,0 +1,72 @@
+{
+  "group_id": "35d9d958-e994-4eae-baeb-baedaa846073",
+  "states": [
+    {
+      "character": {
+        "id": "6955258b-8491-41f8-b066-17b926efa82a",
+        "name": "Idle",
+        "prompt": "Broad middle-aged break-room expert wearing a stained red vest, faded bowling shirt, work pants, scuffed loafers, and a belt full of bottle openers, carrying a metal flask.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:32:13.231468+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Loose_swaggering_idle_with_bottle-flask_flourish_w": {
+            "south": [
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_000.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_001.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_002.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_003.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_004.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_005.png",
+              "Idle/animations/Loose_swaggering_idle_with_bottle-flask_flourish_w/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T12:43:27.243429"
+}

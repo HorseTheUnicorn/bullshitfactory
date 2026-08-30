@@ -1,0 +1,72 @@
+{
+  "group_id": "62b88267-1b87-4480-983c-11c9622f346e",
+  "states": [
+    {
+      "character": {
+        "id": "54c827d6-d500-405f-b939-e3e6cfa70495",
+        "name": "Idle",
+        "prompt": "Weathered sailor with gray beard, faded navy pea coat, striped shirt, red knit cap, rope coil, brass compass, deck shoes, and permanently windblown hair.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:55:41.396249+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Rocking-on-a-deck_idle_with_compass_checking_rope": {
+            "south": [
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_000.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_001.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_002.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_003.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_004.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_005.png",
+              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T13:05:53.418677"
+}

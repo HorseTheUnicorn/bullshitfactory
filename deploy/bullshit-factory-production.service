@@ -1,0 +1,29 @@
+[Unit]
+Description=Bullshit Factory serialized episode production controller
+After=network-online.target bullshit-factory-music.service bullshit-factory-tts.service
+Wants=network-online.target bullshit-factory-music.service bullshit-factory-tts.service
+
+[Service]
+Type=simple
+User=goblin
+Group=goblin
+WorkingDirectory=/home/goblin/cave/bullshit-factory
+EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+Environment=NODE_ENV=production
+Environment=BF_APP_ROOT=/home/goblin/cave/bullshit-factory
+Environment=BF_PUBLIC_ROOT=/home/goblin/cave/bullshit-factory/public
+Environment=BF_DATA_ROOT=/home/goblin/cave/bullshit-factory/runtime
+Environment=BF_PRODUCTION_HOST=127.0.0.1
+Environment=BF_PRODUCTION_PORT=8793
+ExecStart=/usr/bin/node server/bullshit-factory-production.mjs
+Restart=on-failure
+RestartSec=8
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/home/goblin/cave/bullshit-factory
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

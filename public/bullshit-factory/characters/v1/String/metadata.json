@@ -1,0 +1,72 @@
+{
+  "group_id": "39165138-278f-40e7-9a28-c61f7773713b",
+  "states": [
+    {
+      "character": {
+        "id": "249affc9-2212-4e43-9728-ee7af471224c",
+        "name": "Idle",
+        "prompt": "Lean rebellious employee with long messy hair, faded leather vest, black band shirt, ripped gray jeans, heavy boots, wristbands, and a worn red electric guitar.",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "side",
+        "created_at": "2026-08-28T12:57:06.745683+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Energetic_performance_loop_with_foot_tapping_shoul": {
+            "south": [
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_000.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_001.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_002.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_003.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_004.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_005.png",
+              "Idle/animations/Energetic_performance_loop_with_foot_tapping_shoul/south/frame_006.png"
+            ]
+          },
+          "pixellab-walk-v1": {
+            "south": [
+              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
+              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
+            ]
+          },
+          "pixellab-react-v1": {
+            "south": [
+              "Idle/animations/pixellab-react-v1/south/frame_000.png",
+              "Idle/animations/pixellab-react-v1/south/frame_001.png",
+              "Idle/animations/pixellab-react-v1/south/frame_002.png",
+              "Idle/animations/pixellab-react-v1/south/frame_003.png",
+              "Idle/animations/pixellab-react-v1/south/frame_004.png",
+              "Idle/animations/pixellab-react-v1/south/frame_005.png",
+              "Idle/animations/pixellab-react-v1/south/frame_006.png",
+              "Idle/animations/pixellab-react-v1/south/frame_007.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-28T13:08:42.562267"
+}

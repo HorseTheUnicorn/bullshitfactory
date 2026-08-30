@@ -1,0 +1,346 @@
+{
+  "generatedAt": "2026-08-28T14:54:30.834Z",
+  "endpoint": "https://api.pixellab.ai/v2",
+  "sourceStyle": "supplied 16-bit PixelLab character exports; identity-preserving reference-frame generation",
+  "frameCountRequested": 8,
+  "direction": "south",
+  "replace": false,
+  "completed": [
+    {
+      "kind": "animation",
+      "characterId": "magsrust",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place with a sturdy older-worker step and a small shoulder sway",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "magsrust",
+      "animationId": "pixellab-react-v1",
+      "action": "raise a wrench, squint, shrug, and deliver a dry unimpressed reaction",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/MagsRust/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "kernelkline",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place while clutching a cable, with nervous quick steps and hunched shoulders",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "kernelkline",
+      "animationId": "pixellab-react-v1",
+      "action": "type frantically, recoil from the monitor, push glasses up, and point at an error",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/KernelKline/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "sudsmcgee",
+      "animationId": "pixellab-walk-v1",
+      "action": "swagger in place with a loose barroom step, bottle arm counterbalancing the body",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "sudsmcgee",
+      "animationId": "pixellab-react-v1",
+      "action": "raise the bottle, laugh, shrug broadly, and point as if proposing another drink",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/SudsMcGee/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "dooby",
+      "animationId": "pixellab-walk-v1",
+      "action": "drift in place with relaxed alternating steps, gentle torso sway, and loose hands",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "dooby",
+      "animationId": "pixellab-react-v1",
+      "action": "slowly lift both hands, gaze upward, sway as if a strange idea just arrived",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Dooby/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "spaulding",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place like a weathered sailor on a rocking deck, with a wide steady stance",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "spaulding",
+      "animationId": "pixellab-react-v1",
+      "action": "check a compass, pull a rope, point toward the horizon, and brace against a wave",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Spaulding/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "string",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place with a loose rock-and-roll strut, alternating feet and bouncing shoulders",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "string",
+      "animationId": "pixellab-react-v1",
+      "action": "play an invisible guitar riff, stomp one foot, lean into the beat, and throw a rock-star pose",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/String/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "karen",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place with brisk office steps while protecting a clipboard and keeping posture rigid",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "karen",
+      "animationId": "pixellab-react-v1",
+      "action": "write rapidly, stop, push glasses up, raise one finger, and point at a paperwork violation",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Karen/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "nico",
+      "animationId": "pixellab-walk-v1",
+      "action": "walk in place carrying the box, with cautious alternating steps and small nervous glances",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "nico",
+      "animationId": "pixellab-react-v1",
+      "action": "shift the box, double-take, point at an unseen problem, and nervously step back",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Nico/Idle/animations/pixellab-react-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "bork",
+      "animationId": "pixellab-walk-v1",
+      "action": "trot in place with independent legs, a wagging tail, a curious head tilt, and ear flicks",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-walk-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "animation",
+      "characterId": "bork",
+      "animationId": "pixellab-bark-v1",
+      "action": "bark as if trying to talk, open and close the muzzle, tilt the head, flick the ears, and wag the tail",
+      "frameCount": 8,
+      "files": [
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_000.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_001.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_002.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_003.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_004.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_005.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_006.png",
+        "/bullshit-factory/characters/v1/Bork/Idle/animations/pixellab-bark-v1/south/frame_007.png"
+      ]
+    },
+    {
+      "kind": "scene",
+      "sceneId": "break-room",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/break-room.png"
+    },
+    {
+      "kind": "scene",
+      "sceneId": "server-room",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/server-room.png"
+    },
+    {
+      "kind": "scene",
+      "sceneId": "boat-bay",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/boat-bay.png"
+    },
+    {
+      "kind": "scene",
+      "sceneId": "loading-dock",
+      "width": 256,
+      "height": 144,
+      "file": "/bullshit-factory/scenes/loading-dock.png"
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}

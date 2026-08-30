@@ -1,0 +1,53 @@
+{
+  "character": {
+    "id": "36491503-4622-4629-9d90-4558ddad3178",
+    "name": "Idle",
+    "prompt": "Tough elderly woman with silver braid, stained welding cap, patched brown coveralls, heavy boots, thick gloves, safety goggles, oversized wrench, and a permanently irritated expression.\n",
+    "size": {
+      "width": 64,
+      "height": 64
+    },
+    "directions": 8,
+    "view": "side"
+  },
+  "spritesheet": {
+    "path": "Tough_elderly_woman_with-Idle.png",
+    "cell_size": {
+      "width": 84,
+      "height": 84
+    },
+    "sheet_size": {
+      "width": 672,
+      "height": 168
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      },
+      {
+        "row": 1,
+        "type": "animation",
+        "frame_count": 7,
+        "animation": "Stiff but powerful idle loop with knee creaks, shoulder rolls, squinting, wrench taps, sudden precise gestures, and an annoyed head shake.\n",
+        "animation_group_id": "21c6d31b-51a9-4933-8511-d6a1c6140a98",
+        "direction": "south"
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-08-28T12:26:15.272989+00:00"
+}
