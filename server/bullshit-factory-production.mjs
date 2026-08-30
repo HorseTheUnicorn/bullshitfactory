@@ -322,6 +322,9 @@ function defaultState() {
       lastGenerationWho: null,
       lastError: null,
     },
+    generationSelection: {
+      lastWho: null,
+    },
     inventory: [],
     playHistory: [],
     continuity: {
@@ -544,6 +547,8 @@ async function loadState() {
       state.continuousGeneration.runId = null;
       state.continuousGeneration.activeJobId = null;
     }
+    state.generationSelection = { ...defaultState().generationSelection, ...(state.generationSelection || {}) };
+    state.generationSelection.lastWho = state.generationSelection.lastWho === 'orange' ? 'orange' : state.generationSelection.lastWho === 'cast' ? 'cast' : null;
     state.musicApprovals = state.musicApprovals && typeof state.musicApprovals === 'object' ? state.musicApprovals : {};
     state.generatedMusic = Array.isArray(state.generatedMusic) ? state.generatedMusic : [];
     state.episodes = Array.isArray(state.episodes) ? state.episodes : [];
@@ -4646,6 +4651,16 @@ function resolveGenerationWho(value, seed = 1, previousWho = null) {
   return candidate;
 }
 
+function selectGenerationWho(value, seed = 1, selectionState = null) {
+  const normalized = String(value || '').trim().toLowerCase();
+  const previousWho = normalized === 'random' ? selectionState?.lastWho : null;
+  const selectedWho = resolveGenerationWho(normalized, seed, previousWho);
+  if (normalized === 'random' && selectionState && (selectedWho === 'cast' || selectedWho === 'orange')) {
+    selectionState.lastWho = selectedWho;
+  }
+  return selectedWho;
+}
+
 function uniqueEpisodeTitle(candidate, generationWho = 'cast') {
   const base = stripText(candidate, 120) || 'Bullshit Factory: Untitled Factory Incident';
   const used = existingEpisodeTitleKeys();
@@ -5059,7 +5074,9 @@ async function generateEpisode(body = {}, options = {}) {
     const oldMode = String(body.orangeIdiotMode || '').trim().toLowerCase();
     generationWho = body.orangeIdiotOnly === true || oldMode === 'standalone' || body.includeOrangeIdiot === true || Boolean(String(body.orangeIdiotSpeechText || body.tvSpeechText || '').trim()) ? (body.orangeIdiotOnly === true || oldMode === 'standalone' ? 'orange' : 'cast') : 'cast';
   }
-  generationWho = resolveGenerationWho(generationWho, seed);
+  const randomGenerationRequested = String(generationWho).trim().toLowerCase() === 'random';
+  generationWho = selectGenerationWho(generationWho, seed, state.generationSelection);
+  if (randomGenerationRequested) await persistState();
   const generationWhen = ['now', 'random'].includes(String(body.generationWhen || body.when || '').trim().toLowerCase()) ? String(body.generationWhen || body.when).trim().toLowerCase() : 'now';
   const requestedWhere = String(body.generationWhere || body.where || '').trim().toLowerCase() || 'auto';
   const validFactoryScene = (value) => FACTORY_SCENES.some((scene) => scene.id === value);
@@ -5394,7 +5411,7 @@ async function runContinuousGeneration(runId, request) {
     while (state?.continuousGeneration?.runId === runId && state.continuousGeneration.status === 'running') {
       let record;
       const seed = seedFor('continuous-episode:' + runId + ':' + attempt + ':' + Date.now());
-      const selectedWho = resolveGenerationWho(request.generationWho, seed, state.continuousGeneration.lastGenerationWho);
+      const selectedWho = selectGenerationWho(request.generationWho, seed, state.generationSelection);
       const payload = {
         ...request,
         generationWho: selectedWho,
@@ -5934,7 +5951,8 @@ async function maybeQueueContinuousGeneration() {
   if (state.session.refillJobId && generationJobPending(state.session.refillJobId)) return;
   state.session.refillJobId = null;
   const refillSeed = seedFor('continuous-refill:' + Date.now() + ':' + Math.random());
-  const selectedWho = resolveGenerationWho(state.continuousGeneration?.request?.generationWho || 'cast', refillSeed, state.continuousGeneration?.lastGenerationWho);
+  const requestedWho = state.continuousGeneration?.request?.generationWho || 'cast';
+  const selectedWho = selectGenerationWho(requestedWho, refillSeed, state.generationSelection);
   const orangeIdiotOnly = selectedWho === 'orange';
   const template = pickVariedTemplate(refillSeed);
   state.continuousGeneration.lastGenerationWho = selectedWho;
@@ -6729,6 +6747,7 @@ export {
   defaultState,
   episodeTitleBodyKey,
   resolveGenerationWho,
+  selectGenerationWho,
   evaluateWritingCandidate,
   productionCatalogSummary,
   renderPixelGameFontText,

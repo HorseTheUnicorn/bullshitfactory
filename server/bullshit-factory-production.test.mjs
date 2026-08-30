@@ -8,6 +8,7 @@ import {
   buildSegmentDraft,
   episodeTitleBodyKey,
   resolveGenerationWho,
+  selectGenerationWho,
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
@@ -220,4 +221,13 @@ test('continuous random mode chooses a new who mode and honors fixed modes', () 
   assert.deepEqual(sequence, ['orange', 'cast', 'orange', 'cast', 'orange', 'cast']);
   assert.equal(resolveGenerationWho('orange', 2), 'orange');
   assert.equal(resolveGenerationWho('cast', 2), 'cast');
+});
+
+test('random who selection persists a fair alternation for repeated dashboard requests', () => {
+  const selectionState = { lastWho: null };
+  const sequence = [2, 2, 2, 2].map((seed) => selectGenerationWho('random', seed, selectionState));
+  assert.deepEqual(sequence, ['orange', 'cast', 'orange', 'cast']);
+  assert.equal(selectionState.lastWho, 'cast');
+  assert.equal(selectGenerationWho('orange', 2, selectionState), 'orange');
+  assert.equal(selectGenerationWho('cast', 2, selectionState), 'cast');
 });
