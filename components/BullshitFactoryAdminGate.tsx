@@ -34,6 +34,7 @@ export default function BullshitFactoryAdminGate() {
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
@@ -49,7 +50,7 @@ export default function BullshitFactoryAdminGate() {
   }
 
   async function logout() {
-    await fetch('/api/admin/logout', { method: 'POST' }).catch(() => undefined);
+    await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined);
     setSession((current) => current ? { ...current, authenticated: false } : { authenticated: false, configured: true });
   }
 

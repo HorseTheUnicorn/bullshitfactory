@@ -685,6 +685,7 @@ export default function BullshitFactoryDashboard() {
     try {
       const response = await fetch('/api/bullshit-factory/session', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           duration,
@@ -732,6 +733,7 @@ export default function BullshitFactoryDashboard() {
     try {
       const response = await fetch('/api/bullshit-factory/production', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ action, ...payload }),
       });
@@ -839,6 +841,7 @@ export default function BullshitFactoryDashboard() {
     try {
       const response = await fetch('/api/bullshit-factory/production', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ action, episodeId }),
       });
@@ -873,6 +876,7 @@ export default function BullshitFactoryDashboard() {
     try {
       const response = await fetch('/api/bullshit-factory/music', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           kind: 'bed',
