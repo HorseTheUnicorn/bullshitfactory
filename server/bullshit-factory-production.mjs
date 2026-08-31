@@ -5451,6 +5451,7 @@ async function generateEpisode(body = {}, options = {}) {
         ? `Bullshit Factory: Orange Idiot — ${drafts[0].title}`
         : `Bullshit Factory: ${drafts[0].title}`;
     episodeTitle = uniqueEpisodeTitle(rawEpisodeTitle, generationWho);
+    await persistState();
     const themeTrack = trackForId(resources, 'bf-theme-main');
     if (!themeTrack || themeTrack.status !== 'approved' || !themeTrack.file) throw new Error('The approved Bullshit Factory opening theme is unavailable.');
     throwIfCancelled();
