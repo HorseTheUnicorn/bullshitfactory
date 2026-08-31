@@ -109,10 +109,11 @@ export default function BullshitFactoryLanding() {
         const continuousActive = Boolean(payload.playlist?.running || ['running', 'stopping'].includes(String(payload.continuousGeneration?.status || '')));
         setService(response.ok ? (continuousActive ? 'CONTINUOUS SIGNAL' : 'SIGNAL READY') : 'STANDBY');
         setSelectedId((current) => {
+          if (current && nextEpisodes.some((episode) => episode.id === current)) return current;
           const playlistId = continuousActive ? payload.playlist?.current?.segmentId : '';
           if (playlistId && nextEpisodes.some((episode) => episode.id === playlistId)) return playlistId;
           if (continuousActive) return '';
-          return nextEpisodes.some((episode) => episode.id === current) ? current : nextEpisodes[0]?.id || '';
+          return nextEpisodes[0]?.id || '';
         });
       } catch {
         if (!cancelled) setService('STANDBY');
