@@ -540,6 +540,13 @@ async function loadState() {
     state.logs = Array.isArray(state.logs) ? state.logs : [];
     state.control = { ...defaultState().control, ...(state.control || {}) };
     state.control.mode = state.control.mode === 'continuous' || state.control.mode === 'episode' ? state.control.mode : 'none';
+    let normalizedContinuousQueue = false;
+    if (state.session?.mode === 'continuous' && Array.isArray(state.session.queue)) {
+      const queue = normalizeContinuousQueue(state.session.queue);
+      normalizedContinuousQueue = queue.some((item, index) => Number(item.index) !== index);
+      state.session = { ...state.session, queue };
+      state.control.currentIndex = currentPlaylistQueueIndex(queue, state.control.elapsedSeconds);
+    }
     const continuousGenerationDefaults = defaultState().continuousGeneration;
     state.continuousGeneration = { ...continuousGenerationDefaults, ...(state.continuousGeneration || {}) };
     if (!['idle', 'running', 'stopping', 'error'].includes(state.continuousGeneration.status)) state.continuousGeneration.status = 'idle';
@@ -586,6 +593,9 @@ async function loadState() {
       await hydrateNoveltyMemory();
       state.continuity.noveltyHydrated = true;
       state.continuity.noveltySchemaVersion = 4;
+      await atomicWrite(STATE_PATH, state);
+    } else if (normalizedContinuousQueue) {
+      logEvent('playlist-index-normalized', 'The rolling continuous playlist was reindexed after old played items were trimmed.', { itemCount: state.session?.queue?.length || 0 });
       await atomicWrite(STATE_PATH, state);
     }
     if (state.control?.restartRequested) {
@@ -6123,7 +6133,7 @@ function maybeMarkPlayed(item) {
 
 function appendPlaylistItem(source, durationSeconds) {
   if (!state.session) return null;
-  const queue = state.session.queue || [];
+  const queue = normalizeContinuousQueue(state.session.queue || []);
   const startSeconds = queue.length ? Number(queue.at(-1).endSeconds || 0) : Number(state.control.elapsedSeconds || 0);
   const duration = Math.max(1, Math.round(Number(durationSeconds || source.durationSeconds || 30)));
   const item = {
@@ -6147,6 +6157,16 @@ function appendPlaylistItem(source, durationSeconds) {
   state.control.targetSeconds = item.endSeconds;
   return item;
 }
+function normalizeContinuousQueue(queue) {
+  return (Array.isArray(queue) ? queue : []).map((item, index) => ({ ...item, index }));
+}
+
+function currentPlaylistQueueIndex(queue, elapsedSeconds) {
+  const items = Array.isArray(queue) ? queue : [];
+  const found = items.findIndex((item) => Number(elapsedSeconds || 0) < Number(item.endSeconds || 0));
+  return found < 0 ? Math.max(0, items.length - 1) : found;
+}
+
 
 function playlistItemSummary(item) {
   if (!item) return null;
@@ -6193,24 +6213,27 @@ function playlistStatus() {
 async function removePlaylistItem(body = {}) {
   await loadState();
   if (!state.session || state.session.mode !== "continuous") throw new Error("There is no continuous playlist to edit.");
-  const queue = Array.isArray(state.session.queue) ? state.session.queue : [];
+  const queue = normalizeContinuousQueue(state.session.queue || []);
   const requestedIndex = Number.isFinite(Number(body.index)) ? Math.round(Number(body.index)) : -1;
   const requestedId = safeEpisodeId(body.segmentId) || String(body.segmentId || "").trim();
-  const index = requestedIndex >= 0 ? requestedIndex : queue.findIndex((item) => item.segmentId === requestedId);
+  const index = requestedIndex >= 0 && requestedIndex < queue.length
+    ? requestedIndex
+    : queue.findIndex((item) => item.segmentId === requestedId);
   if (index < 0 || index >= queue.length) throw new Error("Playlist item was not found.");
   const currentIndex = Math.max(0, Math.round(safeNumber(state.control.currentIndex, 0)));
   if (index <= currentIndex) throw new Error("The current or already-played playlist item cannot be removed.");
   const removed = queue[index];
-  let playlistCursor = 0;
+  const removedDuration = Math.max(1, Number(removed.durationSeconds || 1));
   const nextQueue = queue.filter((_, itemIndex) => itemIndex !== index).map((item, itemIndex) => {
-    const startSeconds = playlistCursor;
+    const shift = itemIndex >= index ? removedDuration : 0;
     const durationSeconds = Math.max(1, Number(item.durationSeconds || 1));
-    playlistCursor = startSeconds + durationSeconds;
-    return { ...item, index: itemIndex, startSeconds, endSeconds: playlistCursor };
+    const startSeconds = Number(item.startSeconds || 0) - shift;
+    return { ...item, index: itemIndex, startSeconds, endSeconds: startSeconds + durationSeconds };
   });
   state.session.queue = nextQueue;
   state.session.targetSeconds = Number(nextQueue.at(-1)?.endSeconds || state.control.elapsedSeconds || 0);
   state.control.targetSeconds = state.session.targetSeconds;
+  state.control.currentIndex = currentPlaylistQueueIndex(nextQueue, state.control.elapsedSeconds);
   logEvent("playlist-item-removed", "An upcoming item was removed from the continuous website playlist.", { segmentId: removed.segmentId, index });
   await persistState();
   return { removed: playlistItemSummary(removed), playlist: playlistStatus() };
@@ -6300,7 +6323,11 @@ async function tickSession() {
       }
       await maybeQueueContinuousGeneration();
     }
-    if (state.session.queue.length > 240) state.session.queue.splice(0, state.session.queue.length - 240);
+    if (state.session.queue.length > 240) {
+      const removedCount = state.session.queue.length - 240;
+      state.session.queue = normalizeContinuousQueue(state.session.queue.slice(removedCount));
+      state.control.currentIndex = currentPlaylistQueueIndex(state.session.queue, elapsed);
+    }
   }
   if (elapsed >= state.session.targetSeconds) {
     if (state.session.mode === 'continuous') {
