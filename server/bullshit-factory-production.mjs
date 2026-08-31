@@ -2186,7 +2186,6 @@ function groqWriterResponseSchema(draft = {}) {
       premise: { type: 'string' },
       storyBeats: {
         type: 'array',
-        minItems: STORY_BEAT_IDS.length,
         maxItems: STORY_BEAT_IDS.length,
         items: {
           type: 'object',
