@@ -103,6 +103,14 @@ test('deterministic fallback keeps enough unique dialogue after collision repair
   assert.ok(timed.length >= 6, 'collision repair must survive timeline filtering');
 });
 
+test('deterministic fallback carries a shared topic without repeating its keyword on every line', () => {
+  const draft = buildSegmentDraft({ templateId: 'server-emergency', seed: 90017, durationSeconds: 57, castIds: ['rookboss', 'kernelkline', 'bork'] });
+  const lines = deterministicTopicDialogue({ ...draft, topicResearch: { reservedTopics: ['technology'] } });
+  const technologyMentions = lines.filter((line) => /\btechnology\b/iu.test(line.text)).length;
+  assert.ok(technologyMentions < lines.length, 'the primary topic should not be repeated on every line');
+  assert.ok(lines.some((line) => /\b(?:same|current|that issue|it)\b/iu.test(line.text)), 'dialogue should use contextual references');
+});
+
 test('long deterministic fallback rotates per-speaker turns without repeating lines', () => {
   const draft = buildSegmentDraft({ templateId: 'break-policy', seed: 77123, durationSeconds: 180, castIds: ['sudsmcgee', 'karen', 'bork'] });
   const lines = deterministicTopicDialogue(draft);

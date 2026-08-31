@@ -349,7 +349,7 @@ function defaultState() {
       castResearchPools: {},
       customResearchTopics: [],
       noveltyHydrated: false,
-      noveltySchemaVersion: 3,
+      noveltySchemaVersion: 4,
     },
     musicApprovals: {},
     generatedMusic: [],
@@ -519,7 +519,7 @@ async function hydrateNoveltyMemory() {
     }
   }
   const episodeEntries = await readdir(EPISODE_ROOT, { withFileTypes: true }).catch(() => []);
-  for (const entry of episodeEntries.filter((item) => item.isDirectory()).slice(-5000)) {
+  for (const entry of episodeEntries.filter((item) => item.isDirectory())) {
     const record = await readJson(path.join(EPISODE_ROOT, entry.name, 'episode.json'), null);
     const titleKey = canonicalNoveltyText(record?.title);
     if (titleKey) episodeTitleKeys.add(titleKey);
@@ -528,7 +528,7 @@ async function hydrateNoveltyMemory() {
   continuity.usedSpeechFingerprints = [...speechFingerprints].slice(-1000);
   continuity.recentScriptTexts = [...recentTexts].slice(-240);
   continuity.recentOrangeBroadcasts = [...broadcasts].slice(-24);
-  continuity.usedEpisodeTitleKeys = [...episodeTitleKeys].slice(-5000);
+  continuity.usedEpisodeTitleKeys = [...episodeTitleKeys];
 }
 async function loadState() {
   if (statePromise) return statePromise;
@@ -581,11 +581,11 @@ async function loadState() {
     state.continuity.customResearchTopics = normalizeCustomResearchTopics(state.continuity.customResearchTopics);
     state.continuity.noveltyHydrated = state.continuity.noveltyHydrated === true;
     state.continuity.noveltySchemaVersion = Math.max(0, Math.round(safeNumber(state.continuity.noveltySchemaVersion, 0)));
-    const shouldHydrateNoveltyMemory = !state.continuity.noveltyHydrated || state.continuity.noveltySchemaVersion < 3;
+    const shouldHydrateNoveltyMemory = !state.continuity.noveltyHydrated || state.continuity.noveltySchemaVersion < 4;
     if (shouldHydrateNoveltyMemory) {
       await hydrateNoveltyMemory();
       state.continuity.noveltyHydrated = true;
-      state.continuity.noveltySchemaVersion = 3;
+      state.continuity.noveltySchemaVersion = 4;
       await atomicWrite(STATE_PATH, state);
     }
     if (state.control?.restartRequested) {
@@ -2841,13 +2841,27 @@ function deterministicTopicDialogue(draft) {
     'the witness stand is on fire',
   ];
   const speakerTurns = new Map();
-  const render = (template) => template
-    .replaceAll('{topic}', context.primaryTopic)
-    .replaceAll('{subject}', context.subject)
-    .replaceAll('{action}', context.action)
-    .replaceAll('{consequence}', context.consequence)
-    .replaceAll('{reversal}', context.reversal)
-    .replaceAll('{adult}', context.adultWord);
+  const topicReferenceTokens = ['same', 'current'];
+  const subjectReferenceTokens = ['it', 'that thing', 'the same mess', 'it', 'that mess'];
+  const topicTokenForLine = (index) => index === 0 || index % 6 === 0
+    ? context.primaryTopic
+    : topicReferenceTokens[(seed + index) % topicReferenceTokens.length];
+  const subjectTokenForLine = (index) => index === 0 || index % 4 === 0
+    ? context.subject
+    : subjectReferenceTokens[(seed + index) % subjectReferenceTokens.length];
+  const render = (template, index = 0) => {
+    const topicToken = topicTokenForLine(index);
+    const subjectToken = subjectTokenForLine(index);
+    let text = template
+      .replaceAll('{topic}', topicToken)
+      .replaceAll('{subject}', subjectToken)
+      .replaceAll('{action}', context.action)
+      .replaceAll('{consequence}', context.consequence)
+      .replaceAll('{reversal}', context.reversal)
+      .replaceAll('{adult}', context.adultWord);
+    if (topicToken !== context.primaryTopic) text = text.replace(/^(?:same|current)\b/iu, 'That issue');
+    return text;
+  };
   const adultLanguagePattern = /\b(?:bullshit|shit(?:ty)?|fuck(?:ing|ed|er|ers)?|motherfucker(?:s)?|goddamn|damn|hell|ass(?:hole)?|bastard|crap|pissed|screwed|dickhead)\b/iu;
   const adultLanguageMinimum = requiredAdultLanguageTerms(draft.durationSeconds);
   const adultLanguageStride = Math.max(1, Math.floor(targetLines / Math.max(1, adultLanguageMinimum)));
@@ -2858,6 +2872,7 @@ function deterministicTopicDialogue(draft) {
     'This shit means',
     'Some asshole decided',
   ];
+  const hasContextReference = /\b(?:same|current|that issue|that thing|the same mess|that mess|it|incident|bulletin|memo|mess|problem|thing|plan|rule|system|failure|obstacle|solution|shipment|crisis|storm|package|delivery|fix|alert|outage|paperwork|deadline|wreck|subject)\b/iu;
   const hasTopic = (value) => {
     const normalized = String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ');
     const words = new Set(normalized.split(/\s+/u).filter(Boolean));
@@ -2872,8 +2887,8 @@ function deterministicTopicDialogue(draft) {
       ? normalized
       : firstClauseWords.length >= 4 && firstClauseWords.length <= maxWordsPerLine
         ? firstClause
-        : render(shortFallbacks[speakerId] || fallbackTemplates[index % fallbackTemplates.length]);
-    if (!hasTopic(text)) {
+        : render(shortFallbacks[speakerId] || fallbackTemplates[index % fallbackTemplates.length], index);
+    if (!hasTopic(text) && !hasContextReference.test(text)) {
       text = context.primaryTopic + ': ' + text;
     }
     if (adultLanguageMinimum > 0 && index % adultLanguageStride === 0 && !adultLanguagePattern.test(text)) {
@@ -2892,14 +2907,14 @@ function deterministicTopicDialogue(draft) {
     const variants = templates[speakerId] || fallbackTemplates;
     const templateIndex = speakerTurn < variants.length ? speakerTurn : (speakerTurn - variants.length) % fallbackTemplates.length;
     const baseTemplate = speakerTurn < variants.length ? variants[templateIndex] : fallbackTemplates[templateIndex];
-    let text = compactText(render(baseTemplate), index, speakerId);
+    let text = compactText(render(baseTemplate, index), index, speakerId);
     if (speakerTurn >= variants.length) {
       const continuation = callbackPool[(seed + index) % callbackPool.length];
       text = text.replace(/[.!?]+$/u, '') + ', while ' + continuation + '.';
     }
     const key = text.toLowerCase();
     if (usedLines.has(key)) {
-      text = context.primaryTopic + ' ' + callbackPool[(seed + index) % callbackPool.length] + '.';
+      text = 'The same incident is why ' + callbackPool[(seed + index) % callbackPool.length] + '.';
       if (usedLines.has(text.toLowerCase())) text = text.replace(/[.!?]+$/u, '') + ' ' + String(index + 1) + '.';
     }
     usedLines.add(text.toLowerCase());
@@ -4932,7 +4947,7 @@ function uniqueEpisodeTitle(candidate, generationWho = 'cast') {
   usedTitleBodies.add(episodeTitleBodyKey(next));
   if (state?.continuity) {
     state.continuity.nextEpisodeNumber = number;
-    state.continuity.usedEpisodeTitleKeys = [...usedTitleKeys].slice(-5000);
+    state.continuity.usedEpisodeTitleKeys = [...usedTitleKeys];
   }
   return next;
 }
