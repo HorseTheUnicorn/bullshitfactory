@@ -2655,7 +2655,7 @@ function deterministicTopicContext(draft) {
     primaryKeywords: researchTopicKeywords(primaryTopic),
     seed,
     incidentMarker,
-    subject: pick(subjects, 7) + ' ' + pick(DETERMINISTIC_TOPIC_SUBJECT_DETAILS, 71) + ' (' + incidentMarker + ')',
+    subject: pick(subjects, 7) + ' ' + pick(DETERMINISTIC_TOPIC_SUBJECT_DETAILS, 71),
     action,
     consequence,
     reversal,
@@ -2875,9 +2875,6 @@ function deterministicTopicDialogue(draft) {
         : render(shortFallbacks[speakerId] || fallbackTemplates[index % fallbackTemplates.length]);
     if (!hasTopic(text)) {
       text = context.primaryTopic + ': ' + text;
-    }
-    if (!text.includes(context.incidentMarker)) {
-      text = text.replace(/[.!?]+$/u, '') + ' (' + context.incidentMarker + ').';
     }
     if (adultLanguageMinimum > 0 && index % adultLanguageStride === 0 && !adultLanguagePattern.test(text)) {
       const interjection = adultInterjections[(seed + index) % adultInterjections.length];

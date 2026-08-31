@@ -99,6 +99,7 @@ test('deterministic fallback keeps enough unique dialogue after collision repair
   const timed = timedDialogue(lines, draft.dialogue, draft.castIds, draft.durationSeconds);
   assert.equal(lines.length, 6);
   assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
+  assert.equal(lines.some((line) => /\(case \d+\)/iu.test(line.text)), false);
   assert.ok(timed.length >= 6, 'collision repair must survive timeline filtering');
 });
 
