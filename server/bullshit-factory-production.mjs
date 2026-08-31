@@ -115,6 +115,7 @@ const NEMOTRON_FALLBACK_MODELS = String(process.env.BF_NEMOTRON_FALLBACK_MODELS 
   .split(',').map((model) => model.trim()).filter(Boolean);
 const SCRIPT_WRITER_GENERATION_TIMEOUT_MS = Math.max(15_000, Math.min(180_000, Number(process.env.BF_SCRIPT_WRITER_GENERATION_TIMEOUT_MS || process.env.BF_WRITER_GENERATION_TIMEOUT_MS || 120_000)));
 const SCRIPT_WRITER_MAX_OUTPUT_TOKENS = Math.max(2_000, Math.min(16_384, Number(process.env.BF_SCRIPT_WRITER_MAX_OUTPUT_TOKENS || process.env.BF_WRITER_MAX_OUTPUT_TOKENS || 8_192)));
+const GROQ_FREE_TPM_MAX_OUTPUT_TOKENS = Math.max(900, Math.min(2_000, Number(process.env.BF_GROQ_FREE_MAX_OUTPUT_TOKENS || 1_600)));
 const GEMINI_SCRIPT_MODEL = String(process.env.BF_GEMINI_SCRIPT_MODEL || 'gemini-3.5-flash').trim();
 const GEMINI_SCRIPT_FALLBACK_MODELS = String(process.env.BF_GEMINI_SCRIPT_FALLBACK_MODELS || '')
   .split(',').map((model) => model.trim()).filter(Boolean);
@@ -2547,6 +2548,7 @@ function deterministicTopicContext(draft) {
     draft.category,
   ].filter(Boolean).join('|');
   const seed = stableTextHash(seedText || 'deterministic-cast');
+  const incidentMarker = 'case ' + String(seed);
   const pick = (values, salt = 0) => values[(seed + salt) % values.length];
   const subjects = DETERMINISTIC_TOPIC_SUBJECTS[topicKey] || DETERMINISTIC_TOPIC_SUBJECTS.factory;
   const action = pick([
@@ -2587,7 +2589,8 @@ function deterministicTopicContext(draft) {
     primaryTopic,
     primaryKeywords: researchTopicKeywords(primaryTopic),
     seed,
-    subject: pick(subjects, 7) + ' ' + pick(DETERMINISTIC_TOPIC_SUBJECT_DETAILS, 71),
+    incidentMarker,
+    subject: pick(subjects, 7) + ' ' + pick(DETERMINISTIC_TOPIC_SUBJECT_DETAILS, 71) + ' (' + incidentMarker + ')',
     action,
     consequence,
     reversal,
@@ -2807,6 +2810,9 @@ function deterministicTopicDialogue(draft) {
         : render(shortFallbacks[speakerId] || fallbackTemplates[index % fallbackTemplates.length]);
     if (!hasTopic(text)) {
       text = context.primaryTopic + ': ' + text;
+    }
+    if (!text.includes(context.incidentMarker)) {
+      text = text.replace(/[.!?]+$/u, '') + ' (' + context.incidentMarker + ').';
     }
     if (adultLanguageMinimum > 0 && index % adultLanguageStride === 0 && !adultLanguagePattern.test(text)) {
       const interjection = adultInterjections[(seed + index) % adultInterjections.length];
@@ -3124,6 +3130,13 @@ function writerFailureReason(error) {
   return 'provider_error';
 }
 
+function groqRateLimitDelayMs(error) {
+  const text = String(error?.message || error || '');
+  const match = text.match(/try again in\s+([0-9]+(?:\.[0-9]+)?)\s*s/iu);
+  if (match) return clamp(Math.ceil(Number(match[1]) * 1000 + 500), 2_500, 60_000);
+  return 12_000;
+}
+
 function writerErrorDetail(error) {
   return stripText(String(error?.message || error || 'Unknown writer error.')
     .replace(/(?:bearer|authorization|api[_-]?key)\s*[:=]?\s*\S+/giu, '[credential redacted]'), 360);
@@ -3202,7 +3215,8 @@ async function directWithGroq(draft, resources, musicPlan = null) {
       // Groq free-tier TPM counts the prompt plus the reserved completion.
       // Keep the reservation proportional to the line budget so a long prompt
       // does not consume the entire 8k TPM window before another episode can run.
-      const groqMaxOutputTokens = Math.min(2400, Math.max(1200, dialogueLineBudget(requestDraft.durationSeconds) * 90), SCRIPT_WRITER_MAX_OUTPUT_TOKENS);
+      const groqOutputCap = GROQ_FREE_ONLY ? GROQ_FREE_TPM_MAX_OUTPUT_TOKENS : 2_400;
+      const groqMaxOutputTokens = Math.min(groqOutputCap, Math.max(1_100, dialogueLineBudget(requestDraft.durationSeconds) * 58), SCRIPT_WRITER_MAX_OUTPUT_TOKENS);
       try {
         const payload = await fetchJson(GROQ_ENDPOINT, {
           method: 'POST',
@@ -3227,12 +3241,19 @@ async function directWithGroq(draft, resources, musicPlan = null) {
         return { draft: directed, mode: 'groq-api', warning: null, attemptCount, rewriteCount };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Groq script writer failed.');
+        const rateLimited = /\b429\b|rate limit|too many requests/iu.test(String(lastError.message || lastError));
+        if (rateLimited && attempt < SCRIPT_WRITER_MAX_ATTEMPTS) {
+          await new Promise((resolve) => setTimeout(resolve, groqRateLimitDelayMs(lastError)));
+          continue;
+        }
         if (!writerCandidateRetryable(lastError) || attempt >= SCRIPT_WRITER_MAX_ATTEMPTS) break;
         rewriteCount += 1;
         requestDraft = { ...draft, writerRepairRequest: writerRepairRequest(lastError) };
       }
     }
   }
+  lastError.writerAttemptCount = attemptCount;
+  lastError.writerRewriteCount = rewriteCount;
   throw lastError;
 }
 
@@ -3403,7 +3424,9 @@ async function directWithWriter(draft, resources, musicPlan = null) {
     } catch (error) {
       const reason = writerFailureReason(error);
       const detail = writerErrorDetail(error);
-      attempts.push({ provider: label, model: providerModel(provider), status: 'failed', attemptCount: 1, rewriteCount: 0, reason, detail });
+      const writerAttemptCount = Number(error?.writerAttemptCount) || 1;
+      const writerRewriteCount = Number(error?.writerRewriteCount) || 0;
+      attempts.push({ provider: label, model: providerModel(provider), status: 'failed', attemptCount: writerAttemptCount, rewriteCount: writerRewriteCount, reason, detail });
       warnings.push(label + ' writer failed (' + reason + ': ' + detail + '); trying the next writer route.');
       return null;
     }
