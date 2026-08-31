@@ -845,19 +845,23 @@ export default function BullshitFactoryDashboard() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ action, episodeId }),
       });
-      const result = await response.json() as { episode?: ProductionEpisode; error?: string };
+      const result = await response.json() as { episode?: ProductionEpisode; playlist?: ProductionPlaylist | null; playlistItemsRemoved?: number; error?: string };
       if (!response.ok) throw new Error(result.error || 'Episode action was rejected.');
       if (action === 'delete-episode') {
         setEpisodes((current) => current.filter((episode) => episode.id !== episodeId));
         setSelectedEpisodeId((current) => current === episodeId ? null : current);
+        if (result.playlist) setProductionStatus((current) => current ? { ...current, playlist: result.playlist } : current);
       } else if (result.episode) {
         setEpisodes((current) => current.map((episode) => episode.id === result.episode?.id ? { ...episode, ...result.episode } : episode));
       }
+      const playlistItemsRemoved = Number(result.playlistItemsRemoved || 0);
       setMessage(action === 'publish-episode'
         ? 'Episode published to the approved library. Continuous mode may use it at the next queue refill.'
         : action === 'queue-episode'
           ? 'Published episode added to the continuous queue.'
-          : 'Episode package deleted from the review library.');
+          : playlistItemsRemoved > 0
+            ? `Episode deleted from the published library and removed from ${playlistItemsRemoved} playlist item${playlistItemsRemoved === 1 ? '' : 's'}.`
+            : 'Episode package deleted from the review library.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Episode action failed.');
     } finally {

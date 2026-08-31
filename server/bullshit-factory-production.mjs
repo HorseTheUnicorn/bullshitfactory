@@ -6491,12 +6491,44 @@ async function deleteEpisode(episodeId) {
   const id = safeEpisodeId(episodeId);
   const episode = await readEpisode(id);
   if (!episode) throw new Error('Episode was not found.');
-  if (state.session?.queue?.some((item) => item.segmentId === id)) throw new Error('Stop continuous mode or let this episode leave the queue before deleting it.');
+  let queueRemoval = null;
+  if (state.session?.mode === 'continuous') {
+    const queue = normalizeContinuousQueue(state.session.queue || []);
+    const currentIndex = Math.max(0, Math.round(safeNumber(state.control.currentIndex, 0)));
+    const removed = [];
+    const kept = [];
+    let futureShift = 0;
+    for (const [itemIndex, item] of queue.entries()) {
+      if (item.segmentId !== id) {
+        const durationSeconds = Math.max(1, Number(item.durationSeconds || 1));
+        const originalStartSeconds = Number(item.startSeconds || 0);
+        const startSeconds = itemIndex > currentIndex ? originalStartSeconds - futureShift : originalStartSeconds;
+        kept.push({ ...item, startSeconds, endSeconds: startSeconds + durationSeconds });
+        continue;
+      }
+      if (itemIndex === currentIndex) throw new Error('The currently playing playlist item cannot be deleted.');
+      removed.push({ item, index: itemIndex });
+      if (itemIndex > currentIndex) futureShift += Math.max(1, Number(item.durationSeconds || 1));
+    }
+    queueRemoval = { removed, queue: kept.map((item, index) => ({ ...item, index })) };
+  }
   await rm(path.join(EPISODE_ROOT, id), { recursive: true, force: true });
+  if (queueRemoval) {
+    state.session.queue = queueRemoval.queue;
+    state.session.targetSeconds = Number(queueRemoval.queue.at(-1)?.endSeconds || state.control.elapsedSeconds || 0);
+    state.control.targetSeconds = state.session.targetSeconds;
+    state.control.currentIndex = currentPlaylistQueueIndex(queueRemoval.queue, state.control.elapsedSeconds);
+  }
   state.episodes = state.episodes.filter((record) => record.id !== id);
-  logEvent('episode-deleted', episode.title || id, { episodeId: id });
+  const playlistItemsRemoved = queueRemoval?.removed.length || 0;
+  logEvent('episode-deleted', episode.title || id, { episodeId: id, playlistItemsRemoved });
   await persistState();
-  return { id, deleted: true };
+  return {
+    id,
+    deleted: true,
+    playlistItemsRemoved,
+    playlist: state.session?.mode === 'continuous' ? playlistStatus() : null,
+  };
 }
 
 async function handleMusicAction(body) {
