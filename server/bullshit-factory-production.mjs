@@ -2152,6 +2152,72 @@ const ANIMATION_DIRECTOR_RESPONSE_SCHEMA = Object.freeze({
   required: ['movementNotes', 'stageDirections'],
 });
 
+function groqWriterResponseSchema(draft = {}) {
+  const targetLines = Math.max(2, dialogueLineBudget(draft.durationSeconds));
+  const minimumLines = Math.min(targetLines, Math.max(2, minimumDialogueLines(draft.durationSeconds)));
+  const humanIds = (Array.isArray(draft.castIds) ? draft.castIds : [])
+    .filter((id) => String(id).trim().toLowerCase() !== 'bork')
+    .map((id) => String(id));
+  if (draft.orangeIdiotOnly) {
+    return {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        title: { type: 'string' },
+        orangeIdiotSpeechText: { type: 'string' },
+        storyBeats: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: { id: { type: 'string' }, text: { type: 'string' } },
+            required: ['id', 'text'],
+          },
+        },
+        continuityNote: { type: 'string' },
+      },
+      required: ['title', 'orangeIdiotSpeechText', 'storyBeats', 'continuityNote'],
+    };
+  }
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      premise: { type: 'string' },
+      storyBeats: {
+        type: 'array',
+        minItems: STORY_BEAT_IDS.length,
+        maxItems: STORY_BEAT_IDS.length,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: { id: { type: 'string' }, text: { type: 'string' } },
+          required: ['id', 'text'],
+        },
+      },
+      dialogue: {
+        type: 'array',
+        minItems: minimumLines,
+        maxItems: targetLines,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            speakerId: { type: 'string', enum: humanIds.length ? humanIds : ['rookboss'] },
+            text: { type: 'string' },
+            delivery: { type: 'string' },
+            reaction: { type: 'string' },
+          },
+          required: ['speakerId', 'text', 'delivery', 'reaction'],
+        },
+      },
+      alteredStateMode: { type: 'string' },
+      musicTrackId: { type: 'string' },
+      continuityNote: { type: 'string' },
+    },
+    required: ['premise', 'storyBeats', 'dialogue', 'alteredStateMode', 'musicTrackId', 'continuityNote'],
+  };
+}
 function normalizedStoryBeats(candidateBeats, fallbackBeats = []) {
   const candidate = Array.isArray(candidateBeats) ? candidateBeats : [];
   const fallback = Array.isArray(fallbackBeats) ? fallbackBeats : [];
@@ -3230,6 +3296,14 @@ async function directWithGroq(draft, resources, musicPlan = null) {
             temperature: requestDraft.writerRepairRequest ? 0.94 : 0.82,
             top_p: 0.92,
             max_tokens: groqMaxOutputTokens,
+            response_format: {
+              type: 'json_schema',
+              json_schema: {
+                name: requestDraft.orangeIdiotOnly ? 'orange_idiot_script' : 'bullshit_factory_script',
+                strict: true,
+                schema: groqWriterResponseSchema(requestDraft),
+              },
+            },
           }),
         }, SCRIPT_WRITER_GENERATION_TIMEOUT_MS);
         const candidate = extractJsonCandidate(responseContent(payload));
