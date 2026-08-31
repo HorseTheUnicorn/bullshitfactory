@@ -5,10 +5,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=goblin
-Group=goblin
-EnvironmentFile=-/home/goblin/cave/bullshit-factory/tunnel.env
-Environment=HOME=/home/goblin
+User=bullshit-factory
+Group=bullshit-factory
+EnvironmentFile=-/etc/bullshit-factory/tunnel.env
+Environment=HOME=/var/lib/bullshit-factory
 ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate run
 Restart=always
 RestartSec=8
@@ -17,7 +17,7 @@ KillSignal=SIGTERM
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/home/goblin/cave/bullshit-factory
+ReadWritePaths=/var/lib/bullshit-factory
 
 [Install]
 WantedBy=multi-user.target

@@ -1,23 +1,23 @@
 [Unit]
-Description=Bullshit Factory serialized Stable Audio 3 Small-Music adapter
+Description=Bullshit Factory serialized original-music adapter
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=goblin
-Group=goblin
-WorkingDirectory=/home/goblin/cave/bullshit-factory
-EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+User=bullshit-factory
+Group=bullshit-factory
+WorkingDirectory=/opt/bullshit-factory
+EnvironmentFile=-/etc/bullshit-factory/bullshit-factory.env
 Environment=NODE_ENV=production
-Environment=BULLSHIT_FACTORY_STABLE_AUDIO_ROOT=/home/goblin/cave/music/stable-audio-3/optimized/tflite
-Environment=BULLSHIT_FACTORY_STABLE_AUDIO_CLI=/home/goblin/cave/music/stable-audio-3/optimized/tflite/sa3
+Environment=BULLSHIT_FACTORY_STABLE_AUDIO_ROOT=/opt/bullshit-factory/models/stable-audio-3/optimized/tflite
+Environment=BULLSHIT_FACTORY_STABLE_AUDIO_CLI=/opt/bullshit-factory/models/stable-audio-3/optimized/tflite/sa3
 Environment=BULLSHIT_FACTORY_STABLE_AUDIO_PRECISION=fp32
 Environment=BULLSHIT_FACTORY_STABLE_AUDIO_STEPS=8
 Environment=BULLSHIT_FACTORY_STABLE_AUDIO_THREADS=8
 Environment=BULLSHIT_FACTORY_MUSIC_MAX_QUEUE=8
 Environment=BULLSHIT_FACTORY_MUSIC_GENERATION_TIMEOUT_MS=600000
-Environment=BULLSHIT_FACTORY_MUSIC_CACHE_DIR=/home/goblin/cave/bullshit-factory/runtime/music/stable-audio-cache
+Environment=BULLSHIT_FACTORY_MUSIC_CACHE_DIR=/var/lib/bullshit-factory/runtime/music/stable-audio-cache
 ExecStart=/usr/bin/node server/bullshit-factory-music-adapter.mjs
 Restart=on-failure
 RestartSec=8
@@ -25,7 +25,7 @@ TimeoutStopSec=30
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/home/goblin/cave/bullshit-factory /home/goblin/cave/music/stable-audio-3
+ReadWritePaths=/opt/bullshit-factory /opt/bullshit-factory/models/stable-audio-3 /var/lib/bullshit-factory
 LimitNOFILE=65536
 
 [Install]

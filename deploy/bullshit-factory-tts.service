@@ -5,22 +5,22 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=goblin
-Group=goblin
-WorkingDirectory=/home/goblin/cave/bullshit-factory
-EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+User=bullshit-factory
+Group=bullshit-factory
+WorkingDirectory=/opt/bullshit-factory
+EnvironmentFile=-/etc/bullshit-factory/bullshit-factory.env
 Environment=BF_TTS_HOST=127.0.0.1
 Environment=BF_TTS_PORT=8798
-Environment=BF_TTS_MODEL_PATH=/home/goblin/cave/models/kokoro/kokoro-v1.0.onnx
-Environment=BF_TTS_VOICES_PATH=/home/goblin/cave/models/kokoro/voices-v1.0.bin
-ExecStart=/home/goblin/cave/.venv/bin/python3 /home/goblin/cave/bullshit-factory/server/bullshit-factory-tts.py
+Environment=BF_TTS_MODEL_PATH=/opt/bullshit-factory/models/kokoro/kokoro-v1.0.onnx
+Environment=BF_TTS_VOICES_PATH=/opt/bullshit-factory/models/kokoro/voices-v1.0.bin
+ExecStart=/opt/bullshit-factory/.venv/bin/python3 /opt/bullshit-factory/server/bullshit-factory-tts.py
 Restart=on-failure
 RestartSec=8
 TimeoutStopSec=30
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/home/goblin/cave/bullshit-factory
+ReadWritePaths=/opt/bullshit-factory /var/lib/bullshit-factory
 LimitNOFILE=65536
 
 [Install]

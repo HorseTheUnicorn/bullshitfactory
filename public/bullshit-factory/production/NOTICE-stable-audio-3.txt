@@ -8,4 +8,4 @@ The Stable Audio 3 optimized release also includes Google T5Gemma components. Re
 
 https://ai.google.dev/gemma/terms
 
-The adapter runs locally on .76, serializes generation, and creates instrumental audio for pre-generation and review. This notice does not replace the current third-party license terms.
+The adapter runs locally on the configured deployment host, serializes generation, and creates instrumental audio for pre-generation and review. This notice does not replace the current third-party license terms.

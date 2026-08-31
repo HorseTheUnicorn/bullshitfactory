@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import threading
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
@@ -20,8 +21,9 @@ from kokoro_onnx import Kokoro
 HOST = os.environ.get("BF_TTS_HOST", "127.0.0.1")
 PORT = int(os.environ.get("BF_TTS_PORT", "8798"))
 TOKEN = os.environ.get("BF_TTS_TOKEN", "")
-MODEL_PATH = os.environ.get("BF_TTS_MODEL_PATH", "/home/goblin/cave/models/kokoro/kokoro-v1.0.onnx")
-VOICES_PATH = os.environ.get("BF_TTS_VOICES_PATH", "/home/goblin/cave/models/kokoro/voices-v1.0.bin")
+DEFAULT_MODELS_ROOT = Path(os.environ.get("BF_MODELS_ROOT", str(Path(__file__).resolve().parents[1] / "models")))
+MODEL_PATH = os.environ.get("BF_TTS_MODEL_PATH", str(DEFAULT_MODELS_ROOT / "kokoro" / "kokoro-v1.0.onnx"))
+VOICES_PATH = os.environ.get("BF_TTS_VOICES_PATH", str(DEFAULT_MODELS_ROOT / "kokoro" / "voices-v1.0.bin"))
 CUSTOM_VOICES_PATH = os.environ.get("BF_TTS_CUSTOM_VOICES_PATH", "").strip()
 MAX_TEXT_CHARACTERS = 5000
 MAX_REQUEST_BYTES = 64 * 1024
@@ -282,7 +284,7 @@ class Handler(BaseHTTPRequestHandler):
 
         try:
             # Keep the model serialized so a burst of episode lines cannot
-            # overcommit the shared CPU/GPU memory on .76.
+            # overcommit the shared CPU/GPU memory on the configured host.
             with MODEL_LOCK:
                 model = load_model()
                 if voice == ORANGE_IDIOT_MIX_VOICE:

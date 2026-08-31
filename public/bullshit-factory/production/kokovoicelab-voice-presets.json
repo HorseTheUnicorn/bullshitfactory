@@ -10,7 +10,7 @@
   },
   "output": {
     "format": "npz",
-    "file": "/home/goblin/cave/kokovoicelab/exported_voices/bullshit-factory-custom.bin"
+    "file": "configured by BF_TTS_CUSTOM_VOICES_PATH"
   },
   "presets": [
     {

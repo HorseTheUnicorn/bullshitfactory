@@ -2,107 +2,140 @@
 
 Bullshit Factory is a 16-bit animated sitcom and continuous nonsense network. It turns fresh topic suggestions, character rules, and audience seeds into short original cartoon episodes for review and publication.
 
-The project is designed to run on the production host at `.76` and to keep the Windows machine out of the rendering and generation path.
+This repository is environment-neutral. It can run on a self-managed Linux host or another compatible deployment target; hostnames, filesystem paths, credentials, model locations, and runtime state belong in local configuration and are never part of the public source tree.
 
 ## What it does
 
 - Generates on-demand cast episodes or standalone Orange Idiot broadcasts.
 - Supports Short (1 minute), Standard (3 minutes), and Extended (5 minutes) episode presets; Standard is the default.
-- Uses a 3-second original opening title card before the episode content.
-- Renders a locked 384x216 pixel presentation at 12 frames per second.
+- Uses a 3-second original title card, a locked 384x216 presentation, and 12 frames per second.
 - Places characters, props, reactions, captions, and purposeful motion from a validated timeline.
 - Keeps Bork bark-only; Bork does not receive spoken dialogue.
 - Publishes approved episodes to the public website player and its continuous playlist.
 - Provides a single admin dashboard for generation, review, publishing, playlist editing, audience inputs, research refreshes, and live setup.
 - Keeps normal audience chat display-only. Only explicit suggestion commands become creative seeds, and Discord is not posted to autonomously.
 
-The production catalog contains the floor cast plus the separate Orange Idiot broadcast character. Orange Idiot can be generated alone or selected as one side of continuous random programming.
-
 ## Production pipeline
 
 1. Goblin builds a premise and sitcom beat sheet around one concrete incident.
-2. Research results and audience suggestions are treated as untrusted topic seeds, not copy.
+2. Research results and audience suggestions are untrusted topic seeds, not copy.
 3. The writer creates original dialogue, reactions, and stage intent while checking prior script, speech, and title memory.
-4. Gemini supplies animation direction when configured. The local compositor remains the runtime renderer.
-5. Kokoro produces serialized character audio. The dog uses bark audio only.
-6. Sharp and FFmpeg assemble the title card, scene frames, captions, audio, and final MP4.
+4. Gemini supplies animation direction when configured; the local compositor remains the runtime renderer.
+5. Kokoro produces serialized character audio; the dog uses bark audio only.
+6. Sharp and FFmpeg assemble frames, captions, audio, and the final MP4.
 7. Geometry, grounding, timing, audio, caption, novelty, and media checks run before publication.
-8. Failed segments and quarantined episodes are kept out of the public playlist.
+8. Failed or quarantined output stays out of the public playlist.
 
 Every new episode title is numbered and its title body is checked independently, so changing the episode number cannot create a duplicate title.
 
 ## AI and media roles
 
-- Groq Qwen 3.8 27B is the primary free-tier script writer when its API key and model are configured.
-- Gemini Flash is the writer fallback when configured.
+- Groq Qwen 3.8 27B is the primary free-tier script writer when configured.
+- Gemini Flash is the writer fallback.
 - Goblin local generation and the deterministic writer are emergency fallbacks.
-- Gemini Flash Lite is the primary animation director when configured.
-- The local authored clips, Sharp compositor, and FFmpeg pipeline produce the actual frames and media.
-- PixelLab is an optional asset-authoring tool. It is not an automatic production credit consumer.
-- Kokoro FastAPI is the voice backend on loopback. Character voices share the configured production speed, while Orange Idiot has its own pitch/effect controls.
-- Production music is local and original: the approved opening theme is used for the title card, and original generated music beds are optional per episode. No third-party song is pulled automatically.
+- Gemini Flash Lite is the semantic animation director.
+- Authored clips, the deterministic compositor, Sharp, and FFmpeg produce the media.
+- PixelLab is optional asset authoring and does not consume credits during production.
+- Kokoro FastAPI is the loopback voice backend; Orange Idiot has separate pitch/effect controls.
+- Production music is local and original. The opening theme and optional generated beds are used; third-party songs are not pulled automatically.
+
+## Quick start
+
+### Requirements
+
+- Node.js 22.13 or newer and npm.
+- FFmpeg on the executable path.
+- Python 3.10+ for the optional Kokoro service and its documented dependencies.
+- The authored assets and generated catalog in this repository.
+- Optional local Kokoro/KokovoiceLab files, Stable Audio model files, and a Goblin-compatible endpoint.
+- Optional free-tier Groq and Gemini API credentials.
+
+### Install and configure
+
+__BT____BT____BT__bash
+git clone https://github.com/HorseTheUnicorn/bullshitfactory.git
+cd bullshitfactory
+npm ci
+cp .env.example .env
+chmod 600 .env
+__BT____BT____BT__
+
+Edit .env locally. Keep all API keys, tokens, password hashes, live-stream credentials, and model paths there. Use relative paths for a portable checkout or absolute paths appropriate to the host. .dev.vars.example is a separate edge/dashboard proxy reference; copy it to .dev.vars only for that workflow.
+
+Create the single admin account in a local interactive terminal:
+
+__BT____BT____BT__bash
+npm run admin:setup
+__BT____BT____BT__
+
+The command asks for one username and password, stores only a password hash and generated session secret, and enforces the one-admin design. See ADMIN-SETUP.md for rotation details.
+
+Run checks before starting:
+
+__BT____BT____BT__bash
+npm test
+npm run lint
+npm run build
+npm run assets:verify
+npm run start
+__BT____BT____BT__
+
+The application defaults to loopback-only host and port settings from .env.
 
 ## Public site and dashboard
 
-The public landing page is the viewer-facing Bullshit Factory channel. It contains the episode list, video player, captions, audience chat, and continuous-playback state. The player is intentionally not muted by the application. Browser autoplay policy may still require a viewer to press Play before a browser will start audible playback.
+The public page contains the episode list, video player, captions, audience chat, and continuous-playback state. The application does not mute the player, although browser autoplay policy may require a viewer to press Play before audible playback starts.
 
-The admin dashboard is protected by the single-user admin gate. It can:
-
-- Generate a review episode or publish directly to the website playlist.
-- Choose cast, Orange Idiot, or random cast/Orange programming.
-- Choose where and when generation should be staged, plus Short (1 minute), Standard (3 minutes), or Extended (5 minutes); Standard is the default.
-- Start and stop continuous generation independently from playback.
-- Verify playlist health, inspect the last resolved random mode, and remove queued items.
-- Review writer, animation, audio, quarantine, and publishing logs.
-- Refresh topic pools and add custom topic seeds.
-- Configure YouTube and TikTok live output without granting the Discord bot autonomous posting rights.
+The protected dashboard can generate cast or Orange Idiot episodes, choose short/standard/extended duration, start and stop generation, inspect validation and quarantine logs, refresh topic pools, edit the playlist, and configure optional YouTube/TikTok output. Public viewers do not receive generation, publishing, credential, or host control.
 
 ## Continuous programming
 
-Continuous generation is operator-started and runs until the Stop control is pressed. Each generated cut is validated, published, and queued for the website playlist. The public page refreshes playlist state without a full-page reload and advances through published media.
+Continuous generation is operator-started and runs until Stop is pressed. Validated cuts are published and queued for the website. The public page refreshes playlist state without a full-page reload.
 
-When the continuous WHO choice is RANDOM, the first cut starts from a hashed random choice and subsequent cuts alternate cast and Orange Idiot so both modes are represented instead of getting stuck on one mode. The dashboard reports the last resolved choice. A separate playback-only continuous session can also refill its rolling queue with the same selection rules when a generation request is present.
+When WHO is RANDOM, the first cut uses a hashed random choice and later cuts alternate cast and Orange Idiot so both modes are represented. The dashboard reports the last resolved choice.
 
 ## Repository layout
 
-- `app/`: application routes, public page, admin page, and API proxy routes.
-- `components/`: public landing page, dashboard, and reusable UI.
-- `lib/`: shared catalog, scheduling, location, motion, caption, and validation logic.
-- `server/`: local production controller, music adapter, TTS bridge, and live bridge.
-- `public/bullshit-factory/`: authored characters, scenes, props, fonts, music metadata, and training data.
-- `runtime/`: local production state, generated segments, episode media, audio, and playlist state. Runtime media is not source code.
-- `animation-production/`: animation assets, import records, and production training material.
-- `scripts/`: catalog builders, runtime builders, music tools, and admin setup helpers.
-- `.openai/hosting.json`: Sites project and logical storage bindings.
+- app/: routes, public page, admin page, and API proxy routes.
+- components/: landing page, dashboard, and reusable UI.
+- lib/: catalog, location, motion, caption, and validation logic.
+- server/: production controller, music adapter, TTS bridge, and live bridge.
+- public/bullshit-factory/: authored characters, scenes, props, fonts, music metadata, and training data.
+- runtime/: ignored local state, generated segments, media, audio, and playlist state.
+- animation-production/: animation assets, import records, and training material.
+- scripts/: catalog builders, runtime builders, music tools, and admin helpers.
+- .openai/hosting.json: optional Sites project and logical storage bindings.
 
-## Development and validation
+## Optional systemd deployment
 
-The project uses Node.js 22 or newer.
+The deploy/ directory contains generic unit templates using /opt/bullshit-factory for the checkout, /var/lib/bullshit-factory for writable runtime data, and /etc/bullshit-factory/bullshit-factory.env for secrets. Adjust paths and the service user before installing them.
 
-```bash
-npm install
-npm test
-npm run build
-npm run assets:verify
-npm run lint
-npm run start
-```
+__BT____BT____BT__bash
+sudo useradd --system --home-dir /var/lib/bullshit-factory --create-home --shell /usr/sbin/nologin bullshit-factory
+sudo install -d -o bullshit-factory -g bullshit-factory /etc/bullshit-factory
+sudo install -m 600 .env /etc/bullshit-factory/bullshit-factory.env
+sudo cp deploy/bullshit-factory.service /etc/systemd/system/
+sudo cp deploy/bullshit-factory-production.service /etc/systemd/system/
+sudo cp deploy/bullshit-factory-tts.service /etc/systemd/system/
+sudo cp deploy/bullshit-factory-music.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now bullshit-factory-production.service bullshit-factory.service
+__BT____BT____BT__
 
-The production service uses the same repository with environment-specific values supplied by `.env`. Keep secrets out of Git. Use `.dev.vars.example` as a reference for local or dashboard proxy configuration.
+Enable TTS, music, YouTube, and tunnel units only after their optional dependencies and model paths are configured. Keep loopback services behind an authenticated reverse proxy if they must be reachable remotely.
 
-Useful production endpoints are loopback-only:
+## Security and public sharing
 
-- Dashboard application: port 8792.
-- Serialized production controller: port 8793.
-- Kokoro/TTS integration: configured loopback endpoint.
-- Music adapter: configured loopback endpoint.
+- .env, .dev.vars, tunnel configuration, runtime state, generated media, credentials, private keys, and common secret-file names are ignored by Git.
+- Tracked example files contain blank secret values and portable paths. Never fill examples with real credentials.
+- API keys and live-platform credentials stay server-side; never put them in React code, public JSON, browser bundles, or query strings.
+- Keep the admin password as a hash and use a long random session secret.
+- Audience and Discord inputs are suggestions only. The Discord helper must not post or publish autonomously.
+- If a credential was ever committed in another branch or fork, revoke and rotate it before sharing that history.
+- Review third-party model and asset licenses before redistribution.
 
-## Deployment
+## Validation and operations
 
-The production checkout is on `.76` at `/home/goblin/cave/bullshit-factory`. Systemd keeps the dashboard, production controller, TTS, and original-music adapter available on that host.
+Generation is serialized at the controller. The controller records provider choices, animation direction, timing, audio normalization, validation, quarantine, publication, and playlist events. Do not expose service logs or diagnostics publicly.
 
-The source repository is [HorseTheUnicorn/bullshitfactory](https://github.com/HorseTheUnicorn/bullshitfactory). The hosted Site uses the project metadata in `.openai/hosting.json`; publish only a validated build and never commit runtime secrets.
-
-## Content policy
-
-Research and headline feeds provide suggestions for original nonsense. The writer should not copy source wording, present fictional lines as real quotations, or turn the show into a news explainer. Adult language and topics are part of the show's fictional comedy setting, but production validation still controls what reaches the public playlist.
+See SECURITY.md and public/bullshit-factory/production/NOTICE-stable-audio-3.txt for additional security and licensing notes.

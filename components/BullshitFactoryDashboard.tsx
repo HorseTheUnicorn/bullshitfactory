@@ -1151,7 +1151,7 @@ export default function BullshitFactoryDashboard() {
               <div>
                 <span className="bf-eyebrow">LIVE DESTINATIONS / EXPLICIT CONTROL</span>
                 <h3>Send the published website playlist to YouTube or TikTok.</h3>
-                <p>Save RTMP credentials on .76, then press GO LIVE. Nothing starts automatically, and the Discord helper remains suggestion-only.</p>
+                <p>Save RTMP credentials on the configured server, then press GO LIVE. Nothing starts automatically, and the Discord helper remains suggestion-only.</p>
               </div>
               <div className={'bf-live-status bf-live-status-' + (productionStatus?.live?.mode || 'offline')}>
                 <strong>{(productionStatus?.live?.mode || 'offline').replaceAll('-', ' ').toUpperCase()}</strong>

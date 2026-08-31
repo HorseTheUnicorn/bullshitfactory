@@ -47,16 +47,18 @@ def voice_query(name: str) -> str:
 
 def main() -> None:
     script_root = Path(__file__).resolve().parents[1]
+    models_root = Path(os.environ.get("BF_MODELS_ROOT", str(script_root / "models")))
+    lab_root = Path(os.environ.get("KOKOVOICELAB_ROOT", str(models_root / "kokovoicelab")))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--lab-root",
         type=Path,
-        default=Path(os.environ.get("KOKOVOICELAB_ROOT", "/home/goblin/cave/kokovoicelab")),
+        default=lab_root,
     )
     parser.add_argument(
         "--db-path",
         type=Path,
-        default=Path("/home/goblin/cave/kokovoicelab/voices.db"),
+        default=lab_root / "voices.db",
     )
     parser.add_argument(
         "--presets",
@@ -66,7 +68,7 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("/home/goblin/cave/kokovoicelab/exported_voices/bullshit-factory-custom.bin"),
+        default=lab_root / "exported_voices" / "bullshit-factory-custom.bin",
     )
     args = parser.parse_args()
 

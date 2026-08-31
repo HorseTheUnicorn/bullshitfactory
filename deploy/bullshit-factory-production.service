@@ -5,14 +5,14 @@ Wants=network-online.target bullshit-factory-music.service bullshit-factory-tts.
 
 [Service]
 Type=simple
-User=goblin
-Group=goblin
-WorkingDirectory=/home/goblin/cave/bullshit-factory
-EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+User=bullshit-factory
+Group=bullshit-factory
+WorkingDirectory=/opt/bullshit-factory
+EnvironmentFile=-/etc/bullshit-factory/bullshit-factory.env
 Environment=NODE_ENV=production
-Environment=BF_APP_ROOT=/home/goblin/cave/bullshit-factory
-Environment=BF_PUBLIC_ROOT=/home/goblin/cave/bullshit-factory/public
-Environment=BF_DATA_ROOT=/home/goblin/cave/bullshit-factory/runtime
+Environment=BF_APP_ROOT=/opt/bullshit-factory
+Environment=BF_PUBLIC_ROOT=/opt/bullshit-factory/public
+Environment=BF_DATA_ROOT=/var/lib/bullshit-factory/runtime
 Environment=BF_PRODUCTION_HOST=127.0.0.1
 Environment=BF_PRODUCTION_PORT=8793
 ExecStart=/usr/bin/node server/bullshit-factory-production.mjs
@@ -22,7 +22,7 @@ TimeoutStopSec=30
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/home/goblin/cave/bullshit-factory
+ReadWritePaths=/opt/bullshit-factory /var/lib/bullshit-factory
 LimitNOFILE=65536
 
 [Install]

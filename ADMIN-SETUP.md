@@ -1,29 +1,32 @@
 # Bullshit Factory admin setup
 
-The production dashboard lives at `/admin`. It is intentionally locked until the server has both values below:
+The dashboard lives at /admin and is locked until all three values below are configured:
 
-- `BF_ADMIN_USERNAME`: the one allowed admin username. There is no registration or second-user path.
-- `BF_ADMIN_PASSWORD_HASH`: an scrypt hash, never the plaintext password.
-- `BF_ADMIN_SESSION_SECRET`: a long random secret used to sign the HttpOnly admin cookie.
+- BF_ADMIN_USERNAME: the one allowed admin username.
+- BF_ADMIN_PASSWORD_HASH: an scrypt hash, never the plaintext password.
+- BF_ADMIN_SESSION_SECRET: a long random secret for the HttpOnly admin cookie.
 
-For the safest first-time setup on `.76`, run the interactive command from the deployed application directory. It prompts locally for the username and password, writes only a password hash and generated session secret, and does not echo the password:
+For first-time setup, run the interactive command from the deployed application directory. It prompts locally, does not echo the password, and writes only a hash and generated session secret:
 
 ```bash
-cd /home/goblin/cave/bullshit-factory
+cd /opt/bullshit-factory
 npm run admin:setup
-sudo systemctl restart bullshit-factory.service
 ```
 
-Run it again with `--replace` only when intentionally rotating the one account. The setup command updates only the three `BF_ADMIN_*` entries and preserves the rest of `.env`.
+If the checkout is elsewhere, replace the example path. Set BF_ADMIN_ENV_FILE to write to a separate environment file; otherwise the command updates the local .env. Keep the environment file mode at 600 and restart the dashboard service.
 
-Generate a password hash from a private shell session:
+Use --replace only when intentionally rotating the one account. The command updates only the BF_ADMIN_* entries and preserves the other settings.
 
-```powershell
-$env:BF_ADMIN_PASSWORD = Read-Host 'Bullshit Factory admin password'
+For a one-shot hash, use a private interactive shell:
+
+```bash
+read -rsp 'Bullshit Factory admin password: ' BF_ADMIN_PASSWORD
+printf '\n'
+export BF_ADMIN_PASSWORD
 npm run admin:hash
-Remove-Item Env:BF_ADMIN_PASSWORD
+unset BF_ADMIN_PASSWORD
 ```
 
-Alternatively, put the chosen username, printed hash, and a separately generated random session secret in the server-local `.env`, restart the dashboard service, and open `/admin`. The login form accepts that single username and password only. The authentication cookie is HttpOnly and expires after twelve hours. Production and music API routes reject requests without a valid admin session.
+Store only the printed hash in BF_ADMIN_PASSWORD_HASH. Generate a separate random BF_ADMIN_SESSION_SECRET with a password manager or a command such as openssl rand -hex 32. Never put plaintext passwords, hashes, session secrets, live-platform tokens, or private keys in Git, browser code, deployment manifests, screenshots, or support requests.
 
-Do not commit `.env`, password values, hashes, or session secrets.
+The login form accepts the single configured username and password. The authentication cookie is HttpOnly and expires after twelve hours.

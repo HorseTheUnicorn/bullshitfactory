@@ -1,14 +1,14 @@
 [Unit]
-Description=Bullshit Factory final dashboard
+Description=Bullshit Factory dashboard
 After=network-online.target bullshit-factory-music.service bullshit-factory-production.service bullshit-factory-tts.service
 Wants=network-online.target bullshit-factory-music.service bullshit-factory-production.service bullshit-factory-tts.service
 
 [Service]
 Type=simple
-User=goblin
-Group=goblin
-WorkingDirectory=/home/goblin/cave/bullshit-factory
-EnvironmentFile=-/home/goblin/cave/bullshit-factory/.env
+User=bullshit-factory
+Group=bullshit-factory
+WorkingDirectory=/opt/bullshit-factory
+EnvironmentFile=-/etc/bullshit-factory/bullshit-factory.env
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=8792
@@ -19,7 +19,7 @@ TimeoutStopSec=30
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/home/goblin/cave/bullshit-factory
+ReadWritePaths=/opt/bullshit-factory /var/lib/bullshit-factory
 LimitNOFILE=65536
 
 [Install]

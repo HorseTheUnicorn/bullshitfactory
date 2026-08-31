@@ -4,18 +4,21 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import sharp from '/home/goblin/cave/bullshit-factory/node_modules/sharp/dist/index.mjs';
+import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
-const runnerPid = Number(process.env.PIXELLAB_RUNNER_PID || '136986');
-const project = '/home/goblin/cave/bullshit-factory';
-const live = `${project}/dist/client/bullshit-factory`;
-const publicRoot = `${project}/public/bullshit-factory`;
-const stable = '/home/goblin/cave/.pixellab-preserve-20260828/dist/client/bullshit-factory';
-const sources = [
-  stable,
-  '/home/goblin/cave/.bullshit-factory-pre-ace-tuned-20260828/dist/client/bullshit-factory',
-  '/home/goblin/cave/.bullshit-factory-pre-writing-auth-20260828/dist/client/bullshit-factory',
-];
+const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
+const project = path.resolve(process.env.BF_APP_ROOT || path.join(scriptRoot, '..'));
+const live = path.resolve(process.env.PIXELLAB_LIVE_ROOT || path.join(project, 'dist/client/bullshit-factory'));
+const publicRoot = path.resolve(process.env.PIXELLAB_PUBLIC_ROOT || path.join(project, 'public/bullshit-factory'));
+const runnerPid = Number(process.env.PIXELLAB_RUNNER_PID || '0');
+const stable = path.resolve(process.env.PIXELLAB_STABLE_ROOT || path.join(project, 'dist/client/bullshit-factory'));
+const configuredSources = String(process.env.PIXELLAB_SOURCE_ROOTS || '')
+  .split(path.delimiter)
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .map((value) => path.resolve(value));
+const sources = [stable, ...configuredSources.filter((root) => root !== stable)];
 const folders = ['Bork', 'Dooby', 'Karen', 'KernelKline', 'MagsRust', 'Nico', 'RookBoss', 'Spaulding', 'String', 'SudsMcGee'];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -186,10 +189,14 @@ const catalog = await rebuildCatalog();
 const exhaustManifest = copyNewestManifest('PIXELLAB-EXHAUST-20260828.json');
 const batchManifest = copyNewestManifest('PIXELLAB-BATCH-20260828.json');
 
+const configuredRunnerRoots = String(process.env.PIXELLAB_RUNNER_SCRIPT_ROOTS || '')
+  .split(path.delimiter)
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .map((value) => path.resolve(value));
 const runnerScripts = [
   path.join(project, '.codex-pixellab-exhaust-runner.mjs'),
-  '/home/goblin/cave/.bullshit-factory-pre-ace-tuned-20260828/.codex-pixellab-exhaust-runner.mjs',
-  '/home/goblin/cave/.bullshit-factory-pre-writing-auth-20260828/.codex-pixellab-exhaust-runner.mjs',
+  ...configuredRunnerRoots.map((root) => path.join(root, '.codex-pixellab-exhaust-runner.mjs')),
 ];
 for (const filePath of runnerScripts) try { fs.unlinkSync(filePath); } catch { /* disposable file may not exist */ }
 

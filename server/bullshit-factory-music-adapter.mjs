@@ -7,7 +7,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const MUSIC_PROVIDER = 'stable-audio-3-small-music';
-const DEFAULT_STABLE_AUDIO_ROOT = '/home/goblin/cave/music/stable-audio-3/optimized/tflite';
+const DEFAULT_MODELS_ROOT = path.resolve(process.env.BF_MODELS_ROOT || path.join(process.cwd(), 'models'));
+const DEFAULT_STABLE_AUDIO_ROOT = path.join(DEFAULT_MODELS_ROOT, 'stable-audio-3', 'optimized', 'tflite');
 const DEFAULT_ADAPTER_HOST = '127.0.0.1';
 const DEFAULT_ADAPTER_PORT = 8797;
 const DEFAULT_CACHE_DIRECTORY = path.resolve(process.cwd(), 'audio');
