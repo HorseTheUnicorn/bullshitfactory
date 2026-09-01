@@ -194,6 +194,7 @@ const ORANGE_IDIOT_DEFAULT_TIMEZONE = String(process.env.BF_ORANGE_IDIOT_TIMEZON
 const ORANGE_IDIOT_SCHEDULE_LIMIT = 12;
 const DEFAULT_SEGMENT_SECONDS = Math.max(10, Math.min(300, Number(process.env.BF_SEGMENT_SECONDS || 30)));
 const RENDER_FPS = 12;
+const CAMERA_TRANSITION_MS = 240;
 const EPISODE_FONT_STACK = 'Arial, Helvetica, sans-serif';
 const EPISODE_DISPLAY_FONT_STACK = '"Arcade Gold 16", Arial, Helvetica, sans-serif';
 const VOICE_TARGET_LUFS = -18;
@@ -4493,6 +4494,43 @@ function stabilizeFrameGeometry(geometries, fallback) {
   return { width, height, alphaBounds };
 }
 
+function spriteOffsetForStableEnvelope(frameGeometry, stableGeometry, placement) {
+  const frameBounds = frameGeometry?.alphaBounds;
+  const targetBounds = placement?.visibleBounds || placement?.sprite;
+  const sprite = placement?.sprite;
+  if (!frameBounds || !targetBounds || !sprite) return { x: 0, y: 0 };
+  const sourceWidth = Math.max(1, Number(stableGeometry?.width) || Number(frameGeometry?.width) || 1);
+  const sourceHeight = Math.max(1, Number(stableGeometry?.height) || Number(frameGeometry?.height) || 1);
+  const scaleX = Math.max(0.01, Number(sprite.width) || 1) / sourceWidth;
+  const scaleY = Math.max(0.01, Number(sprite.height) || 1) / sourceHeight;
+  const actualLeft = Number(sprite.left) + Math.round(Number(frameBounds.left) * scaleX);
+  const actualRight = Number(sprite.left) + Math.round((Number(frameBounds.right) + 1) * scaleX) - 1;
+  const actualBottom = Number(sprite.top) + Math.round((Number(frameBounds.bottom) + 1) * scaleY) - 1;
+  const targetCenter = (Number(targetBounds.left) + Number(targetBounds.right)) / 2;
+  const actualCenter = (actualLeft + actualRight) / 2;
+  return {
+    x: clamp(Math.round(targetCenter - actualCenter), -12, 12),
+    y: clamp(Math.round(Number(targetBounds.bottom) - actualBottom), -12, 12),
+  };
+}
+
+function spriteOffsetForFixedBox(frameGeometry, width, height) {
+  const frameBounds = frameGeometry?.alphaBounds;
+  const sourceWidth = Math.max(1, Number(frameGeometry?.width) || 1);
+  const sourceHeight = Math.max(1, Number(frameGeometry?.height) || 1);
+  if (!frameBounds) return { x: 0, y: 0 };
+  const targetWidth = Math.max(1, Number(width) || 1);
+  const targetHeight = Math.max(1, Number(height) || 1);
+  const scaleX = targetWidth / sourceWidth;
+  const scaleY = targetHeight / sourceHeight;
+  const actualCenter = ((Number(frameBounds.left) + Number(frameBounds.right) + 1) / 2) * scaleX;
+  const actualBottom = (Number(frameBounds.bottom) + 1) * scaleY - 1;
+  return {
+    x: clamp(Math.round(targetWidth / 2 - actualCenter), -12, 12),
+    y: clamp(Math.round(targetHeight - 1 - actualBottom), -12, 12),
+  };
+}
+
 async function renderGeometryForCharacter(character, characterId, fallback) {
   const usableClips = (Array.isArray(character?.clips) ? character.clips : [])
     .filter((clip) => clip?.status === 'approved'
@@ -4651,7 +4689,7 @@ function registryFrameForTime(clip, elapsedMs) {
 
 function orangeMotionReplacementActive(resources) {
   const clips = Array.isArray(resources?.motionRegistry?.clips)
-    ? resources.motionRegistry.clips.filter((clip) => clip?.status === 'accepted')
+    ? resources.motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus))
     : [];
   return resources?.motionRegistry?.status === 'active'
     && resources?.motionRegistry?.runtimePolicy === 'replacement'
@@ -4659,8 +4697,7 @@ function orangeMotionReplacementActive(resources) {
     && Number(resources?.motionRegistry?.libraryVersion) === H3_LIBRARY_VERSION
     && resources?.motionRegistry?.assetRoot === H3_ASSET_ROOT
     && resources?.motionRegistry?.legacyRuntimeEligible !== true
-    && clips.length > 0
-    && clips.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
+    && clips.length > 0;
 }
 
 function orangeIdiotPacingState(elapsedMs, stage, speaking = true) {
@@ -4790,13 +4827,19 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
       .toBuffer()
       .catch(() => null);
     if (!sprite) return [];
+    const h3FrameGeometry = (walkingSourceFile || h3TalkFrame)
+      ? await frameGeometry(publicAssetPath(walkingSourceFile || h3TalkFrame)).catch(() => null)
+      : null;
+    const h3SpriteOffset = h3FrameGeometry
+      ? spriteOffsetForFixedBox(h3FrameGeometry, spriteWidth, spriteHeight)
+      : { x: 0, y: 0 };
     // Travel uses the supplied full-body sprite turned toward the travel
     // direction. Stationary delivery stays south-facing for the talking cycle.
     const bottomY = clamp(Math.round(Number(stage.spriteBottomY) || 190), spriteHeight, 216);
     const spriteLeft = clamp(Math.round(pacingState.x - spriteWidth / 2), 0, 384 - spriteWidth);
     const spriteTop = clamp(bottomY - spriteHeight, 0, 216 - spriteHeight);
     const podiumLayer = orangeIdiotPodiumLayer(stage);
-    return [podiumLayer, { input: sprite, left: spriteLeft, top: spriteTop }].filter(Boolean);
+    return [podiumLayer, { input: sprite, left: clamp(spriteLeft + h3SpriteOffset.x, 0, 384 - spriteWidth), top: clamp(spriteTop + h3SpriteOffset.y, 0, 216 - spriteHeight) }].filter(Boolean);
   }
   return [];
 }
@@ -5205,7 +5248,11 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const clipFrameRate = Number(clip?.fps || character.playback?.fps || RENDER_FPS) || RENDER_FPS;
     const elapsedMs = cue ? Math.max(0, timeMs - Number(cue.startMs || 0)) : timeMs;
     const framePosition = Math.floor(elapsedMs / 1000 * clipFrameRate);
-    const frameOffset = clip?.loop === false ? 0 : stableTextHash(`${draft.id}:${actorId}:${cue?.id || 'idle'}`) % (clip?.frames?.length || 1);
+    // Start authored loops at their first frame when a semantic cue begins.
+    // An arbitrary phase at every cue boundary causes otherwise valid clips
+    // to appear to flash between unrelated poses. The uncued idle loop keeps
+    // its deterministic phase so actors do not all breathe in lockstep.
+    const frameOffset = clip?.loop === false || cue ? 0 : stableTextHash(`${draft.id}:${actorId}:idle`) % (clip?.frames?.length || 1);
     const frameSources = (Array.isArray(clip?.frames) ? clip.frames : []).filter((frame) => frame?.file);
     const sourceIndex = frameSources.length
       ? clip.loop === false
@@ -5254,8 +5301,12 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
         }
       }
     }
+    const spriteGeometry = sprite ? await frameGeometry(sourcePath).catch(() => null) : null;
+    const spriteOffset = spriteGeometry
+      ? spriteOffsetForStableEnvelope(spriteGeometry, sourceGeometry, placement)
+      : { x: 0, y: 0 };
     const voiceActive = activeCaptionSpeakerId === actorId || cue?.baseState === 'speaking' || cue?.kind === 'bark-and-react';
-    actorLayers.push({ actorId, placement, depth: placement.depth, shadow: shadowLayer(placement.contactShadow), focus: voiceActive ? voiceFocusLayer(placement, character, isBork) : null, sprite, traveling: actorState.traveling, character, isBork, voiceActive, gestureShift });
+    actorLayers.push({ actorId, placement, depth: placement.depth, shadow: shadowLayer(placement.contactShadow), focus: voiceActive ? voiceFocusLayer(placement, character, isBork) : null, sprite, spriteOffset, traveling: actorState.traveling, character, isBork, voiceActive, gestureShift });
   }
   separateRenderedActorLayers(actorLayers, draft.sceneId);
   for (const actor of actorLayers) {
@@ -5317,8 +5368,69 @@ function cameraViewportForShot(shot, actorLayers) {
   };
 }
 
-async function applyShotCamera(sceneBuffer, shot, actorLayers) {
-  const viewport = cameraViewportForShot(shot, actorLayers);
+function interpolateCameraViewport(from, to, progress) {
+  const start = from || { left: 0, top: 0, width: 384, height: 216, type: 'wide_scene' };
+  const finish = to || { left: 0, top: 0, width: 384, height: 216, type: 'wide_scene' };
+  const amount = clamp(Number(progress) || 0, 0, 1);
+  const width = clamp(Math.round(Number(start.width) + (Number(finish.width) - Number(start.width)) * amount), 1, 384);
+  const height = clamp(Math.round(Number(start.height) + (Number(finish.height) - Number(start.height)) * amount), 1, 216);
+  return {
+    left: clamp(Math.round(Number(start.left) + (Number(finish.left) - Number(start.left)) * amount), 0, 384 - width),
+    top: clamp(Math.round(Number(start.top) + (Number(finish.top) - Number(start.top)) * amount), 0, 216 - height),
+    width,
+    height,
+    type: finish.type || start.type || 'wide_scene',
+    shotId: finish.shotId || start.shotId || null,
+    ...(amount > 0 && amount < 1 ? { transition: true } : {}),
+  };
+}
+
+function nonWideShot(shot) {
+  return shot && !['wide_scene', 'wide_factory'].includes(shot.type);
+}
+
+function cameraViewportForFrame(motion, timeMs, actorLayers) {
+  const shots = Array.isArray(motion?.shots) ? motion.shots : [];
+  const activeShot = activeShotForFrame(motion, timeMs);
+  const full = { left: 0, top: 0, width: 384, height: 216, type: 'wide_scene', shotId: null };
+  const target = cameraViewportForShot(activeShot, actorLayers);
+  const transitionMs = CAMERA_TRANSITION_MS;
+  if (activeShot && nonWideShot(activeShot)) {
+    const activeStart = Number(activeShot.startMs || 0);
+    const elapsed = timeMs - activeStart;
+    if (elapsed >= 0 && elapsed < transitionMs) {
+      // Prefer an overlapping lower-priority shot (for example a prop insert
+      // inside a two-shot), then a shot that ended immediately before this
+      // one, otherwise ease in from the full factory view.
+      const underlying = shots
+        .filter((shot) => shot !== activeShot
+          && nonWideShot(shot)
+          && Number(shot.startMs || 0) <= activeStart
+          && Number(shot.endMs || 0) >= activeStart)
+        .sort((left, right) => Number(right.priority || 0) - Number(left.priority || 0))[0] || null;
+      const preceding = underlying || shots
+        .filter((shot) => shot !== activeShot && nonWideShot(shot) && Number(shot.endMs || 0) <= activeStart)
+        .sort((left, right) => Number(right.endMs || 0) - Number(left.endMs || 0))[0] || null;
+      const from = preceding ? cameraViewportForShot(preceding, actorLayers) : full;
+      return interpolateCameraViewport(from, target, elapsed / transitionMs);
+    }
+  }
+  const outgoing = shots
+    .filter((shot) => shot !== activeShot
+      && nonWideShot(shot)
+      && Number(shot.endMs || 0) <= timeMs
+      && timeMs - Number(shot.endMs || 0) < transitionMs
+      && (!activeShot || Number(shot.endMs || 0) >= Number(activeShot.startMs || 0)))
+    .sort((left, right) => Number(right.endMs || 0) - Number(left.endMs || 0) || Number(right.priority || 0) - Number(left.priority || 0))[0] || null;
+  if (outgoing) {
+    const from = cameraViewportForShot(outgoing, actorLayers);
+    return interpolateCameraViewport(from, target, (timeMs - Number(outgoing.endMs || 0)) / transitionMs);
+  }
+  return target;
+}
+
+async function applyShotCamera(sceneBuffer, motion, timeMs, actorLayers) {
+  const viewport = cameraViewportForFrame(motion, timeMs, actorLayers);
   if (viewport.width === 384 && viewport.height === 216) return sceneBuffer;
   return sharp(sceneBuffer)
     .extract({ left: viewport.left, top: viewport.top, width: viewport.width, height: viewport.height })
@@ -5344,17 +5456,19 @@ async function rehearseRenderGeometry(draft, resources) {
     const actorLayers = await actorLayersForFrame(draft, resources, frameIndex, { loadSprites: false });
     const timeMs = Math.floor(frameIndex / RENDER_FPS * 1000);
     const activeShot = activeShotForFrame(draft.motion, timeMs);
-    const viewport = cameraViewportForShot(activeShot, actorLayers);
+    const viewport = cameraViewportForFrame(draft.motion, timeMs, actorLayers);
     if (activeShot) {
       rehearsedShotTypes.add(activeShot.type);
       rehearsedShotIds.add(activeShot.id);
-      const participantIds = new Set((activeShot.participants || []).filter(Boolean));
-      for (const actor of actorLayers.filter((item) => participantIds.has(item.actorId))) {
-        const bounds = actor.placement.visibleBounds || actor.placement.sprite;
-        const centerX = (Number(bounds.left) + Number(bounds.right)) / 2;
-        const centerY = (Number(bounds.top) + Number(bounds.bottom)) / 2;
-        if ((centerX < viewport.left || centerX >= viewport.left + viewport.width || centerY < viewport.top || centerY >= viewport.top + viewport.height) && !firstCameraViolation) {
-          firstCameraViolation = { frameIndex, actorId: actor.actorId, shotId: activeShot.id, viewport, bounds };
+      if (!viewport.transition) {
+        const participantIds = new Set((activeShot.participants || []).filter(Boolean));
+        for (const actor of actorLayers.filter((item) => participantIds.has(item.actorId))) {
+          const bounds = actor.placement.visibleBounds || actor.placement.sprite;
+          const centerX = (Number(bounds.left) + Number(bounds.right)) / 2;
+          const centerY = (Number(bounds.top) + Number(bounds.bottom)) / 2;
+          if ((centerX < viewport.left || centerX >= viewport.left + viewport.width || centerY < viewport.top || centerY >= viewport.top + viewport.height) && !firstCameraViolation) {
+            firstCameraViolation = { frameIndex, actorId: actor.actorId, shotId: activeShot.id, viewport, bounds };
+          }
         }
       }
     }
@@ -5381,7 +5495,7 @@ async function rehearseRenderGeometry(draft, resources) {
     }
   }
   if (firstCameraViolation) {
-    throw new Error('Render rehearsal camera-safety failed at frame ' + firstCameraViolation.frameIndex + ' for ' + firstCameraViolation.actorId + '.');
+    throw new Error('Render rehearsal camera-safety failed at frame ' + firstCameraViolation.frameIndex + ' for ' + firstCameraViolation.actorId + ': ' + JSON.stringify(firstCameraViolation) + '.');
   }
   if (firstGroundingViolation) {
     throw new Error('Render rehearsal grounding failed at frame ' + firstGroundingViolation.frameIndex + ' for ' + firstGroundingViolation.actorId + '.');
@@ -5429,14 +5543,17 @@ async function composeFrame(draft, resources, frameIndex) {
   }
   layers.push(...scenePropLayers);
   layers.push(...await orangeIdiotLayersForFrame(draft, resources, timeMs));
-  layers.push(...actorLayers.map((actor) => ({ input: actor.sprite, left: Math.max(0, actor.placement.sprite.left), top: Math.max(0, actor.placement.sprite.top) })));
+  layers.push(...actorLayers.map((actor) => ({
+    input: actor.sprite,
+    left: Math.max(0, Math.round(actor.placement.sprite.left + (actor.spriteOffset?.x || 0))),
+    top: Math.max(0, Math.round(actor.placement.sprite.top + (actor.spriteOffset?.y || 0))),
+  })));
   layers.push(...heldPropLayers.map(({ input, left, top }) => ({ input, left, top })));
   // Draw the active speaker nameplate last so it remains readable over the
   // authored sprite without creating an editor-style selection box.
   layers.push(...actorLayers.map((actor) => actor.focus).filter(Boolean));
   const sceneBuffer = await base.composite(layers).png().toBuffer();
-  const activeShot = activeShotForFrame(draft.motion, timeMs);
-  const cameraBuffer = await applyShotCamera(sceneBuffer, activeShot, actorLayers);
+  const cameraBuffer = await applyShotCamera(sceneBuffer, draft.motion, timeMs, actorLayers);
   const caption = captionTextForFrame(draft, resources, timeMs);
   const captionLineMarkup = caption
     ? caption.lines.map((line, index) => `<text x="12" y="${200 + index * 11}" fill="#f1f0d5" stroke="#07110f" stroke-width=".35" paint-order="stroke fill" font-family="${escapeSvgText(EPISODE_FONT_STACK)}" font-size="10" font-weight="700">${escapeSvgText(index === 0 && caption.scrolled ? `...${line}` : line)}</text>`).join('')
@@ -7313,7 +7430,9 @@ async function motionAuthoringStatus(resources) {
   const reviewPending = clips.filter((clip) => clip?.status === 'accepted' && !['accepted', 'approved'].includes(clip?.reviewStatus));
   const requestSeconds = (Array.isArray(ledger.requests) ? ledger.requests : []).reduce((total, request) => total + (Number(request?.durationSeconds) || 0), 0);
   const acceptedSeconds = (Array.isArray(ledger.requests) ? ledger.requests : []).filter((request) => request?.status === 'accepted').reduce((total, request) => total + (Number(request?.durationSeconds) || 0), 0);
-  const runtimeReplacementActive = registry.status === 'active' && registry.runtimePolicy === 'replacement' && reviewPending.length === 0 && resources.catalog.motionLibrary?.replacementActive === true;
+  // Pending auditions are inert. They must not switch production away from
+  // the already-approved H3 library while an operator is listening.
+  const runtimeReplacementActive = registry.status === 'active' && registry.runtimePolicy === 'replacement' && resources.catalog.motionLibrary?.replacementActive === true;
   const byCharacter = Object.fromEntries([...new Set(clips.map((clip) => clip?.characterId).filter(Boolean))].sort().map((characterId) => [characterId, clips.filter((clip) => clip.characterId === characterId && clip.status === 'accepted' && ['accepted', 'approved'].includes(clip.reviewStatus)).length]));
   const orangeReviewedActions = reviewed.filter((clip) => clip.characterId === ORANGE_IDIOT_ID).map((clip) => clip.action).sort();
   const orangePendingActions = reviewPending.filter((clip) => clip.characterId === ORANGE_IDIOT_ID).map((clip) => clip.action).sort();
@@ -8198,6 +8317,10 @@ export {
   renderPixelGameFontText,
   buildSpeechMixFilter,
   characterClip,
+  cameraViewportForFrame,
+  interpolateCameraViewport,
+  spriteOffsetForFixedBox,
+  spriteOffsetForStableEnvelope,
   stabilizeFrameGeometry,
   stripTrailingCaseTag,
   timedDialogue,

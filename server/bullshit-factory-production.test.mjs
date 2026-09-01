@@ -6,8 +6,12 @@ import {
   buildGoblinPrompt,
   buildScriptWriterPrompt,
   buildSegmentDraft,
+  cameraViewportForFrame,
+  interpolateCameraViewport,
   characterClip,
   stabilizeFrameGeometry,
+  spriteOffsetForFixedBox,
+  spriteOffsetForStableEnvelope,
   deterministicTopicDialogue,
   timedDialogue,
   ensureAdultLanguageBeats,
@@ -142,6 +146,41 @@ test('renderer uses a stable union envelope across H3 frame and clip transitions
     { width: 92, height: 92, alphaBounds: { left: 16, top: 3, right: 78, bottom: 87 } },
   ], { width: 64, height: 64, alphaBounds: { left: 8, top: 1, right: 58, bottom: 63 } });
   assert.deepEqual(stable, { width: 92, height: 92, alphaBounds: { left: 10, top: 3, right: 78, bottom: 87 } });
+});
+
+test('renderer roots an older unaligned H3 frame inside the stable envelope', () => {
+  assert.deepEqual(
+    spriteOffsetForStableEnvelope(
+      { width: 92, height: 92, alphaBounds: { left: 15, top: 6, right: 75, bottom: 78 } },
+      { width: 92, height: 92, alphaBounds: { left: 10, top: 4, right: 82, bottom: 87 } },
+      { sprite: { left: 100, top: 20, width: 92, height: 92 }, visibleBounds: { left: 110, top: 24, right: 182, bottom: 107 } },
+    ),
+    { x: 1, y: 9 },
+  );
+  assert.deepEqual(
+    spriteOffsetForFixedBox({ width: 92, height: 92, alphaBounds: { left: 15, top: 6, right: 75, bottom: 78 } }, 64, 64),
+    { x: 0, y: 9 },
+  );
+});
+
+test('renderer eases camera shot changes instead of flashing between crop envelopes', () => {
+  const motion = {
+    shots: [
+      { id: 'wide', type: 'wide_scene', startMs: 0, endMs: 1000, priority: 10 },
+      { id: 'close', type: 'dog_reaction', startMs: 1000, endMs: 2000, participants: ['bork'], priority: 80 },
+    ],
+  };
+  const actors = [{ actorId: 'bork', placement: { visibleBounds: { left: 140, top: 80, right: 190, bottom: 180 } } }];
+  const before = cameraViewportForFrame(motion, 990, actors);
+  const entering = cameraViewportForFrame(motion, 1010, actors);
+  const settled = cameraViewportForFrame(motion, 2000, actors);
+  assert.deepEqual(before, { left: 0, top: 0, width: 384, height: 216, type: 'wide_scene' });
+  assert.ok(entering.width < 384 && entering.width > 264, 'the incoming shot should be partway zoomed, not an immediate crop');
+  assert.ok(entering.height < 216 && entering.height > 149, 'the incoming shot should preserve a smooth scale ramp');
+  assert.deepEqual(settled, { left: 33, top: 56, width: 264, height: 149, type: 'dog_reaction', shotId: 'close' });
+  const midpoint = interpolateCameraViewport(before, settled, 0.5);
+  assert.equal(midpoint.width, 324);
+  assert.equal(midpoint.height, 183);
 });
 
 test('deterministic fallback carries a shared topic without repeating its keyword on every line', () => {

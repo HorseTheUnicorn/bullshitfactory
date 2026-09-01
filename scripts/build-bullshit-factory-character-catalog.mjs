@@ -419,13 +419,14 @@ async function main() {
     runtimePolicy: 'hybrid-pilot',
     clips: [],
   });
-  const acceptedEntries = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted') : [];
+  const acceptedEntries = Array.isArray(motionRegistry.clips)
+    ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus))
+    : [];
   const replacementActive = motionRegistry.status === 'active'
     && motionRegistry.runtimePolicy === 'replacement'
     && motionRegistry.libraryId === H3_LIBRARY_ID
     && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION
-    && acceptedEntries.length > 0
-    && acceptedEntries.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
+    && acceptedEntries.length > 0;
   const acceptedMotionCount = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus)).length : 0;
   const reviewPendingMotionCount = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && !['accepted', 'approved'].includes(clip?.reviewStatus)).length : 0;
   for (const spec of characterSpecs) characters.push(await inspectCharacter(spec, motionRegistry));

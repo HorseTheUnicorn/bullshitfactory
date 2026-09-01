@@ -38,6 +38,7 @@ const borkActions = Object.freeze([
 ]);
 const loopActions = new Set(['idle', 'listen', 'talk', 'walk', 'bark', 'wag_tail', 'sniff']);
 const oneShotActions = new Set(['react', 'turn', 'point', 'present', 'lift', 'inspect', 'type', 'drink', 'hand_off', 'carry', 'push', 'repair', 'look_left', 'look_right', 'enter', 'stop', 'exit', 'shrug', 'jump', 'recoil', 'interact', 'happy_bark', 'startled', 'annoyed', 'growl', 'whine', 'huff']);
+const normalizedRootAnchor = Object.freeze({ x: 46, y: 87 });
 const requiredCoverage = Object.freeze({
   human: ['idle', 'listen', 'talk', 'react', 'walk'],
   bork: ['idle', 'listen', 'bark', 'wag_tail', 'sniff', 'walk'],
@@ -267,6 +268,17 @@ async function loadRegistry() {
   registry.assetRoot = H3_ASSET_ROOT;
   registry.clips = Array.isArray(registry.clips) ? registry.clips : [];
   return registry;
+}
+
+export function h3AssetDirectory(characterId, action, emotion) {
+  return path.join(
+    publicRoot,
+    'bullshit-factory',
+    'motion',
+    'v2',
+    characterId,
+    cleanSlug(action + '-' + emotion),
+  );
 }
 
 function estimatedCost(args) {
@@ -608,6 +620,82 @@ async function normalizePreparedFrame(prepared, cropBounds) {
   return cropped;
 }
 
+async function frameAlphaGeometry(buffer) {
+  const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  let left = info.width;
+  let top = info.height;
+  let right = -1;
+  let bottom = -1;
+  let contactWeight = 0;
+  let contactX = 0;
+  for (let y = 0; y < info.height; y += 1) {
+    for (let x = 0; x < info.width; x += 1) {
+      const offset = (y * info.width + x) * info.channels;
+      const alpha = data[offset + info.channels - 1];
+      if (alpha <= 8) continue;
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  if (right < left || bottom < top) return null;
+  const contactTop = Math.max(top, bottom - 4);
+  for (let y = contactTop; y <= bottom; y += 1) {
+    for (let x = left; x <= right; x += 1) {
+      const offset = (y * info.width + x) * info.channels;
+      const alpha = data[offset + info.channels - 1];
+      if (alpha <= 8) continue;
+      contactWeight += alpha;
+      contactX += x * alpha;
+    }
+  }
+  return {
+    width: info.width,
+    height: info.height,
+    alphaBounds: { left, top, right, bottom },
+    rootAnchor: { x: contactWeight ? contactX / contactWeight : (left + right) / 2, y: bottom },
+  };
+}
+
+async function shiftNormalizedFrame(buffer, deltaX, deltaY) {
+  const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const x = Math.max(-24, Math.min(24, Math.round(deltaX)));
+  const y = Math.max(-24, Math.min(24, Math.round(deltaY)));
+  const shifted = Buffer.alloc(info.width * info.height * info.channels);
+  for (let sourceY = 0; sourceY < info.height; sourceY += 1) {
+    for (let sourceX = 0; sourceX < info.width; sourceX += 1) {
+      const targetX = sourceX + x;
+      const targetY = sourceY + y;
+      if (targetX < 0 || targetY < 0 || targetX >= info.width || targetY >= info.height) continue;
+      const sourceOffset = (sourceY * info.width + sourceX) * info.channels;
+      const targetOffset = (targetY * info.width + targetX) * info.channels;
+      data.copy(shifted, targetOffset, sourceOffset, sourceOffset + info.channels);
+    }
+  }
+  return sharp(shifted, { raw: { width: info.width, height: info.height, channels: info.channels } })
+    .png({ palette: true, colours: 64, dither: 0 })
+    .toBuffer();
+}
+
+async function stabilizeNormalizedFrames(frames, { strict = true } = {}) {
+  const geometries = await Promise.all(frames.map((frame) => frameAlphaGeometry(frame)));
+  if (geometries.some((geometry) => !geometry)) throw new PipelineReject('rejected_motion', 'a normalized H3 frame has no usable character pixels');
+  const shifts = geometries.map((geometry) => ({
+    x: normalizedRootAnchor.x - geometry.rootAnchor.x,
+    y: normalizedRootAnchor.y - geometry.alphaBounds.bottom,
+  }));
+  const maxShift = Math.max(0, ...shifts.flatMap((shift) => [Math.abs(shift.x), Math.abs(shift.y)]));
+  if (strict && maxShift > 18) throw new PipelineReject('rejected_motion', 'H3 subject moves too far from its stable feet/root anchor');
+  const aligned = await Promise.all(frames.map((frame, index) => shiftNormalizedFrame(frame, shifts[index].x, shifts[index].y)));
+  const alignedGeometries = await Promise.all(aligned.map((frame) => frameAlphaGeometry(frame)));
+  const unstable = alignedGeometries.some((geometry) => !geometry
+    || Math.abs(geometry.rootAnchor.x - normalizedRootAnchor.x) > 1.1
+    || Math.abs(geometry.alphaBounds.bottom - normalizedRootAnchor.y) > 1);
+  if (strict && unstable) throw new PipelineReject('rejected_motion', 'H3 normalization could not keep the character rooted across frames');
+  return aligned;
+}
+
 async function normalizeFrame(filePath) {
   const prepared = await prepareFrame(filePath);
   return normalizePreparedFrame(prepared, paddedBounds(prepared.bounds, prepared.width, prepared.height));
@@ -643,10 +731,11 @@ async function normalizedFrames(rawFrames, loop) {
   // silhouette on every frame, which reads as unwanted size pulsing.
   const cropBounds = unionFrameBounds(prepared);
   const selected = await Promise.all(prepared.map((frame) => normalizePreparedFrame(frame, cropBounds)));
-  const hashes = new Set(selected.map((frame) => sha256(frame)));
+  const stabilized = await stabilizeNormalizedFrames(selected);
+  const hashes = new Set(stabilized.map((frame) => sha256(frame)));
   if (hashes.size < 2) throw new PipelineReject('rejected_motion', 'all normalized frames are identical');
-  if (!loop) return selected;
-  return [...selected, ...selected.slice(1, -1).reverse()];
+  if (!loop) return stabilized;
+  return [...stabilized, ...stabilized.slice(1, -1).reverse()];
 }
 
 async function contactSheet(frames, outputPath) {
@@ -674,7 +763,7 @@ async function processVideo(videoPath, workDirectory, args, character, sourceHas
   const rawFrames = await extractFrames(videoPath, workDirectory);
   const loop = loopActions.has(args.action) && !oneShotActions.has(args.action);
   const frames = await normalizedFrames(rawFrames, loop);
-  const outputDirectory = path.join(publicRoot, 'bullshit-factory', 'motion', 'v1', character.id, cleanSlug(args.action + '-' + args.emotion));
+  const outputDirectory = h3AssetDirectory(character.id, args.action, args.emotion);
   const outputPublicRoot = H3_ASSET_ROOT + '/' + character.id + '/' + cleanSlug(args.action + '-' + args.emotion);
   const existing = await stat(outputDirectory).catch(() => null);
   if (existing && !args.replace) throw new PipelineReject('duplicate-slot', 'an accepted output directory already exists; pass --replace to supersede it');
@@ -736,7 +825,9 @@ async function processVideo(videoPath, workDirectory, args, character, sourceHas
         chromaIsolated: true,
         fixed92x92Frames: true,
         sharedBoundsNormalization: true,
-        normalization: 'shared-union-bounds-v2',
+        rootAligned: true,
+        rootAlignment: 'fixed-feet-anchor-v3',
+        normalization: 'shared-union-bounds-and-root-anchor-v3',
         maxColors: 64,
         motionDistinct: finalFrameHashes.size,
         noAudioRuntime: true,
@@ -764,15 +855,19 @@ function updateRegistry(registry, entry, replace) {
     && clip.action === entry.action
     && clip.emotion === entry.emotion
     && clip.direction === entry.direction;
+  const reviewed = (clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus);
   const prior = registry.clips.filter(sameSlot);
   if (prior.length && !replace) throw new PipelineReject('duplicate-slot', 'a motion entry already exists for this character/action/emotion slot; pass --replace explicitly');
   const supersededAt = nowIso();
-  registry.clips = registry.clips.map((clip) => sameSlot(clip) ? { ...clip, status: 'superseded', supersededAt } : clip);
+  // A generated candidate is not an approval. Keep the currently reviewed
+  // slot live until the operator explicitly accepts this candidate; only
+  // older unreviewed candidates are superseded during regeneration.
+  registry.clips = registry.clips.map((clip) => sameSlot(clip) && !reviewed(clip) ? { ...clip, status: 'superseded', supersededAt } : clip);
   registry.clips.push(entry);
-  registry.status = 'pilot';
+  registry.status = registry.clips.some(reviewed) ? 'active' : 'pilot';
   registry.runtimePolicy = registry.runtimePolicy === 'replacement' ? 'replacement' : 'hybrid-pilot';
   registry.lastUpdatedAt = nowIso();
-  return prior.map((clip) => clip.id);
+  return prior.filter((clip) => !reviewed(clip)).map((clip) => clip.id);
 }
 
 function requiredMissing(registry) {
@@ -805,6 +900,14 @@ async function acceptRegistryEntry(entryId, reviewNote = '') {
     console.log(JSON.stringify({ status: 'already-reviewed', entryId, registryPath }, null, 2));
     return entry;
   }
+  const sameSlot = (clip) => clip.characterId === entry.characterId
+    && clip.action === entry.action
+    && clip.emotion === entry.emotion
+    && clip.direction === entry.direction;
+  const supersededAt = nowIso();
+  registry.clips = registry.clips.map((clip) => sameSlot(clip) && clip.id !== entry.id
+    ? { ...clip, status: 'superseded', supersededAt }
+    : clip);
   entry.reviewStatus = 'accepted';
   entry.reviewedAt = nowIso();
   entry.reviewer = 'operator';
@@ -1056,12 +1159,15 @@ export {
   contactSheet,
   controlledPrompt as buildPrompt,
   estimatedCost,
+  frameAlphaGeometry,
   normalizeArgs,
   normalizeLedger,
   normalizeFrame,
   normalizedFrames,
+  stabilizeNormalizedFrames,
   parseArgs,
   requiredCoverage,
   requiredMissing,
   acceptRegistryEntry,
+  updateRegistry,
 };

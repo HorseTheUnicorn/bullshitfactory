@@ -15,6 +15,7 @@
     "assets:generate-bullshit-brand": "node scripts/generate-bullshit-factory-brand-assets.mjs",
     "animation:audit": "node scripts/animation-audit.mjs",
     "animation:h3": "node scripts/h3-author-motion.mjs",
+    "animation:resolution-compare": "node scripts/h3-resolution-compare.mjs",
     "animation:preview": "node scripts/animation-audit.mjs --preview",
     "animation:accept": "node scripts/animation-accept.mjs",
     "animation:budget": "node scripts/animation-audit.mjs --budget",

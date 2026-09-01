@@ -133,7 +133,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -465,7 +467,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -798,7 +802,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -964,7 +970,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1130,7 +1138,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1296,7 +1306,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1472,7 +1484,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1638,7 +1652,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1804,7 +1820,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -1970,7 +1988,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2146,7 +2166,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2312,7 +2334,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2478,7 +2502,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2644,7 +2670,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2810,7 +2838,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -2986,7 +3016,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3152,7 +3184,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3318,7 +3352,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3484,7 +3520,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3650,7 +3688,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3826,7 +3866,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -3992,7 +4034,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4158,7 +4202,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4324,7 +4370,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4490,7 +4538,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4666,7 +4716,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4832,7 +4884,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -4998,7 +5052,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -5164,7 +5220,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -5330,7 +5388,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -5506,7 +5566,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -5672,7 +5734,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -5838,7 +5902,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6004,7 +6070,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6170,7 +6238,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6346,7 +6416,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6512,7 +6584,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6678,7 +6752,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -6844,7 +6920,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7010,7 +7088,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7186,7 +7266,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7352,7 +7434,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7518,7 +7602,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7684,7 +7770,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -7850,7 +7938,9 @@
         "motionDistinct": 24,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8026,7 +8116,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8192,7 +8284,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8358,7 +8452,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8524,7 +8620,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8690,7 +8788,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -8856,7 +8956,9 @@
         "motionDistinct": 12,
         "noAudioRuntime": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2"
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -9372,10 +9474,12 @@
         "chromaIsolated": true,
         "fixed92x92Frames": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2",
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
         "maxColors": 64,
         "motionDistinct": 12,
-        "noAudioRuntime": true
+        "noAudioRuntime": true,
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -9546,10 +9650,12 @@
         "chromaIsolated": true,
         "fixed92x92Frames": true,
         "sharedBoundsNormalization": true,
-        "normalization": "shared-union-bounds-v2",
+        "normalization": "shared-union-bounds-and-root-anchor-v3",
         "maxColors": 64,
         "motionDistinct": 12,
-        "noAudioRuntime": true
+        "noAudioRuntime": true,
+        "rootAligned": true,
+        "rootAlignment": "fixed-feet-anchor-v3"
       },
       "source": {
         "provider": "fal",
@@ -9681,6 +9787,6 @@
       "reviewNote": "Corrected supplied Orange artwork reviewed: direct camera gaze and south-facing identity preserved, walk poses show distinct feet and weight changes for left-to-right pacing."
     }
   ],
-  "lastUpdatedAt": "2026-09-01T04:33:42.030Z",
+  "lastUpdatedAt": "2026-09-01T16:12:47.978Z",
   "activatedAt": "2026-09-01T04:33:42.134Z"
 }

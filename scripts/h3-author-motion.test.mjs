@@ -1,15 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import sharp from 'sharp';
 
 import {
   actionDescriptions,
   buildPrompt,
   estimatedCost,
+  frameAlphaGeometry,
+  h3AssetDirectory,
   normalizeArgs,
   normalizeLedger,
   parseArgs,
   requiredCoverage,
   requiredMissing,
+  stabilizeNormalizedFrames,
+  updateRegistry,
 } from './h3-author-motion.mjs';
 
 test('parses and normalizes the five-second H3 authoring contract', () => {
@@ -58,6 +63,40 @@ test('rejects non-contract duration and retry counts before a request', () => {
 test('prices H3 requests from the published resolution rates', () => {
   assert.equal(estimatedCost({ duration: 5, resolution: '480P' }), 0.25);
   assert.equal(estimatedCost({ duration: 5, resolution: '768P' }), 0.4);
+});
+
+test('writes newly authored clips into the active H3_LIBRARY_V2 asset root', () => {
+  const output = h3AssetDirectory('rookboss', 'talk', 'neutral');
+  assert.match(output, /motion[\\/]v2[\\/]rookboss[\\/]talk-neutral$/u);
+  assert.doesNotMatch(output, /motion[\\/]v1[\\/]/u);
+});
+
+test('roots normalized H3 frames to one stable feet anchor', async () => {
+  const makeFrame = async (left, top, right, bottom) => {
+    const raw = Buffer.alloc(92 * 92 * 4);
+    for (let y = top; y <= bottom; y += 1) {
+      for (let x = left; x <= right; x += 1) raw[(y * 92 + x) * 4 + 3] = 255;
+    }
+    return sharp(raw, { raw: { width: 92, height: 92, channels: 4 } }).png().toBuffer();
+  };
+  const aligned = await stabilizeNormalizedFrames([
+    await makeFrame(25, 38, 47, 78),
+    await makeFrame(29, 32, 51, 87),
+  ]);
+  const geometries = await Promise.all(aligned.map((frame) => frameAlphaGeometry(frame)));
+  assert.ok(geometries.every((geometry) => geometry.alphaBounds.bottom === 87));
+  assert.ok(geometries.every((geometry) => Math.abs(geometry.rootAnchor.x - 46) <= 1));
+});
+
+test('keeps an approved slot live while a replacement candidate awaits review', () => {
+  const live = { id: 'live-talk', characterId: 'rookboss', action: 'talk', emotion: 'neutral', direction: 'south', status: 'accepted', reviewStatus: 'accepted' };
+  const candidate = { id: 'candidate-talk', characterId: 'rookboss', action: 'talk', emotion: 'neutral', direction: 'south', status: 'accepted', reviewStatus: 'human-review-required' };
+  const registry = { status: 'active', runtimePolicy: 'replacement', clips: [live] };
+
+  assert.deepEqual(updateRegistry(registry, candidate, true), []);
+  assert.equal(registry.status, 'active');
+  assert.equal(registry.clips.find((clip) => clip.id === live.id).status, 'accepted');
+  assert.equal(registry.clips.find((clip) => clip.id === candidate.id).reviewStatus, 'human-review-required');
 });
 
 test('reconciles persisted H3 duration totals from request records', () => {

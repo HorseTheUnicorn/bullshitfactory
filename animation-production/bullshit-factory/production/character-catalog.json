@@ -221,7 +221,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -377,7 +379,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -533,7 +537,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -689,7 +695,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -855,7 +863,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -1737,7 +1747,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -1893,7 +1905,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -2049,7 +2063,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -2205,7 +2221,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -2371,7 +2389,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -3253,7 +3273,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -3409,7 +3431,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -3565,7 +3589,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -3721,7 +3747,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -3887,7 +3915,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -4769,7 +4799,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -4925,7 +4957,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -5081,7 +5115,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -5237,7 +5273,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -5403,7 +5441,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -6285,7 +6325,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -6441,7 +6483,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -6597,7 +6641,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -6753,7 +6799,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -6919,7 +6967,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -7801,7 +7851,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -7957,7 +8009,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -8113,7 +8167,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -8269,7 +8325,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -8435,7 +8493,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -9317,7 +9377,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -9473,7 +9535,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -9629,7 +9693,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -9785,7 +9851,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -9951,7 +10019,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -10833,7 +10903,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -10989,7 +11061,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -11145,7 +11219,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -11301,7 +11377,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -11467,7 +11545,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -12349,7 +12429,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -12505,7 +12587,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -12661,7 +12745,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -12817,7 +12903,9 @@
             "motionDistinct": 24,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -12983,7 +13071,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -13865,7 +13955,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -14021,7 +14113,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -14177,7 +14271,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -14333,7 +14429,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -14489,7 +14587,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
@@ -14645,7 +14745,9 @@
             "motionDistinct": 12,
             "noAudioRuntime": true,
             "sharedBoundsNormalization": true,
-            "normalization": "shared-union-bounds-v2"
+            "normalization": "shared-union-bounds-and-root-anchor-v3",
+            "rootAligned": true,
+            "rootAlignment": "fixed-feet-anchor-v3"
           },
           "anchors": {
             "feetAnchor": {
