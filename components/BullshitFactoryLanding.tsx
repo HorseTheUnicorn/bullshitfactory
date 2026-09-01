@@ -93,6 +93,7 @@ export default function BullshitFactoryLanding() {
   const [chatBusy, setChatBusy] = useState(false);
   const [chatClientId, setChatClientId] = useState('');
   const playerRef = useRef<HTMLVideoElement | null>(null);
+  const advancedEpisodeRef = useRef('');
 
   useEffect(() => {
     let cancelled = false;
@@ -239,7 +240,11 @@ export default function BullshitFactoryLanding() {
   }, [continuousPlaybackActive, playlist?.current?.segmentId, playContinuousPlayer, selectedEpisodeId]);
 
   function advanceContinuousPlayer() {
-    if (!continuousPlaybackActive) return;
+    const currentEpisodeId = selectedEpisodeId;
+    if (!continuousPlaybackActive || !currentEpisodeId || advancedEpisodeRef.current === currentEpisodeId) return;
+    // `timeupdate` and `ended` can both fire around the same media boundary.
+    // Guard the transition so one episode cannot be skipped by duplicate events.
+    advancedEpisodeRef.current = currentEpisodeId;
     const nextId = playlist?.next?.segmentId || '';
     if (nextId && episodes.some((episode) => episode.id === nextId)) {
       setSelectedId(nextId);
@@ -248,6 +253,15 @@ export default function BullshitFactoryLanding() {
       setSelectedId(episodes[(currentIndex + 1 + episodes.length) % episodes.length]?.id || episodes[0].id);
     }
     setPlayerPlaying(false);
+  }
+
+  function handlePlayerProgress() {
+    const player = playerRef.current;
+    if (!player || !continuousPlaybackActive) return;
+    const duration = Number(player.duration);
+    if (player.ended || (Number.isFinite(duration) && duration > 0 && player.currentTime >= duration - 0.05)) {
+      advanceContinuousPlayer();
+    }
   }
 
   return (
@@ -278,6 +292,7 @@ export default function BullshitFactoryLanding() {
                 controls
                 volume={1}
                 onEnded={advanceContinuousPlayer}
+                onTimeUpdate={handlePlayerProgress}
                 onError={() => {
                   setPlayerPlaying(false);
                   setPlayerNeedsSound(false);
