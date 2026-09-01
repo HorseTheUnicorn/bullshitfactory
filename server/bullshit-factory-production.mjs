@@ -47,6 +47,7 @@ import {
   DEFAULT_AUDITION_SCRIPT,
   LEGACY_FALLBACK_BY_CHARACTER,
   LEGACY_VOICE_BY_CHARACTER,
+  VOICE_AUDITION_DURATION_BOUNDS,
   VOICE_PROFILE_SCHEMA_VERSION,
   createVoiceCandidates,
   findVoiceCollisions,
@@ -4010,7 +4011,10 @@ async function generateVoiceCandidatesForCharacter(characterId, feedback = '') {
         voiceProfile: candidate,
       });
       latency.push(measurement.latencyMs || 0);
-      candidate.validation = await validateVoiceTake(outputPath, measurement);
+      candidate.validation = await validateVoiceTake(outputPath, measurement, {
+        minimumDuration: VOICE_AUDITION_DURATION_BOUNDS.min,
+        maximumDuration: VOICE_AUDITION_DURATION_BOUNDS.max,
+      });
       candidate.validation.fallbackUsed = measurement.fallbackUsed === true;
       candidate.validation.voiceId = measurement.voiceId;
       if (candidate.validation.status === 'pass') validCount += 1;

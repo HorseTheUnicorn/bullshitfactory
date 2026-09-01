@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   DEFAULT_AUDITION_SCRIPT,
   VOICE_CANDIDATE_LABELS,
+  VOICE_AUDITION_DURATION_BOUNDS,
   VOICE_FORMANT_BOUNDS,
   VOICE_PITCH_BOUNDS,
   VOICE_SPEED_BOUNDS,
@@ -36,7 +37,8 @@ test('voice candidates are three differentiated, bible-directed Kokoro recipes',
   assert.match(candidates[0].embedding.source, /blended at inference/u);
   assert.ok(candidates.every((candidate) => candidate.direction.includes('Rook Boss')));
   assert.ok(voiceRecipeDistance(candidates[0], candidates[1]) > 0.1);
-  assert.ok(DEFAULT_AUDITION_SCRIPT.split(/\s+/u).length >= 35);
+  assert.ok(DEFAULT_AUDITION_SCRIPT.split(/\s+/u).length >= 75);
+  assert.deepEqual(VOICE_AUDITION_DURATION_BOUNDS, { min: 12, max: 30, targetMin: 15, targetMax: 25 });
   assert.ok(DEFAULT_AUDITION_SCRIPT.includes('hell') && DEFAULT_AUDITION_SCRIPT.includes('?'));
 
   const directed = createVoiceCandidates(ROOK_BIBLE, { feedback: 'older, rougher, less nasal' });
@@ -44,6 +46,17 @@ test('voice candidates are three differentiated, bible-directed Kokoro recipes',
   assert.ok(directed[0].recipe.effects.rasp > candidates[0].recipe.effects.rasp);
   assert.ok(directed[0].recipe.effects.nasality < candidates[0].recipe.effects.nasality);
   assert.deepEqual(createVoiceCandidates({ id: 'bork', isDog: true }), []);
+});
+
+test('Dooby and Spaulding use original drawl briefs instead of actor-specific cloning', () => {
+  const dooby = createVoiceCandidates({ id: 'dooby', name: 'Dooby' });
+  const spaulding = createVoiceCandidates({ id: 'spaulding', name: 'Spaulding' });
+  assert.match(dooby[0].direction, /relaxed low-mid drawl/u);
+  assert.match(dooby[2].direction, /soft barroom rasp/u);
+  assert.match(spaulding[0].direction, /Western-style drawl/u);
+  assert.match(spaulding[2].direction, /lightly gravelled/u);
+  assert.ok(dooby.every((candidate) => Math.abs(candidate.recipe.speed - 1) <= 0.14));
+  assert.ok(spaulding.every((candidate) => Math.abs(candidate.recipe.speed - 1) <= 0.14));
 });
 
 test('recipe bounds and DSP profile stay inside production-safe limits', () => {
@@ -66,7 +79,9 @@ test('recipe bounds and DSP profile stay inside production-safe limits', () => {
   assert.match(filter, /acrusher=/u);
   assert.match(filter, /chorus=/u);
   assert.match(filter, /acompressor=/u);
+  assert.match(filter, /makeup=1(?:\.0+)?[,]/u);
   assert.match(filter, /loudnorm=/u);
+  assert.match(filter, /alimiter=limit=0\.95:level=0/u);
 });
 
 test('character resolution is legacy-compatible until an approved profile exists', () => {

@@ -9,7 +9,9 @@ processing. Candidate generation never changes the live cast.
 ## Operator workflow
 
 1. Open the authenticated `/admin` page and scroll to **Voice Management / Kokoro**.
-2. Choose **Generate 3 New Candidates** for a character. Optional directions are
+2. Choose **Generate 3 New Candidates** for a character. The shared audition
+   passage targets roughly 15–25 seconds; modest character cadence differences
+   are allowed within the 12–30 second validation envelope. Optional directions are
    plain language, for example `older`, `rougher`, `more nervous`, or `less nasal`.
 3. Play A, B, and C using the shared audition passage.
 4. Click **Select** on the preferred passing candidate. This is the only action
@@ -18,8 +20,13 @@ processing. Candidate generation never changes the live cast.
    together and review any reported recipe collisions.
 
 Bork remains bark-only and is intentionally absent from Kokoro candidate
-generation. Orange Idiot continues through its existing dedicated pitch/speed
-path.
+generation. Orange Idiot continues through its dedicated local Kokoro vector
+blend with the existing pitch/speed treatment and compatibility fallback.
+
+If an operator asks for a voice reminiscent of a real performer or fictional
+film character, the designer records only original performance traits—such as
+drawl, resonance, pace, rasp, or deadpan timing. It does not clone or imitate
+the identifiable voice of a real person.
 
 ## Persistent assets
 
