@@ -3,6 +3,7 @@
   "showId": "bullshit-factory",
   "status": "active",
   "runtimePolicy": "replacement",
+  "legacyRuntimeEligible": false,
   "libraryId": "H3_LIBRARY_V2",
   "libraryVersion": 2,
   "assetRoot": "/bullshit-factory/motion/v2",

@@ -55,7 +55,7 @@ function auditMotion(registry, ledger = {}, options = {}) {
   if (registry?.assetRoot !== H3_ASSET_ROOT) errors.push(`assetRoot must be ${H3_ASSET_ROOT}`);
   if (registry?.status !== 'active') errors.push('motion registry must be active');
   if (registry?.runtimePolicy !== 'replacement') errors.push('motion registry must use replacement policy');
-  if (registry?.legacyRuntimeEligible === true) errors.push('legacy motion must not be runtime eligible');
+  if (registry?.legacyRuntimeEligible !== false) errors.push('legacy motion eligibility must be explicitly disabled');
   if (!active.length) errors.push('motion registry has no reviewed accepted clips');
 
   for (const clip of active) {
