@@ -1,10 +1,32 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const sampleRate = 22_050;
 const channels = 2;
 const bitsPerSample = 16;
 const outputRoot = path.resolve('public/bullshit-factory/music');
+const stableThemeFile = path.join(outputRoot, 'themes', 'bf-theme-main.mp3');
+
+const STABLE_THEME = {
+  id: 'bf-theme-main',
+  title: 'Factory Theme: Nobody Asked',
+  category: 'themes',
+  mood: 'gritty garage blues rock sitcom opening theme',
+  duration: 30,
+  energy: 8,
+  loopable: false,
+  approved: true,
+  autoApproved: true,
+  rightsHolder: 'Bullshit Factory',
+  source: 'original local Stable Audio 3 TFLite generation',
+  provider: 'stable-audio-3-small-music',
+  generationPrompt: 'Original instrumental opening theme for a fictional adult animated factory sitcom. A memorable gritty garage-blues rock band groove with electric guitar hook, bass, live drum kit, and a slightly crooked bar-band feel. Energetic but leaves room for dialogue, strong musical phrase, clear ending, suitable for a short opening bumper. No vocals, no speech, no spoken words, no beeps, no clock sounds, no timer tones, no alarm, no metronome, no chimes, no synthetic notification sounds, no generic ambient bed. Instrumental only; no vocals, no speech, no spoken words.',
+  generatorJobId: '9d281356-e232-40f7-99f7-42714bf4bff7',
+  cacheKey: '5340a423d1ffa451d15df3f1ed65bf794e9b15cc709e02c6458f2452dd69e45a',
+  generatedAt: '2026-09-01T22:39:00.228Z',
+  file: '/bullshit-factory/music/themes/bf-theme-main.mp3',
+  permittedUse: ['livestream', 'VOD', 'commercial'],
+};
 
 const TRACKS = [
   { id: 'bf-theme-main', category: 'themes', title: 'Factory Theme: Nobody Asked', seconds: 32, bpm: 124, bass: 58, lead: 196, seed: 0x1001, energy: 8, loopable: true },
@@ -81,8 +103,16 @@ function writeWavBuffer(track) {
 }
 
 await mkdir(outputRoot, { recursive: true });
-const library = [];
+try {
+  const details = await stat(stableThemeFile);
+  if (!details.isFile() || details.size < 1000) throw new Error('not a usable file');
+} catch {
+  throw new Error('Approved Stable Audio 3 opening theme is missing at ' + stableThemeFile + '. Restore the approved MP3 before rebuilding the music library.');
+}
+
+const library = [STABLE_THEME];
 for (const track of TRACKS) {
+  if (track.id === 'bf-theme-main') continue;
   const categoryRoot = path.join(outputRoot, track.category);
   await mkdir(categoryRoot, { recursive: true });
   const file = path.join(categoryRoot, `${track.id}.wav`);
