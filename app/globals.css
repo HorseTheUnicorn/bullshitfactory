@@ -2799,8 +2799,9 @@ h1 em, h2 em, .eyebrow, .note-index, .scene-cue span, .dossier-relationships > s
 .bf-public-footer { align-items: center; border-top: 2px solid var(--public-line); color: var(--public-muted); display: flex; font-size: 7px; gap: 14px; justify-content: space-between; letter-spacing: .07em; min-height: 28px; position: relative; z-index: 1; }
 
 @media (max-width: 900px) {
-  .bf-public-page { min-height: 100dvh; overflow: auto; }
+  .bf-public-page { display: block; min-height: 100dvh; overflow: auto; }
   .bf-public-layout { grid-template-columns: 1fr; }
+  .bf-public-player { flex: 0 0 auto; min-height: auto; }
   .bf-public-side { max-height: none; }
   .bf-public-episode-scroll { max-height: 260px; }
   .bf-public-cast-rail { grid-template-columns: repeat(5, minmax(0, 1fr)); }
