@@ -32,6 +32,8 @@ test('voice candidates are three differentiated, bible-directed Kokoro recipes',
   assert.deepEqual(candidates.map((candidate) => candidate.label), VOICE_CANDIDATE_LABELS);
   assert.equal(new Set(candidates.map((candidate) => JSON.stringify(candidate.recipe))).size, 3);
   assert.ok(candidates.every((candidate) => candidate.recipe.blend.length === 2));
+  assert.equal(candidates[0].embedding.id, 'rookboss-candidate-a');
+  assert.match(candidates[0].embedding.source, /blended at inference/u);
   assert.ok(candidates.every((candidate) => candidate.direction.includes('Rook Boss')));
   assert.ok(voiceRecipeDistance(candidates[0], candidates[1]) > 0.1);
   assert.ok(DEFAULT_AUDITION_SCRIPT.split(/\s+/u).length >= 35);
@@ -78,6 +80,7 @@ test('character resolution is legacy-compatible until an approved profile exists
   assert.equal(selected.selected, true);
   assert.equal(selected.version, 1);
   assert.equal(selected.voiceId, 'rookboss-voice-v1');
+  assert.equal(selected.profile.embedding.id, 'rookboss-candidate-b');
   assert.equal(selected.blend.length, 2);
 });
 
