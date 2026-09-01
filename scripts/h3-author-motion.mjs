@@ -253,6 +253,7 @@ async function loadLedger() {
 }
 
 async function saveLedger(ledger) {
+  normalizeLedger(ledger);
   ledger.updatedAt = nowIso();
   ledger.totals.estimatedSpendUsd = Number(Number(ledger.totals.estimatedSpendUsd || 0).toFixed(4));
   ledger.totals.submittedRequestSeconds = Number(Number(ledger.totals.submittedRequestSeconds || 0).toFixed(3));
