@@ -142,6 +142,12 @@ function publicEpisode(record: Record<string, unknown>) {
   const files = (record.files && typeof record.files === 'object' ? record.files : {}) as Record<string, unknown>;
   const video = typeof files.video === 'string' || typeof record.videoFile === 'string';
   if (!video) return null;
+  const generation = (record.generation && typeof record.generation === 'object' ? record.generation : {}) as Record<string, unknown>;
+  const firstSegment = Array.isArray(record.segments) && record.segments[0] && typeof record.segments[0] === 'object'
+    ? record.segments[0] as Record<string, unknown>
+    : {};
+  const sceneId = [record.sceneId, firstSegment.sceneId, generation.where]
+    .find((value) => typeof value === 'string' && value.trim() && value.trim().toLowerCase() !== 'auto');
   return {
     id,
     title: typeof record.title === 'string' ? record.title.slice(0, 180) : id,
@@ -149,7 +155,7 @@ function publicEpisode(record: Record<string, unknown>) {
     requestedMinutes: Number.isFinite(Number(record.requestedMinutes)) ? Number(record.requestedMinutes) : null,
     createdAt: typeof record.createdAt === 'string' ? record.createdAt : null,
     publishedAt: typeof record.publishedAt === 'string' ? record.publishedAt : null,
-    sceneId: typeof record.sceneId === 'string' ? record.sceneId : null,
+    sceneId: typeof sceneId === 'string' ? sceneId.slice(0, 80) : null,
     media: {
       video: `/api/bullshit-factory/public/media?kind=video&id=${encodeURIComponent(id)}`,
       poster: `/api/bullshit-factory/public/media?kind=poster&id=${encodeURIComponent(id)}`,
