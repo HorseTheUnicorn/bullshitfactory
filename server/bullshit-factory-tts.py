@@ -152,13 +152,21 @@ def normalize_voice_blend(raw_blend: Any) -> list[tuple[str, float]]:
         raise ValueError("voice_blend may contain at most four sources")
     normalized: list[tuple[str, float]] = []
     for item in raw_blend:
-        if not isinstance(item, dict):
-            raise ValueError("each voice_blend source must be an object")
-        source = item.get("voice", item.get("name", item.get("id")))
+        if isinstance(item, dict):
+            source = item.get("voice", item.get("name", item.get("id")))
+            raw_weight = item.get("weight", 1.0)
+        elif isinstance(item, (tuple, list)) and len(item) == 2:
+            # The HTTP boundary receives objects, but the first validation pass
+            # normalizes them to tuples. Accepting that normalized form makes
+            # the vector builder idempotent and prevents a valid blend from
+            # falling back merely because it was validated twice.
+            source, raw_weight = item
+        else:
+            raise ValueError("each voice_blend source must be an object or pair")
         if not isinstance(source, str) or not source.strip() or len(source.strip()) > 80:
             raise ValueError("each voice_blend source needs a valid voice name")
         try:
-            weight = float(item.get("weight", 1.0))
+            weight = float(raw_weight)
         except (TypeError, ValueError):
             raise ValueError("each voice_blend weight must be numeric") from None
         if not np.isfinite(weight) or weight <= 0:

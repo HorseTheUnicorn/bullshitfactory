@@ -80,6 +80,15 @@ class TtsVoiceTests(unittest.TestCase):
             np.testing.assert_allclose(vector, np.array([1.5, 1.5, 1.5, 1.5], dtype=np.float32))
             self.assertEqual(len(self.service.VOICE_BLEND_CACHE), 1)
 
+            normalized = self.service.normalize_voice_blend(
+                [{"voice": "am_michael", "weight": 0.75}, {"voice": "bm_george", "weight": 0.25}]
+            )
+            np.testing.assert_allclose(
+                self.service.blended_voice_vector(model, normalized),
+                np.array([1.5, 1.5, 1.5, 1.5], dtype=np.float32),
+            )
+            self.assertEqual(len(self.service.VOICE_BLEND_CACHE), 1)
+
     def test_missing_custom_voice_uses_stock_fallback(self):
         self.service.CUSTOM_VOICE_FALLBACKS["rookboss"] = "am_michael"
         self.assertEqual(self.service.voice_argument_for("rookboss"), "am_michael")
