@@ -112,7 +112,10 @@ export default function BullshitFactoryLanding() {
           if (current && nextEpisodes.some((episode) => episode.id === current)) return current;
           const playlistId = continuousActive ? payload.playlist?.current?.segmentId : '';
           if (playlistId && nextEpisodes.some((episode) => episode.id === playlistId)) return playlistId;
-          if (continuousActive) return '';
+          // Internal fallback slots do not have public media. Keep the live
+          // player on a published cut instead of rendering an unplayable
+          // title card when the queue's current item is not an episode.
+          if (continuousActive) return nextEpisodes[0]?.id || '';
           return nextEpisodes[0]?.id || '';
         });
       } catch {
@@ -240,6 +243,9 @@ export default function BullshitFactoryLanding() {
     const nextId = playlist?.next?.segmentId || '';
     if (nextId && episodes.some((episode) => episode.id === nextId)) {
       setSelectedId(nextId);
+    } else if (episodes.length) {
+      const currentIndex = episodes.findIndex((episode) => episode.id === selectedId);
+      setSelectedId(episodes[(currentIndex + 1 + episodes.length) % episodes.length]?.id || episodes[0].id);
     }
     setPlayerPlaying(false);
   }
