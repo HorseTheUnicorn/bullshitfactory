@@ -7,6 +7,7 @@ import {
   buildScriptWriterPrompt,
   buildSegmentDraft,
   characterClip,
+  stabilizeFrameGeometry,
   deterministicTopicDialogue,
   timedDialogue,
   ensureAdultLanguageBeats,
@@ -20,7 +21,7 @@ import {
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
-import { buildMotionPlan, dialogueLineBudget, minimumDialogueLines } from '../lib/bullshit-factory-production.mjs';
+import { buildMotionPlan, dialogueLineBudget, minimumDialogueLines, spreadVoiceTimeline, VOICE_REACTION_TAIL_MS } from '../lib/bullshit-factory-production.mjs';
 
 test('Goblin prompt includes the sitcom and altered-state writing contract', () => {
   const prompt = buildGoblinPrompt(
@@ -116,6 +117,31 @@ test('spoken dialogue strips trailing case labels before captions and Kokoro', (
   assert.equal(timed.length, 2);
   assert.deepEqual(timed.map((line) => line.text), ['The memo is breathing', 'The server is watching us']);
   assert.equal(timed.some((line) => /\(case\s+[a-z0-9_-]+\)/iu.test(line.text)), false);
+});
+
+test('measured voice timelines fill long segments and leave only the authored reaction tail', () => {
+  const durationSeconds = 57;
+  const timeline = spreadVoiceTimeline([
+    { id: 'line-01', speakerId: 'rookboss', text: 'One measured line.', startMs: 900, durationMs: 4200 },
+    { id: 'line-02', speakerId: 'kernelkline', text: 'Two measured lines.', startMs: 5200, durationMs: 4200 },
+    { id: 'line-03', speakerId: 'rookboss', text: 'Three measured lines.', startMs: 9800, durationMs: 4200 },
+    { id: 'line-04', speakerId: 'kernelkline', text: 'Four measured lines.', startMs: 14400, durationMs: 4200 },
+    { id: 'line-05', speakerId: 'rookboss', text: 'Five measured lines.', startMs: 19000, durationMs: 4200 },
+    { id: 'line-06', speakerId: 'kernelkline', text: 'Six measured lines.', startMs: 23600, durationMs: 4200 },
+  ], durationSeconds, 5, VOICE_REACTION_TAIL_MS);
+  const lastEndMs = timeline.at(-1).endMs;
+  assert.ok(lastEndMs <= durationSeconds * 1000 - VOICE_REACTION_TAIL_MS + 1);
+  assert.ok(durationSeconds * 1000 - lastEndMs <= VOICE_REACTION_TAIL_MS + 1);
+  assert.ok(timeline.slice(1).every((line, index) => line.startMs >= timeline[index].endMs));
+  assert.ok(timeline.some((line, index) => index > 0 && line.startMs - timeline[index - 1].endMs > 1000), 'long-form speech should retain audible handoff space');
+});
+
+test('renderer uses a stable union envelope across H3 frame and clip transitions', () => {
+  const stable = stabilizeFrameGeometry([
+    { width: 92, height: 92, alphaBounds: { left: 10, top: 5, right: 70, bottom: 86 } },
+    { width: 92, height: 92, alphaBounds: { left: 16, top: 3, right: 78, bottom: 87 } },
+  ], { width: 64, height: 64, alphaBounds: { left: 8, top: 1, right: 58, bottom: 63 } });
+  assert.deepEqual(stable, { width: 92, height: 92, alphaBounds: { left: 10, top: 3, right: 78, bottom: 87 } });
 });
 
 test('deterministic fallback carries a shared topic without repeating its keyword on every line', () => {

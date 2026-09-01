@@ -92,4 +92,13 @@ mentions a guitar, solo, riff, strum, amp, or related stage action. The former
 procedural ambience bed and automatic music/stinger selection are not eligible
 for content playback. Missing optional cues fall back to silence and never to a
 different music track. All audio is normalized through the existing loudness
-and true-peak limits.
+and true-peak limits. After Kokoro produces the real takes, normal cast speech
+is distributed through the requested segment duration, with a short final
+reaction/button tail. A sparse script that would still leave an extended
+unvoiced tail is rejected rather than publishing a silent half-episode.
+
+The H3 renderer uses one stable union geometry envelope per character across
+approved idle, listen, talk, react, and walk clips. This keeps changing alpha
+padding from moving a character at a state transition. If an individual frame
+cannot be decoded, the renderer holds another valid frame from the same
+approved clip; it does not make the actor blink out for one frame.

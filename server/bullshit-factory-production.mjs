@@ -40,7 +40,10 @@ import {
   orangeIdiotSpeechWordRange,
   normalizeOrangeIdiotSpeechDurationSeconds,
   SCRIPT_END_BUFFER_MS,
+  VOICE_REACTION_TAIL_MS,
+  MAX_DIALOGUE_TAIL_MS,
   serializeVoiceTimeline,
+  spreadVoiceTimeline,
   validateSegmentContract,
 } from '../lib/bullshit-factory-production.mjs';
 import { buildSceneLayout, getCharacterGeometry, getLocationSpec, resolveScenePlacement, validateSceneLayout } from '../lib/bullshit-factory-location.mjs';
@@ -2561,23 +2564,29 @@ function timedDialogue(candidateLines, fallbackLines, castIds, durationSeconds) 
   const uniqueSelected = uniqueDialogueLines(selected);
   const uniqueFallback = uniqueDialogueLines(fallback);
   const source = uniqueSelected.length >= 2 ? uniqueSelected : uniqueFallback;
-  let cursor = 900;
-  return source.map((line, index) => {
-    const length = estimateLineDurationMs(line.text);
-    const startMs = cursor + (index ? 220 : 0);
-    const result = {
-      id: `line-${String(index + 1).padStart(2, '0')}`,
+  // Draft timing should preview the same pacing shape that the measured audio
+  // pass will use. The final pass repeats this with real Kokoro durations.
+  const draftTimeline = source.map((line, index) => ({
+    id: `line-${String(index + 1).padStart(2, '0')}`,
+    speakerId: line.speakerId,
+    text: line.text,
+    delivery: line.delivery || '',
+    reaction: line.reaction || '',
+    startMs: index ? 1120 : 900,
+    mode: 'dialogue',
+  }));
+  return spreadVoiceTimeline(draftTimeline, durationSeconds, 220, VOICE_REACTION_TAIL_MS)
+    .map((line) => ({
+      id: line.id,
       speakerId: line.speakerId,
       text: line.text,
       delivery: line.delivery || '',
       reaction: line.reaction || '',
-      startMs,
-      endMs: startMs + length,
+      startMs: line.startMs,
+      endMs: line.endMs,
       mode: 'dialogue',
-    };
-    cursor = result.endMs;
-    return result;
-  }).filter((line) => line.endMs <= durationSeconds * 1000 - SCRIPT_END_BUFFER_MS);
+    }))
+    .filter((line) => line.endMs <= durationSeconds * 1000 - SCRIPT_END_BUFFER_MS);
 }
 
 function normalizeStageDirections(candidate, draft) {
@@ -4460,6 +4469,41 @@ async function frameGeometry(filePath) {
   return promise;
 }
 
+function stabilizeFrameGeometry(geometries, fallback) {
+  const valid = (Array.isArray(geometries) ? geometries : []).filter((geometry) => {
+    const bounds = geometry?.alphaBounds;
+    return Number.isFinite(Number(geometry?.width))
+      && Number.isFinite(Number(geometry?.height))
+      && Number.isFinite(Number(bounds?.left))
+      && Number.isFinite(Number(bounds?.top))
+      && Number.isFinite(Number(bounds?.right))
+      && Number.isFinite(Number(bounds?.bottom))
+      && Number(bounds.right) >= Number(bounds.left)
+      && Number(bounds.bottom) >= Number(bounds.top);
+  });
+  if (!valid.length) return fallback;
+  const width = Math.max(1, ...valid.map((geometry) => Math.round(Number(geometry.width))));
+  const height = Math.max(1, ...valid.map((geometry) => Math.round(Number(geometry.height))));
+  const alphaBounds = {
+    left: clamp(Math.floor(Math.min(...valid.map((geometry) => Number(geometry.alphaBounds.left)))), 0, width - 1),
+    top: clamp(Math.floor(Math.min(...valid.map((geometry) => Number(geometry.alphaBounds.top)))), 0, height - 1),
+    right: clamp(Math.ceil(Math.max(...valid.map((geometry) => Number(geometry.alphaBounds.right)))), 0, width - 1),
+    bottom: clamp(Math.ceil(Math.max(...valid.map((geometry) => Number(geometry.alphaBounds.bottom)))), 0, height - 1),
+  };
+  return { width, height, alphaBounds };
+}
+
+async function renderGeometryForCharacter(character, characterId, fallback) {
+  const usableClips = (Array.isArray(character?.clips) ? character.clips : [])
+    .filter((clip) => clip?.status === 'approved'
+      && clip.source?.kind === 'h3-max-local'
+      && Array.isArray(clip.frames)
+      && clip.frames.length);
+  const frameFiles = [...new Set(usableClips.flatMap((clip) => clip.frames.map((frame) => frame?.file).filter(Boolean)))];
+  const geometries = await Promise.all(frameFiles.map((file) => frameGeometry(publicAssetPath(file)).catch(() => null)));
+  return stabilizeFrameGeometry(geometries, fallback || getCharacterGeometry(characterId));
+}
+
 function interpolate(a, b, progress) {
   const t = clamp(progress, 0, 1);
   const eased = t * t * (3 - 2 * t);
@@ -5141,7 +5185,7 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
   const actorLayers = [];
   const characters = resources.catalog.characters || [];
   const activeCaptionSpeakerId = (draft.captions || []).find((caption) => timeMs >= Number(caption.startMs || 0) && timeMs <= Number(caption.endMs || 0))?.speakerId || null;
-  for (const [index, actorId] of (draft.castIds || []).entries()) {
+  for (const actorId of draft.castIds || []) {
     const character = characters.find((item) => item.id === actorId);
     if (!character) continue;
     const layoutPlacement = layout.placements.find((placement) => placement.characterId === actorId);
@@ -5162,19 +5206,20 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const elapsedMs = cue ? Math.max(0, timeMs - Number(cue.startMs || 0)) : timeMs;
     const framePosition = Math.floor(elapsedMs / 1000 * clipFrameRate);
     const frameOffset = clip?.loop === false ? 0 : stableTextHash(`${draft.id}:${actorId}:${cue?.id || 'idle'}`) % (clip?.frames?.length || 1);
-    const sourceIndex = clip?.frames?.length
+    const frameSources = (Array.isArray(clip?.frames) ? clip.frames : []).filter((frame) => frame?.file);
+    const sourceIndex = frameSources.length
       ? clip.loop === false
-        ? Math.min(clip.frames.length - 1, framePosition)
-        : (framePosition + frameOffset) % clip.frames.length
+        ? Math.min(frameSources.length - 1, framePosition)
+        : (framePosition + frameOffset) % frameSources.length
       : 0;
-    const source = clip?.frames?.[sourceIndex];
+    const source = frameSources[sourceIndex] || frameSources[0];
     if (!source?.file) continue;
-    const sourcePath = publicAssetPath(source.file);
+    let sourcePath = publicAssetPath(source.file);
     const canonical = getCharacterGeometry(actorId);
-    const geometryKey = actorId + ':' + String(clip?.id || source.file);
+    const geometryKey = actorId + ':stable-h3-envelope';
     let sourceGeometry = draft.__renderClipGeometry.get(geometryKey);
     if (!sourceGeometry) {
-      sourceGeometry = await frameGeometry(sourcePath).catch(() => ({ width: canonical.sourceSize.width, height: canonical.sourceSize.height, alphaBounds: canonical.alphaBounds }));
+      sourceGeometry = await renderGeometryForCharacter(character, actorId, canonical);
       draft.__renderClipGeometry.set(geometryKey, sourceGeometry);
     }
     const basePlacement = placementForFrame(layoutPlacement, actorId, sourceGeometry);
@@ -5186,9 +5231,29 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
       ? { x: Number(stableFeet.x) + gestureShift, y: Number(stableFeet.y) }
       : { x: actorState.point.x + gestureShift, y: actorState.point.y };
     const placement = movePlacementToFeet(basePlacement, desiredFeet);
-    const sprite = loadSprites
-      ? await sharp(sourcePath).resize(placement.sprite.width, placement.sprite.height, { kernel: sharp.kernel.nearest }).png().toBuffer()
-      : null;
+    let sprite = null;
+    if (loadSprites) {
+      try {
+        sprite = await sharp(sourcePath).resize(placement.sprite.width, placement.sprite.height, { kernel: sharp.kernel.nearest }).png().toBuffer();
+      } catch (error) {
+        // A single damaged or missing motion frame must not make the actor
+        // blink out of the rendered frame. Hold the first decodable frame in
+        // this clip; if none decode, fail the segment with a useful error.
+        for (const fallbackFrame of frameSources) {
+          const fallbackPath = publicAssetPath(fallbackFrame.file);
+          try {
+            sprite = await sharp(fallbackPath).resize(placement.sprite.width, placement.sprite.height, { kernel: sharp.kernel.nearest }).png().toBuffer();
+            sourcePath = fallbackPath;
+            break;
+          } catch {
+            // Try the next approved frame before quarantining the segment.
+          }
+        }
+        if (!sprite) {
+          throw new Error(`H3 frame decode failed for ${actorId} clip ${clip.id}: ${error?.message || 'unknown image error'}`);
+        }
+      }
+    }
     const voiceActive = activeCaptionSpeakerId === actorId || cue?.baseState === 'speaking' || cue?.kind === 'bark-and-react';
     actorLayers.push({ actorId, placement, depth: placement.depth, shadow: shadowLayer(placement.contactShadow), focus: voiceActive ? voiceFocusLayer(placement, character, isBork) : null, sprite, traveling: actorState.traveling, character, isBork, voiceActive, gestureShift });
   }
@@ -5487,15 +5552,18 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
       rawLineFiles.push({ speakerId: 'bork', id: bark.id, text: bark.caption, startMs: bark.startMs, endMs: bark.endMs, filePath, duration: measurement.duration });
     }
   }
-  const timeline = serializeVoiceTimeline(
-    rawLineFiles.map((line) => {
-      const sourceDurationMs = Math.round(line.duration * 1000);
-      return { ...line, durationMs: sourceDurationMs };
-    }),
-    draft.durationSeconds,
-    SPEAKER_HANDOFF_GAP_MS,
-    SCRIPT_END_BUFFER_MS,
-  );
+  const measuredEvents = rawLineFiles.map((line) => {
+    const sourceDurationMs = Math.round(line.duration * 1000);
+    return { ...line, durationMs: sourceDurationMs };
+  });
+  // Orange Idiot's standalone broadcast keeps its authored pacing. Normal
+  // cast segments use the measured takes to fill the requested runtime so a
+  // short script cannot leave the back half of an episode silent.
+  const distributeMeasuredSpeech = draft.sceneId !== ORANGE_IDIOT_STANDALONE_SCENE_ID
+    && (draft.dialogue || []).length > 1;
+  const timeline = distributeMeasuredSpeech
+    ? spreadVoiceTimeline(measuredEvents, draft.durationSeconds, SPEAKER_HANDOFF_GAP_MS, VOICE_REACTION_TAIL_MS)
+    : serializeVoiceTimeline(measuredEvents, draft.durationSeconds, SPEAKER_HANDOFF_GAP_MS, SCRIPT_END_BUFFER_MS);
   const timelineById = new Map(timeline.map((event) => [event.id, event]));
   const unscheduledSpeech = rawLineFiles.filter((line) => line.speakerId !== 'bork' && !timelineById.has(line.id));
   if (unscheduledSpeech.length) {
@@ -5525,6 +5593,10 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   // runs long, retain its measured duration so speech is never truncated.
   const effectiveDurationSeconds = Math.max(requestedDurationSeconds, measuredSpeechDurationSeconds);
   draft.durationSeconds = Number(effectiveDurationSeconds.toFixed(3));
+  const speechTailMs = Math.max(0, Math.round(Number(draft.durationSeconds) * 1000 - lastSpeechEndMs));
+  if (distributeMeasuredSpeech && speechTailMs > MAX_DIALOGUE_TAIL_MS) {
+    throw new Error(`Measured dialogue leaves an unvoiced tail of ${(speechTailMs / 1000).toFixed(1)} seconds; provide more dialogue or choose a shorter episode.`);
+  }
   alignDraftToVoiceTimeline(draft, timeline);
   const audioPlan = await resolveAudioForDraft(draft, resources);
   const truncatedSpeech = lineFiles.filter((line) => Number(line.duration) + 0.075 < Number(line.sourceDuration));
@@ -5546,8 +5618,11 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     calibratedWpm: SPEECH_CALIBRATED_WPM,
     truncatedTakes: 0,
     maxSpeechEndMs: lastSpeechEndMs,
+    speechTailMs,
+    timelineMode: distributeMeasuredSpeech ? 'measured-distributed' : 'measured-serialized',
     measuredSpeechDurationSeconds,
     postSpeechPadMs: SCRIPT_END_BUFFER_MS,
+    reactionTailMs: speechTailMs,
     requestedDurationSeconds,
     mixFile: relativeRuntimePath(mixPath),
     durationSeconds: measurement.duration,
@@ -6355,7 +6430,7 @@ async function generateEpisode(body = {}, options = {}) {
       media: { width: media.width, height: media.height, fps: RENDER_FPS, videoCodec: media.videoCodec, audioCodec: media.audioCodec, bytes: media.bytes, durationDeltaSeconds, requestedDurationDeltaSeconds: Number((media.duration - totalSeconds).toFixed(3)) },
       segmentIds: drafts.map((draft) => draft.id),
       effectiveContentDurationSeconds,
-      durationPolicy: "3-second opening plus the requested short/medium/long segment duration; measured speech ends with a 30 ms pad and the remaining time is intentional reaction room",
+      durationPolicy: "3-second opening plus the requested short/medium/long segment duration; measured cast speech is distributed through the segment with a bounded 1.5-second reaction/button tail",
       segments: drafts.map((draft, index) => ({ id: draft.id, title: draft.title, requestedDurationSeconds: durations[index] || draft.durationSeconds, durationSeconds: draft.durationSeconds, sceneId: draft.sceneId, castIds: draft.castIds, music: draft.music })),
       opening: { durationSeconds: OPENING_SECONDS, themeTrack: { id: themeTrack.id, title: themeTrack.title, provider: themeTrack.provider || 'internal', source: themeTrack.source, rightsHolder: themeTrack.rightsHolder, mode: 'opening-only' }, titleCardFile: relativeRuntimePath(opening.titleCardPath), videoFile: relativeRuntimePath(opening.path) },
       music: episodeMusic,
@@ -8123,6 +8198,7 @@ export {
   renderPixelGameFontText,
   buildSpeechMixFilter,
   characterClip,
+  stabilizeFrameGeometry,
   stripTrailingCaseTag,
   timedDialogue,
   validateSegmentContract,
