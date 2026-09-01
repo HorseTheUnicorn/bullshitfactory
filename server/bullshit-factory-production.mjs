@@ -7,6 +7,7 @@ import { createReadStream } from 'node:fs';
 import { chmod, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import {
   CAST_IDS,
@@ -42,6 +43,17 @@ import {
   validateSegmentContract,
 } from '../lib/bullshit-factory-production.mjs';
 import { buildSceneLayout, getCharacterGeometry, getLocationSpec, resolveScenePlacement, validateSceneLayout } from '../lib/bullshit-factory-location.mjs';
+import {
+  DEFAULT_AUDITION_SCRIPT,
+  LEGACY_FALLBACK_BY_CHARACTER,
+  LEGACY_VOICE_BY_CHARACTER,
+  VOICE_PROFILE_SCHEMA_VERSION,
+  createVoiceCandidates,
+  findVoiceCollisions,
+  resolveCharacterVoice,
+  voiceFilterForProfile,
+} from '../lib/bullshit-factory-voice.mjs';
+import { VoiceProfileStore, safeCandidateId, safeCharacterId } from '../lib/bullshit-factory-voice-store.mjs';
 
 const execFileAsync = promisify(execFile)
 const MEDIA_DURATION_TOLERANCE_SECONDS = 0.25;
@@ -59,6 +71,8 @@ const LIVE_SECRETS_PATH = path.join(LIVE_ROOT, 'stream-secrets.json');
 const LIVE_PLAYLIST_PATH = path.join(LIVE_ROOT, 'published-playlist.txt');
 const LIVE_FFMPEG_PATH = String(process.env.BF_LIVE_FFMPEG_PATH || 'ffmpeg').trim() || 'ffmpeg';
 const LIVE_ENABLED = String(process.env.BF_LIVE_ENABLED || 'true').trim().toLowerCase() !== 'false';
+const VOICE_ROOT = path.resolve(process.env.BF_VOICE_ROOT || path.join(DATA_ROOT, 'voices'));
+const VOICE_STORE = new VoiceProfileStore(VOICE_ROOT);
 const HOST = String(process.env.BF_PRODUCTION_HOST || '127.0.0.1').trim();
 const PORT = Math.max(1024, Number(process.env.BF_PRODUCTION_PORT || 8793));
 const ACCESS_TOKEN = String(process.env.BF_PRODUCTION_TOKEN || '').trim();
@@ -188,17 +202,7 @@ const CONTINUOUS_BUFFER_SECONDS = Math.max(300, Math.min(1800, Number(process.en
 const CONTINUOUS_REFILL_TRIGGER_SECONDS = Math.max(120, Math.min(CONTINUOUS_BUFFER_SECONDS - 60, Number(process.env.BF_CONTINUOUS_REFILL_TRIGGER_SECONDS || 300)));
 const CONTINUOUS_DURATION_WEIGHTS = Object.freeze(normalizeContinuousDurationWeights(process.env.BF_CONTINUOUS_DURATION_WEIGHTS || 'short:0.22,medium:0.60,long:0.18'));
 
-const VOICE_BY_CHARACTER = Object.freeze({
-  rookboss: 'rookboss',
-  magsrust: 'magsrust',
-  kernelkline: 'kernelkline',
-  sudsmcgee: 'sudsmcgee',
-  dooby: 'dooby',
-  spaulding: 'spaulding',
-  string: 'string',
-  karen: 'karen',
-  nico: 'nico',
-});
+const VOICE_BY_CHARACTER = LEGACY_VOICE_BY_CHARACTER;
 
 
 let resourcesPromise;
@@ -296,7 +300,7 @@ function normalizeLiveState(value) {
 }
 function defaultState() {
   return {
-    schemaVersion: 1,
+    schemaVersion: VOICE_PROFILE_SCHEMA_VERSION,
     showId: 'bullshit-factory',
     control: {
       status: 'idle',
@@ -707,6 +711,103 @@ async function fileIsUsable(filePath, minimumBytes = 1) {
   } catch {
     return false;
   }
+}
+
+function bibleForCharacter(resources, characterId) {
+  const id = safeCharacterId(characterId);
+  return (resources?.bibles?.characters || []).find((character) => character?.id === id) || null;
+}
+
+function catalogCharacterFor(resources, characterId) {
+  const id = safeCharacterId(characterId);
+  return (resources?.catalog?.characters || []).find((character) => character?.id === id) || null;
+}
+
+async function storedVoiceResolution(resources, characterId) {
+  const id = safeCharacterId(characterId);
+  const stored = await VOICE_STORE.readProfile(id);
+  return {
+    ...stored,
+    resolution: resolveCharacterVoice(id, stored.profile, {
+      legacyVoice: VOICE_BY_CHARACTER[id],
+      fallbackVoice: LEGACY_FALLBACK_BY_CHARACTER[id],
+    }),
+  };
+}
+
+function voiceCandidateAudioPath(candidate) {
+  return typeof candidate?.audioFile === 'string' && candidate.audioFile ? candidate.audioFile : null;
+}
+
+async function voiceManagementPayload(resources = null) {
+  resources = resources || await loadResources();
+  const bibleCharacters = Array.isArray(resources.bibles?.characters) ? resources.bibles.characters : [];
+  const records = await VOICE_STORE.list(bibleCharacters.map((character) => character.id));
+  const byId = new Map(records.map((record) => [record.characterId, record]));
+  const characters = [];
+  const selectedProfiles = [];
+  for (const bible of bibleCharacters) {
+    const id = safeCharacterId(bible.id);
+    if (!id) continue;
+    const catalogCharacter = catalogCharacterFor(resources, id);
+    const record = byId.get(id) || { profile: null, error: null, candidates: null, candidatesError: null };
+    const isDog = bible.isDog === true || bible.voiceProfile?.mode === 'bark-only' || id === 'bork';
+    const resolution = resolveCharacterVoice(id, record.profile, {
+      legacyVoice: VOICE_BY_CHARACTER[id],
+      fallbackVoice: LEGACY_FALLBACK_BY_CHARACTER[id],
+    });
+    if (record.profile) selectedProfiles.push(record.profile);
+    const candidates = isDog
+      ? []
+      : (record.candidates?.candidates || []).map((candidate) => ({
+        candidateId: candidate.candidateId,
+        label: candidate.label,
+        voiceId: candidate.voiceId,
+        direction: candidate.direction,
+        source: candidate.source,
+        recipe: candidate.recipe,
+        validation: candidate.validation,
+        audioFile: voiceCandidateAudioPath(candidate),
+        generationId: candidate.generationId,
+        createdAt: candidate.createdAt,
+        notes: candidate.notes,
+      }));
+    characters.push({
+      characterId: id,
+      displayName: bible.name || catalogCharacter?.displayName || id,
+      role: bible.role || catalogCharacter?.role || '',
+      portrait: catalogCharacter?.preview || null,
+      isDog,
+      current: isDog
+        ? { mode: 'bark-only', voiceId: null, label: 'Bork bark asset', version: null, audioFile: null }
+        : {
+          mode: resolution.selected ? 'selected-profile' : 'legacy-compatible',
+          voiceId: resolution.voiceId,
+          label: resolution.selected ? resolution.profile.label : 'Legacy KokovoiceLab voice',
+          version: resolution.selected ? resolution.version : null,
+          candidateId: resolution.selected ? resolution.candidateId : null,
+          fallbackVoice: resolution.fallbackVoice,
+          audioFile: resolution.selected ? resolution.profile.auditionFile : null,
+          recipe: resolution.recipe,
+        },
+      profileError: record.error,
+      candidatesError: record.candidatesError,
+      generation: record.candidates
+        ? { generationId: record.candidates.generationId, generatedAt: record.candidates.generatedAt, status: record.candidates.status, feedback: record.candidates.feedback, error: record.candidates.error }
+        : null,
+      candidates,
+    });
+  }
+  return {
+    schemaVersion: 1,
+    showId: 'bullshit-factory',
+    candidateCount: 3,
+    auditionScript: DEFAULT_AUDITION_SCRIPT,
+    characters,
+    collisions: findVoiceCollisions(selectedProfiles),
+    selectedCount: selectedProfiles.length,
+    voiceRoot: 'runtime/voices',
+  };
 }
 
 async function readBody(request) {
@@ -3698,60 +3799,316 @@ async function normalizeSpeechPacing(text, outputPath, measurement) {
   }
 }
 
-async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SPEED, lang = 'en-us' } = {}) {
-  const targets = [];
-  if (TTS_FASTAPI_ENABLED && TTS_FASTAPI_ENDPOINT && voice === ORANGE_IDIOT_VOICE) {
-    targets.push({
-      endpoint: TTS_FASTAPI_ENDPOINT,
-      headers: fastApiTtsHeaders(),
-      body: { model: TTS_FASTAPI_MODEL, input: text, voice: TTS_FASTAPI_ORANGE_VOICE || voice, speed, response_format: 'wav' },
-    });
+let rubberbandSupportPromise;
+
+async function ffmpegSupportsRubberband() {
+  if (!rubberbandSupportPromise) {
+    rubberbandSupportPromise = execFileAsync('ffmpeg', ['-hide_banner', '-filters'], { timeout: 15_000, maxBuffer: 128 * 1024 })
+      .then(({ stdout, stderr }) => /rubberband/iu.test(`${stdout}\n${stderr}`))
+      .catch(() => false);
   }
-  targets.push({
-    endpoint: TTS_ENDPOINT,
-    headers: ttsHeaders(),
-    body: { text, voice, speed, lang, response_format: 'wav' },
-  });
-  let lastError = new Error('No TTS target is configured.');
-  for (const target of targets) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 120_000);
+  return rubberbandSupportPromise;
+}
+
+async function writeProfiledVoiceAudio(bytes, outputPath, profile) {
+  if (!profile?.recipe) {
+    await writeFile(outputPath, bytes);
+    return probeAudio(outputPath);
+  }
+  const rawPath = `${outputPath}.raw.wav`;
+  await writeFile(rawPath, bytes);
+  let processed = false;
+  try {
+    const useRubberband = await ffmpegSupportsRubberband();
+    const runFilter = async (rubberband) => execFileAsync('ffmpeg', [
+      '-hide_banner', '-loglevel', 'error', '-y', '-i', rawPath,
+      '-af', voiceFilterForProfile(profile, { useRubberband: rubberband }),
+      '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', outputPath,
+    ], { timeout: 60_000, maxBuffer: 16 * 1024 });
     try {
-      const response = await fetch(target.endpoint, {
-        method: 'POST',
-        headers: target.headers,
-        body: JSON.stringify(target.body),
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error(`TTS returned HTTP ${response.status}.`);
-      const bytes = Buffer.from(await response.arrayBuffer());
-      if (!bytes.length || bytes.length > MAX_AUDIO_BYTES) throw new Error('TTS returned an empty or oversized file.');
-      const isOrangeVoice = voice === ORANGE_IDIOT_VOICE;
-      if (isOrangeVoice && ORANGE_IDIOT_AUDIO_EFFECT_ENABLED) {
-        const rawPath = `${outputPath}.raw.wav`;
-        try {
-          await writeFile(rawPath, bytes);
-          await execFileAsync('ffmpeg', [
-            '-hide_banner', '-loglevel', 'error', '-y', '-i', rawPath,
-            '-af', ORANGE_IDIOT_AUDIO_FILTER,
-            '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', outputPath,
-          ], { timeout: 60_000, maxBuffer: 16 * 1024 });
-        } finally {
-          await rm(rawPath, { force: true }).catch(() => {});
-        }
-      } else {
-        await writeFile(outputPath, bytes);
-      }
-      const measured = await probeAudio(outputPath);
-      return normalizeSpeechPacing(text, outputPath, measured);
+      await runFilter(useRubberband);
+      processed = true;
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error('TTS request failed.');
-      if (target !== targets.at(-1)) logEvent('tts-fallback', `TTS target failed; trying the compatibility adapter.`, { endpoint: target.endpoint, error: lastError.message });
-    } finally {
-      clearTimeout(timer);
+      // A stock ffmpeg build may lack Rubber Band even when a profile asks for
+      // formant movement. Keep the blend/EQ/compression path and omit only the
+      // optional filter rather than breaking the production line.
+      if (!useRubberband) throw error;
+      await runFilter(false);
+      processed = true;
+      logEvent('voice-formant-fallback', 'Rubber Band formant processing was unavailable; the compatible DSP profile was used.', { error: error instanceof Error ? error.message : 'rubberband unavailable' });
     }
+  } catch (error) {
+    // The existing mixer still applies program loudness and peak limiting. A
+    // valid Kokoro take is safer than losing a whole segment because an
+    // optional effect filter is unavailable.
+    await writeFile(outputPath, bytes);
+    logEvent('voice-dsp-fallback', 'Voice DSP was unavailable; the valid Kokoro take was retained for the normal mixer.', { error: error instanceof Error ? error.message : 'voice DSP failed' });
+  } finally {
+    await rm(rawPath, { force: true }).catch(() => {});
+  }
+  const measurement = await probeAudio(outputPath);
+  return { ...measurement, processed };
+}
+
+function speechPlans(voice, speed, lang, voiceProfile) {
+  const recipe = voiceProfile?.recipe || null;
+  const selectedVoice = voiceProfile?.ttsVoice || recipe?.ttsVoice || voice;
+  const selectedBlend = voiceProfile?.blend || recipe?.blend || null;
+  const selectedFallback = voiceProfile?.fallbackVoice || recipe?.fallbackVoice || '';
+  const selectedSpeed = recipe?.speed ?? voiceProfile?.speed ?? speed;
+  const selectedLang = recipe?.lang || voiceProfile?.lang || lang;
+  const plans = [{ voice: selectedVoice, blend: selectedBlend, fallbackVoice: selectedFallback, speed: selectedSpeed, lang: selectedLang, profile: recipe ? voiceProfile : null, fallbackUsed: false }];
+  if (selectedFallback && selectedFallback !== selectedVoice) {
+    plans.push({ voice: selectedFallback, blend: null, fallbackVoice: '', speed: selectedSpeed, lang: selectedLang, profile: null, fallbackUsed: true });
+  }
+  return plans;
+}
+
+function ttsBodyForPlan(text, plan) {
+  const body = { text, voice: plan.voice, speed: plan.speed, lang: plan.lang, response_format: 'wav' };
+  if (Array.isArray(plan.blend) && plan.blend.length) body.voice_blend = plan.blend;
+  if (plan.fallbackVoice) body.fallback_voice = plan.fallbackVoice;
+  return body;
+}
+
+async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SPEED, lang = 'en-us', voiceProfile = null } = {}) {
+  const plans = speechPlans(voice, speed, lang, voiceProfile);
+  let lastError = new Error('No TTS target is configured.');
+  const startedAt = Date.now();
+  for (const plan of plans) {
+    const targets = [];
+    const isOrangeVoice = plan.voice === ORANGE_IDIOT_VOICE && !plan.profile;
+    if (TTS_FASTAPI_ENABLED && TTS_FASTAPI_ENDPOINT && isOrangeVoice) {
+      targets.push({
+        endpoint: TTS_FASTAPI_ENDPOINT,
+        headers: fastApiTtsHeaders(),
+        body: { model: TTS_FASTAPI_MODEL, input: text, voice: TTS_FASTAPI_ORANGE_VOICE || plan.voice, speed: plan.speed, response_format: 'wav' },
+      });
+    }
+    targets.push({ endpoint: TTS_ENDPOINT, headers: ttsHeaders(), body: ttsBodyForPlan(text, plan) });
+    for (const target of targets) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 45_000);
+      try {
+        const response = await fetch(target.endpoint, {
+          method: 'POST',
+          headers: target.headers,
+          body: JSON.stringify(target.body),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`TTS returned HTTP ${response.status}.`);
+        const bytes = Buffer.from(await response.arrayBuffer());
+        if (!bytes.length || bytes.length > MAX_AUDIO_BYTES) throw new Error('TTS returned an empty or oversized file.');
+        if (isOrangeVoice && ORANGE_IDIOT_AUDIO_EFFECT_ENABLED) {
+          const rawPath = `${outputPath}.raw.wav`;
+          try {
+            await writeFile(rawPath, bytes);
+            await execFileAsync('ffmpeg', [
+              '-hide_banner', '-loglevel', 'error', '-y', '-i', rawPath,
+              '-af', ORANGE_IDIOT_AUDIO_FILTER,
+              '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', outputPath,
+            ], { timeout: 60_000, maxBuffer: 16 * 1024 });
+          } finally {
+            await rm(rawPath, { force: true }).catch(() => {});
+          }
+        } else {
+          await writeProfiledVoiceAudio(bytes, outputPath, plan.profile);
+        }
+        const measured = await probeAudio(outputPath);
+        const paced = plan.profile ? measured : await normalizeSpeechPacing(text, outputPath, measured);
+        return { ...paced, voiceId: voiceProfile?.voiceId || plan.voice, selectedVersion: voiceProfile?.version || 0, fallbackUsed: plan.fallbackUsed, latencyMs: Date.now() - startedAt };
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('TTS request failed.');
+        if (target !== targets.at(-1)) logEvent('tts-fallback', 'TTS target failed; trying the compatibility adapter.', { endpoint: target.endpoint, error: lastError.message });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    if (plan.fallbackUsed === false && plans.length > 1) logEvent('voice-fallback', 'Selected character voice failed; using its stock Kokoro fallback.', { voice: plan.voice, fallback: plans[1].voice, error: lastError.message });
   }
   throw lastError;
+}
+
+async function inspectVoiceAudio(filePath) {
+  try {
+    const { stderr, stdout } = await execFileAsync('ffmpeg', [
+      '-hide_banner', '-i', filePath,
+      '-af', 'volumedetect,silencedetect=noise=-50dB:d=0.5',
+      '-f', 'null', '-',
+    ], { timeout: 30_000, maxBuffer: 64 * 1024 });
+    const output = `${stdout}\n${stderr}`;
+    const maxMatch = output.match(/max_volume:\s*(-?\d+(?:\.\d+)?)\s*dB/iu);
+    const meanMatch = output.match(/mean_volume:\s*(-?\d+(?:\.\d+)?)\s*dB/iu);
+    const silenceSeconds = [...output.matchAll(/silence_duration:\s*(\d+(?:\.\d+)?)/giu)]
+      .reduce((sum, match) => sum + Number(match[1]), 0);
+    return {
+      maxVolumeDb: maxMatch ? Number(maxMatch[1]) : null,
+      meanVolumeDb: meanMatch ? Number(meanMatch[1]) : null,
+      silenceSeconds,
+      error: null,
+    };
+  } catch (error) {
+    return { maxVolumeDb: null, meanVolumeDb: null, silenceSeconds: null, error: error instanceof Error ? error.message : 'Audio signal inspection failed.' };
+  }
+}
+
+async function validateVoiceTake(filePath, measurement = null, { minimumDuration = 8, maximumDuration = 40 } = {}) {
+  const measured = measurement || await probeAudio(filePath);
+  const signal = await inspectVoiceAudio(filePath);
+  const duration = Number(measured.duration || 0);
+  const checks = [
+    { id: 'audio-generated', pass: Number(measured.bytes || 0) > 100, detail: `${measured.bytes || 0} bytes` },
+    { id: 'duration', pass: duration >= minimumDuration && duration <= maximumDuration, detail: `${duration.toFixed(2)} seconds` },
+    { id: 'no-clipping', pass: Number.isFinite(signal.maxVolumeDb) && signal.maxVolumeDb <= -0.05, detail: signal.maxVolumeDb === null ? 'peak could not be measured' : `${signal.maxVolumeDb.toFixed(2)} dB peak` },
+    { id: 'audible-signal', pass: Number.isFinite(signal.meanVolumeDb) && signal.meanVolumeDb > -50, detail: signal.meanVolumeDb === null ? 'mean signal could not be measured' : `${signal.meanVolumeDb.toFixed(2)} dB mean` },
+    { id: 'not-excessively-silent', pass: Number.isFinite(signal.silenceSeconds) && signal.silenceSeconds <= duration * 0.45, detail: signal.silenceSeconds === null ? 'silence could not be measured' : `${signal.silenceSeconds.toFixed(2)} seconds detected` },
+    { id: 'finite-audio', pass: !signal.error, detail: signal.error || 'ffmpeg signal checks passed' },
+  ];
+  return {
+    status: checks.every((check) => check.pass) ? 'pass' : 'failed',
+    checks,
+    durationSeconds: duration,
+    bytes: Number(measured.bytes || 0),
+    quality: signal,
+    latencyMs: Number(measured.latencyMs || 0),
+  };
+}
+
+async function generateVoiceCandidatesForCharacter(characterId, feedback = '') {
+  const resources = await loadResources();
+  await loadState();
+  const id = safeCharacterId(characterId);
+  const bible = bibleForCharacter(resources, id);
+  if (!bible || id === 'bork' || bible.isDog === true || bible.voiceProfile?.mode === 'bark-only') throw new Error('Bork remains bark-only and does not receive Kokoro voice candidates.');
+  const generationId = `voice-${id}-${Date.now()}`;
+  const candidates = createVoiceCandidates(bible, { generationId, feedback, now: nowIso() });
+  if (candidates.length !== 3) throw new Error(`Voice designer returned ${candidates.length} candidates; exactly three are required for audition.`);
+  for (const candidate of candidates) {
+    candidate.audioFile = relativeRuntimePath(VOICE_STORE.auditionPath(id, candidate.candidateId));
+  }
+  await VOICE_STORE.writeCandidates(id, { generationId, feedback, status: 'generating', candidates });
+  const latency = [];
+  let validCount = 0;
+  for (const candidate of candidates) {
+    const outputPath = VOICE_STORE.auditionPath(id, candidate.candidateId);
+    try {
+      const measurement = await requestSpeech(DEFAULT_AUDITION_SCRIPT, candidate.recipe.ttsVoice, outputPath, {
+        speed: candidate.recipe.speed,
+        lang: candidate.recipe.lang,
+        voiceProfile: candidate,
+      });
+      latency.push(measurement.latencyMs || 0);
+      candidate.validation = await validateVoiceTake(outputPath, measurement);
+      candidate.validation.fallbackUsed = measurement.fallbackUsed === true;
+      candidate.validation.voiceId = measurement.voiceId;
+      if (candidate.validation.status === 'pass') validCount += 1;
+    } catch (error) {
+      candidate.validation = {
+        status: 'failed',
+        checks: [{ id: 'audio-generated', pass: false, detail: error instanceof Error ? error.message : 'Kokoro audition failed.' }],
+        error: error instanceof Error ? error.message : 'Kokoro audition failed.',
+      };
+    }
+    await VOICE_STORE.writeCandidates(id, {
+      generationId,
+      feedback,
+      status: 'generating',
+      candidates,
+    });
+  }
+  const status = validCount === candidates.length ? 'ready' : validCount > 0 ? 'partial' : 'failed';
+  await VOICE_STORE.writeCandidates(id, {
+    generationId,
+    generatedAt: nowIso(),
+    feedback,
+    status,
+    candidates,
+    error: status === 'failed' ? 'No voice candidate passed audio validation.' : null,
+  });
+  logEvent('voice-candidates-generated', `${validCount}/${candidates.length} candidates ready for ${id}.`, { characterId: id, generationId, feedback: String(feedback || '').slice(0, 180), averageLatencyMs: latency.length ? Math.round(latency.reduce((sum, value) => sum + value, 0) / latency.length) : null });
+  if (!validCount) throw new Error('No voice candidate passed audio validation. The live voice was left unchanged.');
+  return {
+    id: `voice-candidates-${id}`,
+    state: status,
+    validation: { status, validCount, candidateCount: candidates.length, averageLatencyMs: latency.length ? Math.round(latency.reduce((sum, value) => sum + value, 0) / latency.length) : null },
+  };
+}
+
+async function selectVoiceCandidate(body = {}) {
+  const resources = await loadResources();
+  await loadState();
+  const id = safeCharacterId(body.characterId);
+  const candidateId = safeCandidateId(body.candidateId);
+  const bible = bibleForCharacter(resources, id);
+  if (!bible || id === 'bork' || bible.isDog === true || bible.voiceProfile?.mode === 'bark-only') throw new Error('Bork remains bark-only and cannot be assigned a Kokoro voice.');
+  const candidates = await VOICE_STORE.readCandidates(id);
+  if (candidates.error || !candidates.document) throw new Error(candidates.error || 'Generate voice candidates before selecting one.');
+  const candidate = candidates.document.candidates.find((entry) => entry.candidateId === candidateId);
+  if (!candidate) throw new Error('That voice candidate is not available. Generate a fresh set and try again.');
+  if (candidate.validation?.status !== 'pass') throw new Error('That voice candidate did not pass audio validation.');
+  if (!candidate.audioFile || !(await fileIsUsable(runtimeFilePath(candidate.audioFile), 100))) throw new Error('That audition audio is missing; generate a fresh candidate set.');
+  const profile = await VOICE_STORE.selectCandidate(id, candidateId);
+  logEvent('voice-selected', `${bible.name || id}: Candidate ${candidate.label}`, { characterId: id, candidateId, version: profile.version, voiceId: profile.voiceId });
+  await persistState();
+  return { profile, voices: await voiceManagementPayload(resources) };
+}
+
+async function generateCastReel() {
+  const resources = await loadResources();
+  await loadState();
+  const humans = (resources.bibles?.characters || []).filter((character) => character?.id && character.id !== 'bork' && character.isDog !== true && character.voiceProfile?.mode !== 'bark-only');
+  if (!humans.length) throw new Error('No speaking characters are available for a cast reel.');
+  const workRoot = path.join(VOICE_ROOT, 'reel-work');
+  const outputPath = path.join(VOICE_ROOT, 'cast-reel.wav');
+  await mkdir(workRoot, { recursive: true });
+  const takes = [];
+  const profiles = [];
+  const sceneLines = [
+    'Everybody look confident. The machine is lying, and I have a plan.',
+    'Your plan is smoking. Unplug it before it learns anything.',
+    'I have a log proving this is a configuration problem wearing a hat.',
+    'This calls for a meeting and a drink.',
+    'What if the forklift is a thought?',
+    'Every crisis is a rigging problem.',
+    'This argument needs a solo.',
+    'I need that in triplicate.',
+    'I would like to report that I am not touching the lever.',
+  ];
+  let offsetMs = 0;
+  try {
+    for (const bible of humans) {
+      const stored = await storedVoiceResolution(resources, bible.id);
+      const resolution = stored.resolution;
+      if (resolution.selected) profiles.push(resolution.profile);
+      const linePath = path.join(workRoot, `${safeCharacterId(bible.id)}.wav`);
+       const line = `${bible.name || bible.id}: ${sceneLines[takes.length % sceneLines.length]}`;
+      const measurement = await requestSpeech(line, resolution.ttsVoice, linePath, {
+        speed: resolution.recipe?.speed || 0.96,
+        lang: resolution.recipe?.lang || 'en-us',
+        voiceProfile: resolution,
+      });
+      takes.push({ linePath, offsetMs, duration: measurement.duration, latencyMs: measurement.latencyMs || 0, characterId: bible.id });
+      offsetMs += Math.max(500, Math.round(measurement.duration * 1000)) + 650;
+    }
+    const inputs = [];
+    const filters = [];
+    const labels = [];
+    for (const [index, take] of takes.entries()) {
+      inputs.push('-i', take.linePath);
+      const label = `reel${index}`;
+      filters.push(`[${index}:a]aresample=44100,loudnorm=I=${VOICE_TARGET_LUFS}:LRA=7:TP=-2:linear=true,adelay=${take.offsetMs}|${take.offsetMs}[${label}]`);
+      labels.push(`[${label}]`);
+    }
+    filters.push(`${labels.join('')}amix=inputs=${takes.length}:duration=longest:dropout_transition=0,apad=pad_dur=${Math.max(1, offsetMs / 1000)},atrim=duration=${Math.max(1, offsetMs / 1000)},loudnorm=I=${PROGRAM_TARGET_LUFS}:LRA=7:TP=${PROGRAM_TRUE_PEAK_DB}:linear=true,alimiter=limit=0.95[mix]`);
+    await execFileAsync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...inputs, '-filter_complex', filters.join(';'), '-map', '[mix]', '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', outputPath], { timeout: 120_000, maxBuffer: 16 * 1024 });
+    const measurement = await probeAudio(outputPath);
+    const voiceReport = { generatedAt: nowIso(), file: relativeRuntimePath(outputPath), durationSeconds: measurement.duration, bytes: measurement.bytes, averageLatencyMs: Math.round(takes.reduce((sum, take) => sum + take.latencyMs, 0) / Math.max(1, takes.length)), testType: 'multi-character-scene', collisions: findVoiceCollisions(profiles), characters: humans.map((character) => character.id), dogPolicy: 'Bork omitted; bark-only asset remains unchanged.' };
+    await VOICE_STORE.writeCastReelReport(voiceReport);
+    logEvent('voice-cast-reel-generated', `${humans.length} speaking characters rendered.`, { averageLatencyMs: voiceReport.averageLatencyMs, collisions: voiceReport.collisions.length });
+    return { id: 'voice-cast-reel', state: 'ready', validation: { status: 'ready', ...voiceReport } };
+  } finally {
+    await rm(workRoot, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 function ffmpegPath(filePath) {
@@ -4721,12 +5078,17 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     if (!(await fileIsUsable(musicFile, 100))) throw new Error(`Approved music file is missing: ${music.id}`);
   }
   const rawLineFiles = [];
+  const voiceResolutions = new Map();
+  const voiceForCharacter = async (characterId) => {
+    if (!voiceResolutions.has(characterId)) voiceResolutions.set(characterId, (await storedVoiceResolution(resources, characterId)).resolution);
+    return voiceResolutions.get(characterId);
+  };
   for (const line of draft.dialogue) {
-    const voice = VOICE_BY_CHARACTER[line.speakerId];
-    if (!voice) throw new Error(`No voice is configured for ${line.speakerId}.`);
+    const voice = await voiceForCharacter(line.speakerId);
+    if (!voice?.ttsVoice) throw new Error(`No voice is configured for ${line.speakerId}.`);
     const filePath = path.join(segmentDirectory, `${line.id}.wav`);
-    const measurement = await requestSpeech(line.text, voice, filePath);
-    rawLineFiles.push({ ...line, filePath, duration: measurement.duration });
+    const measurement = await requestSpeech(line.text, voice.ttsVoice, filePath, { speed: voice.recipe?.speed || 0.96, lang: voice.recipe?.lang || 'en-us', voiceProfile: voice });
+    rawLineFiles.push({ ...line, filePath, duration: measurement.duration, voiceId: measurement.voiceId, voiceVersion: measurement.selectedVersion, voiceFallbackUsed: measurement.fallbackUsed === true });
   }
   for (const interruption of draft.tvInterruptions || []) {
     if (!ORANGE_IDIOT_VOICE) throw new Error('Orange Idiot speech is enabled, but the Kokoro voice is not configured.');
@@ -4801,6 +5163,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     durationSeconds: measurement.duration,
     bytes: measurement.bytes,
     provider: 'kokoro-loopback',
+    voices: [...voiceResolutions.values()].map((voice) => ({ characterId: voice.characterId, voiceId: voice.voiceId, version: voice.version, selected: voice.selected, fallbackVoice: voice.fallbackVoice, fallbackUsed: rawLineFiles.some((line) => line.voiceId === voice.voiceId && line.voiceFallbackUsed) })),
     music: music
       ? { mode: musicMode, usedInMix: musicMode === 'bed', id: music.id, title: music.title, provider: music.provider || 'internal', source: music.source, autoApproved: music.autoApproved === true }
       : { mode: musicMode, usedInMix: false },
@@ -6364,6 +6727,7 @@ async function statusPayload() {
   const quarantined = inventory.filter((item) => item.state === 'quarantined');
   const tracks = allowedMusicTracks(resources);
   const approvedTracks = tracks.filter((track) => track?.status === 'approved');
+  const voices = await voiceManagementPayload(resources);
   let musicBackend = { status: 'disabled' };
   if (MUSIC_ENABLED) {
     try {
@@ -6409,7 +6773,7 @@ async function statusPayload() {
     live: await liveStatus(),
     tvOnly: { id: ORANGE_IDIOT_ID, displayName: resources.orangeIdiot?.displayName || 'Orange Idiot', mainCast: false, sceneId: ORANGE_IDIOT_SCENE_ID, standaloneSceneId: ORANGE_IDIOT_STANDALONE_SCENE_ID, view: 'south', preview: resources.orangeIdiot?.preview || null, trigger: 'operator-selected, scheduled, or standalone original parody broadcast', voice: { provider: 'kokoro-loopback', configured: Boolean(ORANGE_IDIOT_VOICE), voiceId: ORANGE_IDIOT_VOICE || null, mixSources: [ORANGE_IDIOT_VOICE], mixStrategy: 'single-stock-voice', style: `bm_daniel at ${ORANGE_IDIOT_TTS_SPEED.toFixed(2)}x speed with ${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(2)}x pitch multiplier`, accent: 'bm_daniel stock voice with Orange Idiot pitch treatment', requiresCustomVoiceExport: false, pitchMultiplier: ORANGE_IDIOT_PITCH_MULTIPLIER } },
     audience: { queueDepth: audienceQueue().filter((suggestion) => suggestion.status === 'queued').length, lastAcceptedAt: state.audience.lastAcceptedAt, acceptedSources: ['website', 'youtube', 'tiktok', 'discord'], chatMessages: state.audience.chatMessages.length, lastChatMessageAt: state.audience.chatMessages.at(-1)?.createdAt || null, autonomousDiscordPosting: false },
-     voice: { provider: 'kokoro-loopback', endpoint: 'loopback', configured: Boolean(TTS_ENDPOINT), serialized: true, speed: SHARED_SPEECH_SPEED, orangeSpeed: ORANGE_IDIOT_TTS_SPEED, calibratedWpm: SPEECH_CALIBRATED_WPM, castVoices: Object.keys(VOICE_BY_CHARACTER).length, customVoiceAuthoring: 'kokovoicelab', customVoiceFileConfigured: Boolean(process.env.BF_TTS_CUSTOM_VOICES_PATH), referenceWpm: SHARED_TTS_REFERENCE_WPM, customVoiceFallbacks: 'configured-in-tts-service', barkOnly: true },
+    voice: { provider: 'kokoro-loopback', endpoint: 'loopback', configured: Boolean(TTS_ENDPOINT), serialized: true, speed: SHARED_SPEECH_SPEED, orangeSpeed: ORANGE_IDIOT_TTS_SPEED, calibratedWpm: SPEECH_CALIBRATED_WPM, castVoices: Object.keys(VOICE_BY_CHARACTER).length, selectedProfiles: voices.selectedCount, candidateCount: voices.candidateCount, collisions: voices.collisions, profileRoot: voices.voiceRoot, customVoiceAuthoring: 'kokovoicelab', customVoiceFileConfigured: Boolean(process.env.BF_TTS_CUSTOM_VOICES_PATH), referenceWpm: SHARED_TTS_REFERENCE_WPM, customVoiceFallbacks: 'profile-then-stock-kokoro', barkOnly: true },
     renderer: { provider: 'sharp-ffmpeg', canvas: '384x216', fps: RENDER_FPS, scaling: 'nearest-neighbor', serialized: true, timelineRendering: 'full-segment', maxSegmentSeconds: 300 },
     music: {
       approved: approvedTracks.length,
@@ -6904,6 +7268,10 @@ async function handleRequest(request, response) {
     const result = jsonResponse({ episodes: await listEpisodes() });
     response.writeHead(result.status, result.headers); response.end(result.body); return;
   }
+  if (request.method === 'GET' && url.pathname === '/api/production/voices') {
+    const result = jsonResponse(await voiceManagementPayload(await loadResources()));
+    response.writeHead(result.status, result.headers); response.end(result.body); return;
+  }
   const episodeMatch = url.pathname.match(/^\/api\/production\/episodes\/([^/]+)$/u);
   if (request.method === 'GET' && episodeMatch) {
     const episode = await readEpisode(episodeMatch[1]);
@@ -6934,6 +7302,30 @@ async function handleRequest(request, response) {
     await serveRuntimeFile(request, response, relativePath, mediaMatch[1] === 'video' ? 'video/mp4' : mediaMatch[1] === 'audio' ? 'audio/mpeg' : 'image/png');
     return;
   }
+  if (request.method === 'GET' && url.pathname === '/api/production/media/voice/cast-reel') {
+    await serveRuntimeFile(request, response, relativeRuntimePath(VOICE_STORE.castReelPath()), 'audio/wav');
+    return;
+  }
+  const currentVoiceMediaMatch = url.pathname.match(/^\/api\/production\/media\/voice\/current\/([^/]+)$/u);
+  if (request.method === 'GET' && currentVoiceMediaMatch) {
+    let characterId = '';
+    try { characterId = safeCharacterId(decodeURIComponent(currentVoiceMediaMatch[1])); } catch { characterId = ''; }
+    const stored = characterId ? await VOICE_STORE.readProfile(characterId) : { profile: null };
+    if (!characterId || !stored.profile?.auditionFile) { response.writeHead(404); response.end(); return; }
+    await serveRuntimeFile(request, response, stored.profile.auditionFile, 'audio/wav');
+    return;
+  }
+  const voiceMediaMatch = url.pathname.match(/^\/api\/production\/media\/voice\/([^/]+)\/([abc])$/u);
+  if (request.method === 'GET' && voiceMediaMatch) {
+    let characterId = '';
+    try { characterId = safeCharacterId(decodeURIComponent(voiceMediaMatch[1])); } catch { characterId = ''; }
+    const candidateId = safeCandidateId(voiceMediaMatch[2]);
+    const candidates = await VOICE_STORE.readCandidates(characterId);
+    const candidate = candidates.document?.candidates?.find((entry) => entry.candidateId === candidateId);
+    if (!characterId || !candidate || !candidate.audioFile) { response.writeHead(404); response.end(); return; }
+    await serveRuntimeFile(request, response, candidate.audioFile, 'audio/wav');
+    return;
+  }
   if (request.method === 'GET' && url.pathname === '/api/production/jobs') {
     const result = jsonResponse({ jobs: [...jobs.values()].slice(-60).reverse(), generationActive });
     response.writeHead(result.status, result.headers); response.end(result.body); return;
@@ -6957,6 +7349,24 @@ async function handleRequest(request, response) {
     response.writeHead(result.status, result.headers); response.end(result.body); return;
   }
   try {
+    if (url.pathname === '/api/production/voices/candidates') {
+      const characterId = safeCharacterId(body.characterId);
+      if (!characterId) throw new Error('characterId is required.');
+      const feedback = stripText(body.feedback, 240);
+      const record = queueGeneration(`voice-candidates-${characterId}`, () => generateVoiceCandidatesForCharacter(characterId, feedback));
+      const result = jsonResponse({ job: record }, 202);
+      response.writeHead(result.status, result.headers); response.end(result.body); return;
+    }
+    if (url.pathname === '/api/production/voices/select') {
+      const payload = await selectVoiceCandidate(body);
+      const result = jsonResponse(payload);
+      response.writeHead(result.status, result.headers); response.end(result.body); return;
+    }
+    if (url.pathname === '/api/production/voices/cast-reel') {
+      const record = queueGeneration('voice-cast-reel', generateCastReel);
+      const result = jsonResponse({ job: record }, 202);
+      response.writeHead(result.status, result.headers); response.end(result.body); return;
+    }
     if (url.pathname === '/api/production/audience/suggestions') {
       const payload = await queueAudienceSuggestion(body);
       const result = jsonResponse(payload, payload.duplicate ? 200 : 201);
@@ -7075,6 +7485,7 @@ async function start() {
   await mkdir(SEGMENT_ROOT, { recursive: true });
   await mkdir(AUDIO_ROOT, { recursive: true });
   await mkdir(EPISODE_ROOT, { recursive: true });
+  await mkdir(VOICE_ROOT, { recursive: true });
   await loadState();
   const server = createServer((request, response) => {
     void handleRequest(request, response).catch((error) => {
@@ -7103,7 +7514,7 @@ async function start() {
   return server;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   start().catch((error) => { console.error('[bullshit-factory-production] fatal:', error); process.exitCode = 1; });
 }
 

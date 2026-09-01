@@ -19,6 +19,7 @@ import {
   type SessionPlan,
 } from '../lib/bullshit-factory';
 import { buildSceneLayout, getCharacterGeometry, resolveScenePlacement } from '../lib/bullshit-factory-location.mjs';
+import BullshitFactoryVoices from './BullshitFactoryVoices';
 
 type QualityResult = ReturnType<typeof evaluateSessionQuality>;
 
@@ -1225,6 +1226,8 @@ export default function BullshitFactoryDashboard() {
             ) : <p className="bf-production-log">No production activity yet.</p>}
           </section>
         </section>
+
+        <BullshitFactoryVoices />
 
         <section className="bf-episode-library" aria-label="Finished episode review library">
           <div className="bf-section-heading">

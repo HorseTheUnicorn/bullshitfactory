@@ -45,7 +45,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
-
 # public-sharing guardrails
 # Keep runtime credentials, tunnel files, and secret bundles out of future commits.
 tunnel.env
@@ -57,3 +56,6 @@ tunnel.env
 /runtime/
 /.codex-deploy/
 *.orig
+/runtime/
+/.codex-voice-smoke-runtime*/
+tsconfig.tsbuildinfo

@@ -15,20 +15,25 @@ function json(payload: unknown, status = 200) {
   });
 }
 
-function knownGetPath(view: string | null, id: string | null) {
+function knownGetPath(view: string | null, id: string | null, characterId: string | null) {
   if (view === 'status' || !view) return '/api/production/status';
   if (view === 'playlist') return '/api/production/playlist';
   if (view === 'segments') return '/api/production/segments';
   if (view === 'episodes') return '/api/production/episodes';
+  if (view === 'voices') return '/api/production/voices';
   if (view === 'jobs') return '/api/production/jobs';
   if (view === 'logs') return '/api/production/logs';
   if (view === 'live-status') return '/api/production/live/status';
+  if (view === 'job' && id && /^job-[a-f0-9-]{8,120}$/iu.test(id)) return `/api/production/jobs/${encodeURIComponent(id)}`;
   if (view === 'segment' && id && /^[a-z0-9][a-z0-9_-]{0,95}$/iu.test(id)) return `/api/production/segments/${encodeURIComponent(id)}`;
   if ((view === 'episode' || view === 'episode-video' || view === 'episode-poster' || view === 'episode-captions' || view === 'episode-transcript') && id && /^episode-[a-z0-9-]{1,120}$/iu.test(id)) {
     if (view === 'episode') return `/api/production/episodes/${encodeURIComponent(id)}`;
     const kind = view.replace('episode-', '');
     return `/api/production/media/episode/${kind}/${encodeURIComponent(id)}`;
   }
+  if (view === 'voice-current' && characterId && /^[a-z0-9][a-z0-9_-]{0,95}$/iu.test(characterId)) return `/api/production/media/voice/current/${encodeURIComponent(characterId)}`;
+  if (view === 'voice-audition' && characterId && id && /^[a-z0-9][a-z0-9_-]{0,95}$/iu.test(characterId) && /^[abc]$/iu.test(id)) return `/api/production/media/voice/${encodeURIComponent(characterId)}/${encodeURIComponent(id.toLowerCase())}`;
+  if (view === 'voice-reel') return '/api/production/media/voice/cast-reel';
   return null;
 }
 
@@ -40,6 +45,9 @@ function knownPostPath(action: string) {
   if (action === 'save-live-setup') return '/api/production/live/setup';
   if (action === 'start-live') return '/api/production/live/start';
   if (action === 'stop-live') return '/api/production/live/stop';
+  if (action === 'generate-voice-candidates') return '/api/production/voices/candidates';
+  if (action === 'select-voice-candidate') return '/api/production/voices/select';
+  if (action === 'generate-cast-reel') return '/api/production/voices/cast-reel';
   if (action === 'save-orange-schedule') return '/api/production/orange-idiot/schedule';
   if (action === 'refresh-orange-sources') return '/api/production/orange-idiot/research';
   if (action === 'add-research-topic' || action === 'remove-research-topic') return '/api/production/research/topic';
@@ -87,13 +95,13 @@ async function proxyJson(pathname: string, init: RequestInit = {}, timeoutMs = 8
 export async function GET(request: Request) {
   if (!isAdminAuthenticated(request)) return json({ error: 'Admin login required.' }, 401);
   const url = new URL(request.url);
-  const pathname = knownGetPath(url.searchParams.get('view'), url.searchParams.get('id'));
+  const pathname = knownGetPath(url.searchParams.get('view'), url.searchParams.get('id'), url.searchParams.get('characterId'));
   if (!pathname) return json({ error: 'Unknown production view.' }, 400);
-  if (pathname.includes('/media/episode/')) {
+  if (pathname.includes('/media/episode/') || pathname.includes('/media/voice/')) {
     try {
       const range = request.headers.get('range');
       const response = await productionFetch(pathname, range ? { headers: { range } } : {}, 30_000);
-      if (!response.ok) return json({ error: 'Episode media is unavailable.' }, response.status);
+      if (!response.ok) return json({ error: 'Requested voice or episode media is unavailable.' }, response.status);
       const headers = new Headers();
       for (const name of ['accept-ranges', 'cache-control', 'content-range', 'content-type', 'content-length', 'content-disposition', 'x-content-type-options']) {
         const value = response.headers.get(name);

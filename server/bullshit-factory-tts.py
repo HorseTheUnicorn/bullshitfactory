@@ -74,6 +74,7 @@ MODEL_LOCK = threading.Lock()
 CUSTOM_VOICES: dict[str, np.ndarray] = {}
 CUSTOM_VOICES_LOADED = False
 CUSTOM_VOICE_ERROR: str | None = None
+VOICE_BLEND_CACHE: dict[str, np.ndarray] = {}
 
 
 def json_bytes(payload: dict[str, Any]) -> bytes:
@@ -125,21 +126,53 @@ def load_model() -> Kokoro:
     return MODEL
 
 
-def voice_argument_for(name: str) -> str | np.ndarray:
-    argument: str | np.ndarray = CUSTOM_VOICES.get(name, name)
+def voice_argument_for(name: str, fallback: str | None = None) -> str | np.ndarray:
+    requested_name = str(name).strip()
+    argument: str | np.ndarray = CUSTOM_VOICES.get(requested_name, requested_name)
     if isinstance(argument, str) and MODEL_VOICES and argument not in MODEL_VOICES:
-        fallback = CUSTOM_VOICE_FALLBACKS.get(name)
-        if fallback and fallback in MODEL_VOICES:
-            logging.warning("Custom voice %s is unavailable; using stock Kokoro fallback %s", name, fallback)
-            argument = fallback
+        fallback_name = str(fallback or CUSTOM_VOICE_FALLBACKS.get(requested_name, "")).strip()
+        fallback_argument: str | np.ndarray = CUSTOM_VOICES.get(fallback_name, fallback_name)
+        if isinstance(fallback_argument, np.ndarray):
+            logging.warning("Voice %s is unavailable; using custom fallback vector %s", requested_name, fallback_name)
+            argument = fallback_argument
+        elif fallback_name and fallback_argument in MODEL_VOICES:
+            logging.warning("Voice %s is unavailable; using stock Kokoro fallback %s", requested_name, fallback_name)
+            argument = fallback_argument
         else:
-            raise ValueError(f"Voice {name!r} is not present in the installed model.")
+            raise ValueError(f"Voice {requested_name!r} is not present in the installed model.")
     return argument
 
 
-def voice_vector_for(model: Kokoro, name: str) -> np.ndarray:
+def normalize_voice_blend(raw_blend: Any) -> list[tuple[str, float]]:
+    if raw_blend is None:
+        return []
+    if not isinstance(raw_blend, list) or not raw_blend:
+        raise ValueError("voice_blend must be a non-empty list")
+    if len(raw_blend) > 4:
+        raise ValueError("voice_blend may contain at most four sources")
+    normalized: list[tuple[str, float]] = []
+    for item in raw_blend:
+        if not isinstance(item, dict):
+            raise ValueError("each voice_blend source must be an object")
+        source = item.get("voice", item.get("name", item.get("id")))
+        if not isinstance(source, str) or not source.strip() or len(source.strip()) > 80:
+            raise ValueError("each voice_blend source needs a valid voice name")
+        try:
+            weight = float(item.get("weight", 1.0))
+        except (TypeError, ValueError):
+            raise ValueError("each voice_blend weight must be numeric") from None
+        if not np.isfinite(weight) or weight <= 0:
+            raise ValueError("each voice_blend weight must be positive and finite")
+        normalized.append((source.strip(), weight))
+    total = sum(weight for _, weight in normalized)
+    if not np.isfinite(total) or total <= 0:
+        raise ValueError("voice_blend weights must have a finite positive total")
+    return [(source, weight / total) for source, weight in normalized]
+
+
+def voice_vector_for(model: Kokoro, name: str, fallback: str | None = None) -> np.ndarray:
     """Resolve a stock or custom voice to the vector Kokoro can synthesize from."""
-    argument = voice_argument_for(name)
+    argument = voice_argument_for(name, fallback)
     if isinstance(argument, np.ndarray):
         vector = argument
     else:
@@ -151,6 +184,29 @@ def voice_vector_for(model: Kokoro, name: str) -> np.ndarray:
     values = np.asarray(vector, dtype=np.float32)
     if values.size <= 0 or not np.isfinite(values).all():
         raise ValueError(f"Voice {name!r} has an empty or invalid Kokoro vector.")
+    return values
+
+
+def blended_voice_vector(model: Kokoro, raw_blend: Any, fallback: str | None = None) -> np.ndarray:
+    """Build and cache a reusable Kokoro vector blend for a candidate recipe."""
+    blend = normalize_voice_blend(raw_blend)
+    if not blend:
+        raise ValueError("voice_blend must contain at least one source")
+    cache_key = json.dumps(blend, separators=(",", ":"))
+    cached = VOICE_BLEND_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    vectors = [voice_vector_for(model, source, fallback) for source, _ in blend]
+    if len({vector.shape for vector in vectors}) != 1:
+        raise ValueError("Kokoro voice vectors in the blend have incompatible shapes")
+    mixed_voice = sum(
+        (weight * vector for (source, weight), vector in zip(blend, vectors)),
+        np.zeros_like(vectors[0], dtype=np.float32),
+    )
+    values = np.asarray(mixed_voice, dtype=np.float32)
+    if values.size <= 0 or not np.isfinite(values).all():
+        raise ValueError("Kokoro voice blend is empty or invalid")
+    VOICE_BLEND_CACHE[cache_key] = values
     return values
 
 
@@ -229,7 +285,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
         if self.path == "/healthz":
             load_custom_voices()
-            self.send_json(200, {"ok": True, "service": "bullshit-factory-kokoro", "modelLoaded": MODEL is not None, "serialized": True, "voiceAuthoring": "kokovoicelab", "customVoiceCount": len(CUSTOM_VOICES), "customVoiceError": CUSTOM_VOICE_ERROR, "voiceMix": {"id": ORANGE_IDIOT_MIX_VOICE, "sources": list(ORANGE_IDIOT_MIX_SOURCES), "enabled": all(voice_is_available(source) for source in ORANGE_IDIOT_MIX_SOURCES), "strategy": "voice-vector-single-performance", "style": "single-performance voice-vector blend"}})
+            self.send_json(200, {"ok": True, "service": "bullshit-factory-kokoro", "modelLoaded": MODEL is not None, "serialized": True, "voiceAuthoring": "kokovoicelab", "customVoiceCount": len(CUSTOM_VOICES), "customVoiceError": CUSTOM_VOICE_ERROR, "blendCacheCount": len(VOICE_BLEND_CACHE), "voiceMix": {"id": ORANGE_IDIOT_MIX_VOICE, "sources": list(ORANGE_IDIOT_MIX_SOURCES), "enabled": all(voice_is_available(source) for source in ORANGE_IDIOT_MIX_SOURCES), "strategy": "voice-vector-single-performance", "style": "single-performance voice-vector blend"}})
             return
         if self.path == "/voices":
             self.send_json(200, {"voices": available_voice_names()})
@@ -261,6 +317,8 @@ class Handler(BaseHTTPRequestHandler):
 
         text = request.get("text")
         voice = request.get("voice")
+        raw_voice_blend = request.get("voice_blend", request.get("voiceBlend"))
+        fallback_voice = request.get("fallback_voice", request.get("fallbackVoice"))
         if not isinstance(text, str) or not text.strip():
             self.send_json(400, {"error": "Speech text is required."})
             return
@@ -270,6 +328,17 @@ class Handler(BaseHTTPRequestHandler):
         load_custom_voices()
         if not isinstance(voice, str) or (voice != ORANGE_IDIOT_MIX_VOICE and voice not in ALLOWED_VOICES and voice not in CUSTOM_VOICES and voice not in CUSTOM_VOICE_FALLBACKS):
             self.send_json(400, {"error": "That Kokoro voice is not enabled."})
+            return
+        if fallback_voice is not None and (not isinstance(fallback_voice, str) or not fallback_voice.strip() or not voice_is_available(fallback_voice.strip())):
+            self.send_json(400, {"error": "The requested stock Kokoro fallback is not enabled."})
+            return
+        try:
+            voice_blend = normalize_voice_blend(raw_voice_blend)
+        except ValueError as error:
+            self.send_json(400, {"error": str(error)})
+            return
+        if voice_blend and any(not voice_is_available(source) for source, _ in voice_blend):
+            self.send_json(400, {"error": "Every voice blend source must be an enabled Kokoro voice."})
             return
         try:
             speed = float(request.get("speed", str(DEFAULT_TTS_SPEED)))
@@ -289,8 +358,32 @@ class Handler(BaseHTTPRequestHandler):
                 model = load_model()
                 if voice == ORANGE_IDIOT_MIX_VOICE:
                     samples, sample_rate = create_child_voice_mix(model, text, speed, lang)
+                elif voice_blend:
+                    try:
+                        samples, sample_rate = model.create(
+                            text.strip(),
+                            voice=blended_voice_vector(model, voice_blend, fallback_voice.strip() if isinstance(fallback_voice, str) else None),
+                            speed=speed,
+                            lang=lang,
+                        )
+                    except (KeyError, TypeError, ValueError, RuntimeError) as error:
+                        fallback_name = (fallback_voice.strip() if isinstance(fallback_voice, str) else "") or CUSTOM_VOICE_FALLBACKS.get(voice, "")
+                        if not fallback_name:
+                            raise
+                        logging.warning("Voice blend for %s unavailable (%s); using fallback %s", voice, error, fallback_name)
+                        samples, sample_rate = model.create(
+                            text.strip(),
+                            voice=voice_argument_for(fallback_name, fallback_name),
+                            speed=speed,
+                            lang=lang,
+                        )
                 else:
-                    samples, sample_rate = model.create(text.strip(), voice=voice_argument_for(voice), speed=speed, lang=lang)
+                    samples, sample_rate = model.create(
+                        text.strip(),
+                        voice=voice_argument_for(voice, fallback_voice.strip() if isinstance(fallback_voice, str) else None),
+                        speed=speed,
+                        lang=lang,
+                    )
             if not speech_is_usable(samples, sample_rate):
                 self.send_json(502, {"error": "Kokoro returned silent or invalid speech."})
                 return
