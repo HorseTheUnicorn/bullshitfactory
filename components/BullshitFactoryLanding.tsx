@@ -239,7 +239,7 @@ export default function BullshitFactoryLanding() {
     void playContinuousPlayer();
   }, [continuousPlaybackActive, playlist?.current?.segmentId, playContinuousPlayer, selectedEpisodeId]);
 
-  function advanceContinuousPlayer() {
+  const advanceContinuousPlayer = useCallback(() => {
     const currentEpisodeId = selectedEpisodeId;
     if (!continuousPlaybackActive || !currentEpisodeId || advancedEpisodeRef.current === currentEpisodeId) return;
     // `timeupdate` and `ended` can both fire around the same media boundary.
@@ -253,7 +253,22 @@ export default function BullshitFactoryLanding() {
       setSelectedId(episodes[(currentIndex + 1 + episodes.length) % episodes.length]?.id || episodes[0].id);
     }
     setPlayerPlaying(false);
-  }
+  }, [continuousPlaybackActive, episodes, playlist?.next?.segmentId, selectedEpisodeId, selectedId]);
+
+  useEffect(() => {
+    if (!continuousPlaybackActive || !selectedEpisodeId) return;
+    // Some browsers can stop dispatching media events at the exact final
+    // frame. Poll only the existing player state as a last-resort handoff.
+    const watchdog = window.setInterval(() => {
+      const player = playerRef.current;
+      if (!player) return;
+      const duration = Number(player.duration);
+      if (player.ended || (Number.isFinite(duration) && duration > 0 && player.currentTime >= duration - 0.05)) {
+        advanceContinuousPlayer();
+      }
+    }, 250);
+    return () => window.clearInterval(watchdog);
+  }, [advanceContinuousPlayer, continuousPlaybackActive, selectedEpisodeId]);
 
   function handlePlayerProgress() {
     const player = playerRef.current;
