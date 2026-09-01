@@ -274,7 +274,7 @@ export const sessionDurationOptions = SESSION_DURATION_OPTIONS;
 function clipPriority(clip: PixelClip) {
   const id = String(clip.id || '');
   const frameCount = Array.isArray(clip.frames) ? clip.frames.length : Number(clip.frameCount || 0);
-  return (/v3/i.test(id) ? 1000 : 0) + (frameCount === 6 ? 100 : 0) + (/pixellab/i.test(id) ? 10 : 0);
+  return frameCount >= 12 ? 100 : 0;
 }
 
 function bestClip(clips: PixelClip[], matches: (clip: PixelClip) => boolean) {
@@ -289,7 +289,7 @@ export function pickCharacterClip(character: FactoryCharacter, preference = 'mov
       ? bestClip(clips, (clip) => /idle|loop|stiff|hunched|loose|slow|rocking|rigid|energetic|cautious/i.test(clip.id) && !/walk|run|step|react|talk|point|gesture/i.test(clip.id))
     : preference === 'reaction'
       ? bestClip(clips, (clip) => /react|laugh|cheer|bark|talk|point|gesture/i.test(clip.id))
-    : bestClip(clips, (clip) => /walk|run|step|pixellab-/i.test(clip.id)) || clips.find((clip) => clip.id === character.primaryAnimation);
+    : bestClip(clips, (clip) => /walk|run|step/i.test(clip.id)) || clips.find((clip) => clip.id === character.primaryAnimation);
   return preferred || clips[0] || null;
 }
 

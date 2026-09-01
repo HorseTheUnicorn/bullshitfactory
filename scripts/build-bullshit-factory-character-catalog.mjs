@@ -14,7 +14,7 @@ const productionCatalogPath = path.join(productionRoot, 'character-catalog.json'
 const motionRegistryPath = path.join(publicRoot, 'bullshit-factory', 'production', 'motion-registry.json');
 const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
 const H3_LIBRARY_VERSION = 2;
-const H3_ASSET_ROOT = '/bullshit-factory/motion/v1';
+const H3_ASSET_ROOT = '/bullshit-factory/motion/v2';
 
 const characterSpecs = [
   {
@@ -25,7 +25,6 @@ const characterSpecs = [
     department: 'management',
     tone: '#c86f3f',
     quote: 'The breakdown is now official company policy.',
-    preferredAnimation: 'looking_forward_talking_and_pointing_at_the_screen',
   },
   {
     id: 'magsrust',
@@ -35,7 +34,6 @@ const characterSpecs = [
     department: 'maintenance',
     tone: '#b58d65',
     quote: 'I remember when this machine only caught fire once a week.',
-    preferredAnimation: 'Stiff_but_powerful_idle_loop_with_knee_creaks_shou',
   },
   {
     id: 'kernelkline',
@@ -45,7 +43,6 @@ const characterSpecs = [
     department: 'systems',
     tone: '#6d9d91',
     quote: 'The server is emotionally unavailable.',
-    preferredAnimation: 'Hunched_typing_loop_with_finger_twitching_rapid_he',
   },
   {
     id: 'sudsmcgee',
@@ -55,7 +52,6 @@ const characterSpecs = [
     department: 'break-room',
     tone: '#d28a44',
     quote: 'This problem needs a meeting and a drink.',
-    preferredAnimation: 'Loose_swaggering_idle_with_bottle-flask_flourish_w',
   },
   {
     id: 'dooby',
@@ -65,7 +61,6 @@ const characterSpecs = [
     department: 'wellness',
     tone: '#82956e',
     quote: 'What if the forklift is just a very slow thought?',
-    preferredAnimation: 'Slow_drifting_idle_with_gentle_swaying_long_though',
   },
   {
     id: 'spaulding',
@@ -75,7 +70,6 @@ const characterSpecs = [
     department: 'maritime',
     tone: '#668a92',
     quote: 'Every crisis is a rigging problem.',
-    preferredAnimation: 'Rocking-on-a-deck_idle_with_compass_checking_rope',
   },
   {
     id: 'string',
@@ -85,7 +79,6 @@ const characterSpecs = [
     department: 'entertainment',
     tone: '#a65b5c',
     quote: 'This argument needs a guitar solo.',
-    preferredAnimation: 'Energetic_performance_loop_with_foot_tapping_shoul',
   },
   {
     id: 'karen',
@@ -95,7 +88,6 @@ const characterSpecs = [
     department: 'compliance',
     tone: '#986b86',
     quote: 'I need that violation in triplicate.',
-    preferredAnimation: 'Rigid_idle_loop_with_rapid_writing_glasses_pushing',
   },
   {
     id: 'nico',
@@ -105,7 +97,6 @@ const characterSpecs = [
     department: 'shipping',
     tone: '#c0a04f',
     quote: 'Is this where I sign, or where I quit?',
-    preferredAnimation: 'Cautious_loop_with_nervous_steps_double-takes_box',
   },
   {
     id: 'bork',
@@ -115,7 +106,6 @@ const characterSpecs = [
     department: 'animal',
     tone: '#7e9eb0',
     quote: 'Bark bark bark.',
-    preferredAnimation: 'bark_loop_with_independent_head_tilts_ear_flicks_f',
     isDog: true,
   },
 ];
@@ -184,17 +174,17 @@ const ACTION_FALLBACKS = Object.freeze({
   interact: 'react',
 });
 
-function buildActionRegistry(clips, isDog, { replacementActive = false } = {}) {
-  const usable = clips.filter((clip) => clip.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length && (!replacementActive || clip.source?.kind === 'h3-max-local'));
+function buildActionRegistry(clips, isDog) {
+  const usable = clips.filter((clip) => clip.status === 'approved'
+    && clip.source?.kind === 'h3-max-local'
+    && Array.isArray(clip.frames)
+    && clip.frames.length);
   return Object.fromEntries(ACTION_REGISTRY.map((action) => {
     const fallbackAction = isDog
       ? ({ talk: 'bark', bark: 'bark', wag_tail: 'wag_tail', sniff: 'sniff', walk: 'walk', enter: 'walk', exit: 'walk', interact: 'react' }[action] || 'idle')
       : (ACTION_FALLBACKS[action] || 'idle');
-    const preferred = (clip) => {
-      const source = String(clip?.source?.kind || '');
-      return source === 'h3-max-local' ? 100000 : source === 'character-authored' ? 10000 : /pixellab/iu.test(source) ? 0 : 1000;
-    };
-    const newest = (left, right) => preferred(right) - preferred(left) || String(right?.id || '').localeCompare(String(left?.id || ''));
+    const newest = (left, right) => String(right?.acceptedAt || right?.generatedAt || right?.id || '')
+      .localeCompare(String(left?.acceptedAt || left?.generatedAt || left?.id || ''));
     const fallbackChain = [];
     let nextFallback = fallbackAction;
     while (nextFallback && !fallbackChain.includes(nextFallback) && fallbackChain.length < ACTION_REGISTRY.length) {
@@ -205,18 +195,12 @@ function buildActionRegistry(clips, isDog, { replacementActive = false } = {}) {
     }
     if (!fallbackChain.includes('idle')) fallbackChain.push('idle');
     const local = (predicate) => usable.filter((clip) => predicate(clip) && clip.source?.kind === 'h3-max-local').sort(newest)[0] || null;
-    const any = (predicate) => usable.filter(predicate).sort(newest)[0] || null;
-    // Prefer an accepted local replacement fallback over an older exact clip.
-    // This keeps pilot renders visually consistent while legacy assets remain
-    // on disk for rollback and audit.
     const exactLocal = local((clip) => clip.action === action);
     const fallbackLocal = fallbackChain
       .map((fallbackName) => local((clip) => clip.action === fallbackName))
       .find(Boolean)
       || null;
-    const exactLegacy = any((clip) => clip.action === action);
-    const fallbackLegacy = fallbackChain.map((fallbackName) => any((clip) => clip.action === fallbackName)).find(Boolean) || null;
-    const selected = exactLocal || fallbackLocal || exactLegacy || fallbackLegacy;
+    const selected = exactLocal || fallbackLocal;
     const exactSelected = Boolean(selected && selected.action === action);
     return [action, {
       clipId: selected?.id || null,
@@ -340,88 +324,14 @@ async function inspectPng(filePath, label) {
   };
 }
 
-function choosePrimaryAnimation(animationNames, preferredAnimation) {
-  if (preferredAnimation && animationNames.includes(preferredAnimation)) return preferredAnimation;
-  return animationNames[0] || null;
+function choosePrimaryAnimation(clips) {
+  return clips.find((clip) => clip.action === 'idle')?.id
+    || clips.find((clip) => clip.action === 'talk')?.id
+    || clips.find((clip) => clip.action === 'walk')?.id
+    || clips[0]?.id
+    || null;
 }
 
-
-function classifyAnimationAction(animationId, isDog = false) {
-  const id = String(animationId || '').toLowerCase().replace(/[_-]+/gu, ' ');
-  if (isDog) {
-    if (/\bbark\b|\byip\b|\bwoof\b|\bbark talk\b/u.test(id)) return 'bark';
-    if (/\bwag tail\b|\btail\b|\bear flick\b/u.test(id)) return 'wag_tail';
-    if (/\bsniff\b|\bscent\b/u.test(id)) return 'sniff';
-    if (/\bwalk\b|\btrot\b|\brun\b|\bchase\b/u.test(id)) return 'walk';
-    if (/\bfetch\b|\bcatch\b|\btug\b|\bcarry\b|\bchew\b|\btoy\b/u.test(id)) return 'interact';
-    if (/\bjump\b|\bleap\b|\broll\b|\bshake\b|\bscratch\b|\bstretch\b|\byawn\b|\blie down\b|\bsleep\b|\bwake\b/u.test(id)) return 'react';
-    return 'idle';
-  }
-  if (/\bwalk\b|\brun\b|\bstep\b|\bstand up\b/u.test(id)) return 'walk';
-  if (/\btalk\b|\bspeak\b|\bspeech\b|\bpoint\b|\bpresent\b|\bgesture\b/u.test(id)) return 'talk';
-  if (/\btype\b|\bcomputer\b|\bcable\b|\bconsole\b|\bkeyboard\b/u.test(id)) return 'type';
-  if (/\brepair\b|\bfix\b|\bpull rope\b|\bclean\b|\bcook\b/u.test(id)) return 'repair';
-  if (/\bcarry\b|\blift\b|\bpick up\b|\bput down\b|\bcrate\b|\bcart\b/u.test(id)) return 'carry';
-  if (/\bdrink\b|\btoast\b|\bsmoke\b|\bphone\b|\bread\b|\bwrite\b|\binspect\b|\bcheck\b|\buse\b/u.test(id)) return 'interact';
-  if (/\bturn\b|\blook\b|\bglance\b|\bshake no\b|\bnod yes\b|\bbeckon\b|\bwave\b|\bshrug\b/u.test(id)) return 'react';
-  if (/\blaugh\b|\bcough\b|\bsneeze\b|\byawn\b|\bblink\b|\bstretch\b|\bscratch\b|\bsit\b|\bsleep\b|\blean\b|\brock\b|\bargue\b/u.test(id)) return 'react';
-  if (/\bidle\b|\bloop\b|\bhunched\b|\bstiff\b|\bcautious\b|\bloose\b|\brigid\b|\benergetic\b|\bslow\b|\brocking\b/u.test(id)) return 'idle';
-  return 'react';
-}
-
-function animationSourceKind(animationId) {
-  const id = String(animationId || '');
-  if (/(?:^|[-_])v3(?:$|[-_])/iu.test(id)) return 'pixellab-animate-with-text-v3';
-  if (/(?:^|[-_])v2(?:$|[-_])/iu.test(id)) return 'pixellab-v2';
-  return /pixellab/iu.test(id) ? 'pixellab-authored' : 'character-authored';
-}
-
-async function inspectAnimationClip(spec, root, animationId, isDog) {
-  const animationRoot = path.join(root, 'Idle', 'animations', animationId);
-  const southRoot = path.join(animationRoot, 'south');
-  const entries = (await fs.readdir(southRoot, { withFileTypes: true }))
-    .filter((entry) => entry.isFile() && /^frame_\d+\.png$/u.test(entry.name))
-    .sort((left, right) => {
-      const a = Number(left.name.match(/\d+/u)?.[0] || 0);
-      const b = Number(right.name.match(/\d+/u)?.[0] || 0);
-      return a - b;
-    });
-  const frames = [];
-  const errors = [];
-  let dimensions = null;
-  for (const entry of entries) {
-    const imagePath = path.join(southRoot, entry.name);
-    try {
-      const info = await inspectPng(imagePath, spec.folder + ' animation frame');
-      const current = { width: info.width, height: info.height, hasAlpha: info.hasAlpha };
-      if (dimensions && (current.width !== dimensions.width || current.height !== dimensions.height)) {
-        errors.push('frame dimensions do not match');
-      }
-      dimensions ||= current;
-      frames.push({ file: publicPath(imagePath), width: current.width, height: current.height });
-    } catch (error) {
-      errors.push(error instanceof Error ? error.message : 'unreadable frame');
-    }
-  }
-  const isPixelLab = /pixellab/iu.test(animationId);
-  const isV3 = /(?:^|[-_])v3(?:$|[-_])/iu.test(animationId);
-  const minimumFrames = isPixelLab ? 6 : 7;
-  if (frames.length < minimumFrames) errors.push('too few frames');
-  if (isV3 && frames.length !== 6) errors.push('animate-with-text-v3 must have exactly 6 frames');
-  return {
-    id: animationId,
-    action: classifyAnimationAction(animationId, isDog),
-    direction: 'south',
-    frameCount: frames.length,
-    fps: 12,
-    loop: true,
-    status: errors.length ? 'review' : 'approved',
-    quality: errors.length ? 'review' : 'verified',
-    qualityErrors: errors,
-    source: { kind: animationSourceKind(animationId), directory: publicPath(animationRoot) + '/' },
-    frames,
-  };
-}
 
 async function inspectCharacter(spec, motionRegistry) {
   const root = path.join(characterRoot, spec.folder);
@@ -455,35 +365,10 @@ async function inspectCharacter(spec, motionRegistry) {
     };
   }
 
-  const clips = [];
-  const animationRoot = path.join(root, 'Idle', 'animations');
-  let animationEntries = [];
-  try {
-    animationEntries = (await fs.readdir(animationRoot, { withFileTypes: true }))
-      .filter((entry) => entry.isDirectory())
-      .sort((left, right) => left.name.localeCompare(right.name));
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
-  }
-  for (const entry of animationEntries) {
-    clips.push(await inspectAnimationClip(spec, root, entry.name, Boolean(spec.isDog)));
-  }
-  const acceptedEntries = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted') : [];
-  const replacementActive = motionRegistry.status === 'active'
-    && motionRegistry.runtimePolicy === 'replacement'
-    && motionRegistry.libraryId === H3_LIBRARY_ID
-    && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION
-    && acceptedEntries.length > 0
-    && acceptedEntries.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
-  const legacyClips = clips.splice(0, clips.length).map((clip) => replacementActive
-    ? { ...clip, status: 'compatibility-only', quality: 'compatibility-only', runtimeEligible: false }
-    : clip);
-  clips.push(...legacyClips);
-  clips.push(...await acceptedMotionClips(spec, motionRegistry));
-  const animationNames = clips.map((clip) => clip.id);
-  const primaryAnimation = choosePrimaryAnimation(animationNames, spec.preferredAnimation);
+  const clips = await acceptedMotionClips(spec, motionRegistry);
+  const primaryAnimation = choosePrimaryAnimation(clips);
   if (!primaryAnimation) throw new Error(spec.folder + ' has no animation clips.');
-  const actionRegistry = buildActionRegistry(clips, Boolean(spec.isDog), { replacementActive });
+  const actionRegistry = buildActionRegistry(clips, Boolean(spec.isDog));
 
   return {
     id: spec.id,
@@ -549,7 +434,7 @@ async function main() {
     catalogVersion: '2.0',
     showId: 'bullshit-factory',
     status: 'active-review',
-    format: 'pixellab-16bit-sprite',
+    format: '16-bit-pixel-art',
     root: '/bullshit-factory/characters/v1/',
     castLimit: 10,
     activeCastCount: characters.length,
@@ -564,7 +449,7 @@ async function main() {
       loop: true,
       sourceFramesPerClip: 6,
       sourceFrameVariants: [6, 7, 8],
-      registryPolicy: replacementActive ? 'accepted local motion registry only; legacy directories removed after replacement acceptance' : 'accepted local motion registry first; legacy directories remain compatibility candidates until replacement activation',
+      registryPolicy: 'accepted H3_LIBRARY_V2 local motion registry only; legacy motion assets are not runtime eligible',
       actionRegistryVersion: '2.0',
       actions: ACTION_REGISTRY,
       fallbackActions: ACTION_FALLBACKS,
@@ -581,14 +466,14 @@ async function main() {
       acceptedClipCount: acceptedMotionCount,
       reviewPendingClipCount: reviewPendingMotionCount,
       replacementActive,
-      legacyRuntimeEligible: !replacementActive,
+      legacyRuntimeEligible: false,
     },
     retiredReplacements: [
       {
         retiredFolder: 'rook_boss',
         replacementFolder: 'RookBoss',
         replacementId: 'rookboss',
-        reason: 'The new PixelLab RookBoss export is now canonical.',
+        reason: 'The canonical RookBoss export is now active.',
       },
     ],
     characters,

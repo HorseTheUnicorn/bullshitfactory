@@ -26,31 +26,6 @@
           "north-west": "Idle/rotations/north-west.png",
           "west": "Idle/rotations/west.png",
           "south-west": "Idle/rotations/south-west.png"
-        },
-        "animations": {
-          "looking_forward_talking_and_pointing_at_the_screen": {
-            "south": [
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_000.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_001.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_002.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_003.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_004.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_005.png",
-              "Idle/animations/looking_forward_talking_and_pointing_at_the_screen/south/frame_006.png"
-            ]
-          },
-          "pixellab-walk-v1": {
-            "south": [
-              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
-            ]
-          }
         }
       }
     }

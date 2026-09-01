@@ -50,7 +50,7 @@
     "headTarget": "camera",
     "talk": "south-facing short-burst delivery with pauses, repetitions, stretched vowels, abrupt emphasis changes, and bounded lateral pacing beats",
     "walk": "south-facing lateral walk with head and eyes held on camera; no profile turn",
-    "runtimePolicy": "use the reviewed local H3 talk/walk clips while the replacement registry is active; use the deterministic local fallback only before activation or during rollback"
+    "runtimePolicy": "use the reviewed local H3 talk/walk clips while the replacement registry is active; legacy animation assets are not runtime eligible"
   },
   "voice": {
     "provider": "kokoro-loopback",

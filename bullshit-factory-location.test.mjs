@@ -34,6 +34,16 @@ test('factory-floor resolves semantic locations to valid foot-grounded placement
   }
 });
 
+test('Bork renders smaller than human cast while staying feet grounded', () => {
+  const human = resolveScenePlacement({ sceneId: 'factory-floor', characterId: 'rookboss', walkBand: 'middle', x: 0.5 });
+  const bork = resolveScenePlacement({ sceneId: 'factory-floor', characterId: 'bork', walkBand: 'middle', x: 0.5 });
+  const visibleHeight = (placement) => placement.visibleBounds.bottom - placement.visibleBounds.top + 1;
+  assert.equal(bork.characterScale, 0.72);
+  assert.ok(visibleHeight(bork) < visibleHeight(human) * 0.85, 'Bork should read materially smaller than a human cast member');
+  assert.equal(bork.feet.y, human.feet.y);
+  assert.equal(bork.groundAnchor.y, bork.feet.y);
+});
+
 test('factory-floor layout supplies entry, stand, exit, and feet-locked navigation', () => {
   const layout = buildSceneLayout('factory-floor', ['rookboss', 'magsrust', 'kernelkline', 'bork']);
   const result = validateSceneLayout(layout, { requireActors: ['rookboss', 'magsrust', 'kernelkline', 'bork'] });

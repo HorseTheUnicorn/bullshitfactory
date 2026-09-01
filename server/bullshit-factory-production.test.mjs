@@ -16,6 +16,7 @@ import {
   selectContinuousDurationPreset,
   resolveGenerationWho,
   selectGenerationWho,
+  stripTrailingCaseTag,
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
@@ -102,6 +103,19 @@ test('deterministic fallback keeps enough unique dialogue after collision repair
   assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
   assert.equal(lines.some((line) => /\(case \d+\)/iu.test(line.text)), false);
   assert.ok(timed.length >= 6, 'collision repair must survive timeline filtering');
+});
+
+test('spoken dialogue strips trailing case labels before captions and Kokoro', () => {
+  assert.equal(stripTrailingCaseTag('The memo is breathing (case 123).'), 'The memo is breathing');
+  assert.equal(stripTrailingCaseTag('The memo is breathing (case XXX)!'), 'The memo is breathing');
+  assert.equal(stripTrailingCaseTag('The case is closed.'), 'The case is closed.');
+  const timed = timedDialogue([
+    { speakerId: 'rookboss', text: 'The memo is breathing (case 123).' },
+    { speakerId: 'kernelkline', text: 'The server is watching us (case XXX).' },
+  ], [], ['rookboss', 'kernelkline'], 30);
+  assert.equal(timed.length, 2);
+  assert.deepEqual(timed.map((line) => line.text), ['The memo is breathing', 'The server is watching us']);
+  assert.equal(timed.some((line) => /\(case\s+[a-z0-9_-]+\)/iu.test(line.text)), false);
 });
 
 test('deterministic fallback carries a shared topic without repeating its keyword on every line', () => {

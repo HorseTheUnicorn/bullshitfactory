@@ -26,43 +26,6 @@
           "north-west": "Idle/rotations/north-west.png",
           "west": "Idle/rotations/west.png",
           "south-west": "Idle/rotations/south-west.png"
-        },
-        "animations": {
-          "Rocking-on-a-deck_idle_with_compass_checking_rope": {
-            "south": [
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_000.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_001.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_002.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_003.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_004.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_005.png",
-              "Idle/animations/Rocking-on-a-deck_idle_with_compass_checking_rope/south/frame_006.png"
-            ]
-          },
-          "pixellab-walk-v1": {
-            "south": [
-              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
-            ]
-          },
-          "pixellab-react-v1": {
-            "south": [
-              "Idle/animations/pixellab-react-v1/south/frame_000.png",
-              "Idle/animations/pixellab-react-v1/south/frame_001.png",
-              "Idle/animations/pixellab-react-v1/south/frame_002.png",
-              "Idle/animations/pixellab-react-v1/south/frame_003.png",
-              "Idle/animations/pixellab-react-v1/south/frame_004.png",
-              "Idle/animations/pixellab-react-v1/south/frame_005.png",
-              "Idle/animations/pixellab-react-v1/south/frame_006.png",
-              "Idle/animations/pixellab-react-v1/south/frame_007.png"
-            ]
-          }
         }
       }
     }

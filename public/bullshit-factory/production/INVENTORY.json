@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "showId": "bullshit-factory",
-  "generatedAt": "2026-09-01T10:04:47.669Z",
+  "generatedAt": "2026-09-01T13:59:08.618Z",
   "canvas": {
     "width": 384,
     "height": 216,
@@ -19,8 +19,8 @@
       "id": "rookboss",
       "folder": "RookBoss",
       "rotations": 8,
-      "clips": 78,
-      "frames": 553,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -28,8 +28,8 @@
       "id": "magsrust",
       "folder": "MagsRust",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -37,8 +37,8 @@
       "id": "kernelkline",
       "folder": "KernelKline",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -46,8 +46,8 @@
       "id": "sudsmcgee",
       "folder": "SudsMcGee",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -55,8 +55,8 @@
       "id": "dooby",
       "folder": "Dooby",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -64,8 +64,8 @@
       "id": "spaulding",
       "folder": "Spaulding",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -73,8 +73,8 @@
       "id": "string",
       "folder": "String",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -82,8 +82,8 @@
       "id": "karen",
       "folder": "Karen",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -91,8 +91,8 @@
       "id": "nico",
       "folder": "Nico",
       "rotations": 8,
-      "clips": 78,
-      "frames": 555,
+      "clips": 5,
+      "frames": 112,
       "grounded": true,
       "errors": []
     },
@@ -100,8 +100,8 @@
       "id": "bork",
       "folder": "Bork",
       "rotations": 8,
-      "clips": 78,
-      "frames": 570,
+      "clips": 6,
+      "frames": 132,
       "grounded": true,
       "errors": []
     }
@@ -337,12 +337,11 @@
     "standaloneBackground": "/bullshit-factory/scenes/orange-idiot-house.png",
     "view": "south",
     "preview": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-h3-source.png",
-    "talkingFrames": [],
     "motionRegistry": "/bullshit-factory/production/motion-registry.json",
     "motionLibrary": {
       "id": "H3_LIBRARY_V2",
       "version": 2,
-      "assetRoot": "/bullshit-factory/motion/v1"
+      "assetRoot": "/bullshit-factory/motion/v2"
     },
     "motionPolicy": "replacement",
     "acceptedMotionClipIds": [

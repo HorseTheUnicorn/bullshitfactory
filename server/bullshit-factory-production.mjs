@@ -73,6 +73,7 @@ const STATE_PATH = path.join(DATA_ROOT, 'production-state.json');
 const MOTION_REGISTRY_PATH = path.join(PUBLIC_ROOT, 'bullshit-factory/production/motion-registry.json');
 const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
 const H3_LIBRARY_VERSION = 2;
+const H3_ASSET_ROOT = '/bullshit-factory/motion/v2';
 const H3_LEDGER_PATH = path.join(DATA_ROOT, 'h3-authoring-ledger.json');
 const LIVE_ROOT = path.join(DATA_ROOT, 'live');
 const LIVE_SECRETS_PATH = path.join(LIVE_ROOT, 'stream-secrets.json');
@@ -150,9 +151,9 @@ const GEMINI_ANIMATION_FALLBACK_MODELS = String(process.env.BF_ANIMATION_DIRECTO
 const ANIMATION_DIRECTOR_PROVIDER = String(process.env.BF_ANIMATION_DIRECTOR_PROVIDER || process.env.BF_ANIMATION_PROVIDER || (GEMINI_API_KEY ? 'gemini' : 'deterministic-compositor')).trim().toLowerCase();
 const ANIMATION_DIRECTOR_ENABLED = String(process.env.BF_ANIMATION_DIRECTOR_ENABLED || 'true').trim().toLowerCase() !== 'false';
 const ANIMATION_DIRECTOR_GENERATION_TIMEOUT_MS = Math.max(15_000, Math.min(180_000, Number(process.env.BF_ANIMATION_DIRECTOR_GENERATION_TIMEOUT_MS || 90_000)));
-// Production renders use the locked local catalog. PixelLab remains an
-// opt-in authoring tool for future asset batches, never an automatic credit
-// consumer during episode generation.
+// Production renders use the locked local catalog. H3 remains an offline
+// authoring input, never a runtime network or credit consumer during episode
+// generation.
 const ANIMATION_MODEL = String(process.env.BF_ANIMATION_MODEL || 'local-authored-clips').trim();
 const ANIMATION_MAX_CONCURRENT_JOBS = Math.max(1, Math.min(8, Number(process.env.BF_ANIMATION_MAX_CONCURRENT_JOBS || 8)));
 const INSPIRATION_ENDPOINT = String(process.env.BF_INSPIRATION_ENDPOINT || 'http://127.0.0.1:8790/api/site?view=live').trim();
@@ -1103,6 +1104,12 @@ async function musicPreflight(draft, resources) {
 
 function stripText(value, maximum = 420) {
   return String(value || '').replace(/[\u0000-\u001f\u007f]/gu, ' ').replace(/\s+/gu, ' ').trim().slice(0, maximum);
+}
+
+function stripTrailingCaseTag(value) {
+  return String(value || '')
+    .replace(/\s+\(case\s+[a-z0-9_-]{1,40}\)\s*[.!?…]*\s*$/iu, '')
+    .trim();
 }
 
 function configuredSourceUrls(value, fallback = []) {
@@ -2531,7 +2538,7 @@ function timedDialogue(candidateLines, fallbackLines, castIds, durationSeconds) 
   const allowed = new Set(castIds.filter((id) => id !== 'bork'));
   const lineLimit = dialogueLineBudget(durationSeconds) + 2;
   const playableText = (value) => {
-    const normalized = stripText(value, 300);
+    const normalized = stripText(stripTrailingCaseTag(value), 300);
     if (durationSeconds > 12) return normalized;
     // Short bumpers still need two audible exchanges. Cap each line to a
     // compact four-word phrase so the two-second end buffer stays intact.
@@ -3177,15 +3184,32 @@ function deterministicTopicDialogue(draft) {
       variation += 1;
     }
     if (priorDialogueLineKeys.has(key) || usedLines.has(key)) {
-      const caseTag = String((Math.abs(seed) + index * 37) % 997).padStart(3, '0');
-      text = baseText + ' (case ' + caseTag + ').';
-      key = canonicalNoveltyText(text);
+      const finalCollisionClosers = [
+        'and the room remembers it',
+        'while the next shift denies everything',
+        'before the floor files another complaint',
+        'and the witness still wants coffee',
+        'while nobody admits touching it',
+        'before the loudspeaker changes its story',
+        'and the toolbox refuses to comment',
+        'while the paperwork waits for a lawyer',
+      ];
+      for (let attempt = 0; attempt < finalCollisionClosers.length; attempt += 1) {
+        const closer = finalCollisionClosers[(Math.abs(seed) + index * 37 + attempt) % finalCollisionClosers.length];
+        const candidate = baseText + ', ' + closer + '.';
+        const candidateKey = canonicalNoveltyText(candidate);
+        if (!priorDialogueLineKeys.has(candidateKey) && !usedLines.has(candidateKey)) {
+          text = candidate;
+          key = candidateKey;
+          break;
+        }
+      }
     }
     if (usedLines.has(key)) {
       text = 'The same incident is why ' + callbackPool[(Math.abs(seed) + index) % callbackPool.length] + '.';
       key = canonicalNoveltyText(text);
       if (usedLines.has(key)) {
-        text = text.replace(/[.!?]+$/u, '') + ' ' + String(index + 1) + '.';
+        text = text.replace(/[.!?]+$/u, '') + ', and the room remembers it.';
         key = canonicalNoveltyText(text);
       }
     }
@@ -4043,13 +4067,14 @@ function ttsBodyForPlan(text, plan) {
 }
 
 async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SPEED, lang = 'en-us', voiceProfile = null } = {}) {
+  const spokenText = stripTrailingCaseTag(text);
   const plans = speechPlans(voice, speed, lang, voiceProfile);
   let lastError = new Error('No TTS target is configured.');
   const startedAt = Date.now();
   for (const plan of plans) {
     const targets = [];
     const isOrangeVoice = plan.voice === ORANGE_IDIOT_VOICE && !plan.profile;
-    const localTarget = { endpoint: TTS_ENDPOINT, headers: ttsHeaders(), body: ttsBodyForPlan(text, plan) };
+    const localTarget = { endpoint: TTS_ENDPOINT, headers: ttsHeaders(), body: ttsBodyForPlan(spokenText, plan) };
     if (isOrangeVoice) {
       // The local Kokoro vector blend is authoritative for Orange Idiot. Keep
       // the compatibility adapter as a recovery path for older deployments.
@@ -4058,7 +4083,7 @@ async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SP
         targets.push({
           endpoint: TTS_FASTAPI_ENDPOINT,
           headers: fastApiTtsHeaders(),
-          body: { model: TTS_FASTAPI_MODEL, input: text, voice: TTS_FASTAPI_ORANGE_VOICE || plan.voice, speed: plan.speed, response_format: 'wav' },
+          body: { model: TTS_FASTAPI_MODEL, input: spokenText, voice: TTS_FASTAPI_ORANGE_VOICE || plan.voice, speed: plan.speed, response_format: 'wav' },
         });
       }
     } else {
@@ -4093,7 +4118,7 @@ async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SP
           await writeProfiledVoiceAudio(bytes, outputPath, plan.profile);
         }
         const measured = await probeAudio(outputPath);
-        const paced = plan.profile ? measured : await normalizeSpeechPacing(text, outputPath, measured);
+        const paced = plan.profile ? measured : await normalizeSpeechPacing(spokenText, outputPath, measured);
         return { ...paced, voiceId: voiceProfile?.voiceId || plan.voice, selectedVersion: voiceProfile?.version || 0, fallbackUsed: plan.fallbackUsed, latencyMs: Date.now() - startedAt };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('TTS request failed.');
@@ -4376,20 +4401,21 @@ function clipActionPreferences(kind, requestedAction = '') {
   return ['talk', 'react', 'interact'];
 }
 
-function characterClip(character, kind = 'idle', requestedAction = '', replacementActive = false) {
+function characterClip(character, kind = 'idle', requestedAction = '') {
   const clips = Array.isArray(character?.clips) ? character.clips : [];
-  const usable = clips.filter((clip) => clip?.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length && (!replacementActive || clip.source?.kind === 'h3-max-local'));
-  // Semantic cues may omit clipAction for a normal idle/listen state. In
-  // replacement mode the registry remains authoritative, so resolve that
-  // omission through the already-computed clip kind instead of treating the
-  // valid H3 clip as missing.
+  const usable = clips.filter((clip) => clip?.status === 'approved'
+    && clip.source?.kind === 'h3-max-local'
+    && Array.isArray(clip.frames)
+    && clip.frames.length);
+  // Semantic cues may omit clipAction for a normal idle/listen state. The
+  // accepted H3 registry remains authoritative, so resolve that omission
+  // through the already-computed clip kind.
   const actionKey = String(requestedAction || kind || 'idle').toLowerCase().replace(/[- ]+/gu, '_');
   const registryClipId = character?.actionRegistry?.[actionKey]?.clipId;
   if (registryClipId) {
     const registered = usable.find((clip) => clip.id === registryClipId);
     if (registered) return registered;
   }
-  if (replacementActive) return null;
   const preferences = clipActionPreferences(kind, requestedAction);
   const score = (clip) => {
     const actionIndex = preferences.indexOf(String(clip?.action || '').toLowerCase());
@@ -4562,6 +4588,8 @@ function reviewedOrangeMotionClip(resources, action) {
     .filter((clip) => clip?.characterId === ORANGE_IDIOT_ID
       && clip?.status === 'accepted'
       && ['accepted', 'approved'].includes(clip?.reviewStatus)
+      && (clip?.source?.kind === 'h3-max-local'
+        || (clip?.source?.provider === 'fal' && clip?.source?.model === 'minimax/h3-max/image-to-video'))
       && clip?.action === action
       && clip?.direction === 'south'
       && Array.isArray(clip?.frames)
@@ -4585,6 +4613,8 @@ function orangeMotionReplacementActive(resources) {
     && resources?.motionRegistry?.runtimePolicy === 'replacement'
     && resources?.motionRegistry?.libraryId === H3_LIBRARY_ID
     && Number(resources?.motionRegistry?.libraryVersion) === H3_LIBRARY_VERSION
+    && resources?.motionRegistry?.assetRoot === H3_ASSET_ROOT
+    && resources?.motionRegistry?.legacyRuntimeEligible !== true
     && clips.length > 0
     && clips.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
 }
@@ -4674,10 +4704,6 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
   });
   const preview = resources.orangeIdiot?.preview;
   if (!interruption || !preview) return [];
-  const talkingFrames = Array.isArray(resources.orangeIdiot?.talkingFrames)
-    ? resources.orangeIdiot.talkingFrames.filter((file) => typeof file === 'string' && file.startsWith('/'))
-    : [];
-  const talkingFrameDelayMs = Math.max(50, Number(resources.orangeIdiot?.assetSet?.talking?.frameDelayMs) || 200);
   const speechEndMs = Number(interruption.speechEndMs || interruption.endMs || 0);
   const isSpeaking = timeMs <= speechEndMs;
   const elapsedMs = Math.max(0, timeMs - Number(interruption.startMs || 0));
@@ -4686,11 +4712,8 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
   if (orangeMotionReplacementActive(resources) && isSpeaking && !h3TalkClip) {
     throw new Error('Replacement motion coverage is missing for Orange Idiot action talk.');
   }
-  const talkingFrameIndex = isSpeaking && talkingFrames.length
-    ? Math.floor(elapsedMs / talkingFrameDelayMs) % talkingFrames.length
-    : -1;
   const h3TalkFrame = isSpeaking ? registryFrameForTime(h3TalkClip, elapsedMs) : null;
-  const sourceFile = h3TalkFrame || (talkingFrameIndex >= 0 ? talkingFrames[talkingFrameIndex] : preview);
+  const sourceFile = h3TalkFrame || preview;
   if (draft.sceneId === ORANGE_IDIOT_STANDALONE_SCENE_ID) {
     const scene = getLocationSpec(draft.sceneId);
     const stage = scene.broadcastAnchors?.orangeIdiot;
@@ -4702,14 +4725,11 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
       { ...stage, spriteWidth },
       isSpeaking,
     );
-    const walkingFrames = resources.orangeIdiot?.assetSet?.walking?.frames || {};
     const h3WalkFrame = pacingState.moving ? registryFrameForTime(h3WalkClip, elapsedMs) : null;
     if (orangeMotionReplacementActive(resources) && pacingState.moving && !h3WalkFrame) {
       throw new Error('Replacement motion coverage is missing for Orange Idiot action walk.');
     }
-    const walkingSourceFile = pacingState.moving
-      ? h3WalkFrame || (typeof walkingFrames[pacingState.direction] === 'string' && walkingFrames[pacingState.direction].startsWith('/') ? walkingFrames[pacingState.direction] : null)
-      : null;
+    const walkingSourceFile = pacingState.moving ? h3WalkFrame : null;
     const sourceCrop = stage.spriteSourceCrop;
     let source = sharp(publicAssetPath(walkingSourceFile || sourceFile));
     if (!walkingSourceFile && !h3TalkFrame && sourceCrop) {
@@ -5129,9 +5149,15 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const cue = cueForActor(draft.motion, actorId, timeMs);
     const actorState = actorFeetAt(layoutPlacement, timeSeconds, draft.motion, actorId);
     const isBork = actorId === 'bork';
-    const replacementActive = resources.catalog.motionLibrary?.replacementActive === true;
-    const clip = characterClip(character, clipKindForCue(cue, actorState, isBork), cue?.clipAction || cue?.action || '', replacementActive);
-    if (replacementActive && !clip) throw new Error('Replacement motion coverage is missing for ' + actorId + ' action ' + String(cue?.clipAction || cue?.action || 'idle') + '.');
+    const motionLibrary = resources.catalog.motionLibrary || {};
+    if (motionLibrary.id !== H3_LIBRARY_ID
+      || Number(motionLibrary.version) !== H3_LIBRARY_VERSION
+      || motionLibrary.replacementActive !== true
+      || motionLibrary.legacyRuntimeEligible === true) {
+      throw new Error('Final runtime requires the accepted H3_LIBRARY_V2 motion library; legacy motion is disabled.');
+    }
+    const clip = characterClip(character, clipKindForCue(cue, actorState, isBork), cue?.clipAction || cue?.action || '');
+    if (!clip) throw new Error('H3_LIBRARY_V2 motion coverage is missing for ' + actorId + ' action ' + String(cue?.clipAction || cue?.action || 'idle') + '.');
     const clipFrameRate = Number(clip?.fps || character.playback?.fps || RENDER_FPS) || RENDER_FPS;
     const elapsedMs = cue ? Math.max(0, timeMs - Number(cue.startMs || 0)) : timeMs;
     const framePosition = Math.floor(elapsedMs / 1000 * clipFrameRate);
@@ -7226,7 +7252,7 @@ async function motionAuthoringStatus(resources) {
       runtimePolicy: registry.runtimePolicy || 'hybrid-pilot',
       libraryId: registry.libraryId || null,
       libraryVersion: Number(registry.libraryVersion) || null,
-      assetRoot: registry.assetRoot || '/bullshit-factory/motion/v1',
+      assetRoot: registry.assetRoot || '/bullshit-factory/motion/v2',
       model: registry.model || 'minimax/h3-max/image-to-video',
       clipCount: clips.length,
       reviewedAccepted: reviewed.length,
@@ -8097,6 +8123,7 @@ export {
   renderPixelGameFontText,
   buildSpeechMixFilter,
   characterClip,
+  stripTrailingCaseTag,
   timedDialogue,
   validateSegmentContract,
 };

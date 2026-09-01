@@ -26,54 +26,6 @@
           "north-west": "Idle/rotations/north-west.png",
           "west": "Idle/rotations/west.png",
           "south-west": "Idle/rotations/south-west.png"
-        },
-        "animations": {
-          "bark_loop_with_independent_head_tilts_ear_flicks_f": {
-            "south": [
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_000.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_001.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_002.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_003.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_004.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_005.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f/south/frame_006.png"
-            ]
-          },
-          "bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570": {
-            "south": [
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_000.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_001.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_002.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_003.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_004.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_005.png",
-              "Idle/animations/bark_loop_with_independent_head_tilts_ear_flicks_f-eeea7570/south/frame_006.png"
-            ]
-          },
-          "pixellab-walk-v1": {
-            "south": [
-              "Idle/animations/pixellab-walk-v1/south/frame_000.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_001.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_002.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_003.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_004.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_005.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_006.png",
-              "Idle/animations/pixellab-walk-v1/south/frame_007.png"
-            ]
-          },
-          "pixellab-bark-v1": {
-            "south": [
-              "Idle/animations/pixellab-bark-v1/south/frame_000.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_001.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_002.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_003.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_004.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_005.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_006.png",
-              "Idle/animations/pixellab-bark-v1/south/frame_007.png"
-            ]
-          }
         }
       }
     }

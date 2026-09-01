@@ -13,15 +13,15 @@ Host: Proxmox guest .76 (Ubuntu)
 ## Legacy motion inventory
 
 - 10 active characters: 9 human characters and Bork.
-- The authoritative `.76` checkout contains 4,423 legacy `Idle/animations` PNG frames. The isolated voice worktree retains those files as rollback assets; the replacement-active catalog marks them compatibility-only and the runtime selector will not choose them.
+- The authoritative `.76` checkout contained 4,423 legacy `Idle/animations` PNG frames before this cutover. Those superseded motion trees have now been removed from the isolated runtime branch; canonical character source art, rotations, and spritesheets remain under `characters/v1/`.
 - The generated catalog exposes 51 reviewed H3 replacement clips for the ten-character cast. The registry contains 53 reviewed accepted clips total: 51 main-cast clips plus Orange Idiot's reviewed `talk` and `walk` proof set.
-- Canonical character art, rotations, spritesheets, scenes, voices, scripts, captions, playlist, and production state are preserved. The H3 runtime change is limited to motion selection and the accepted local motion assets.
+- Canonical character art, rotations, spritesheets, scenes, voices, scripts, captions, playlist, and production state are preserved. The H3 runtime change is limited to motion selection and the accepted local motion assets. Orange Idiot's superseded five-frame talking animation was removed as well; his standalone south-facing preview and accepted H3 `talk`/`walk` proof remain.
 
 ## Required replacement
 
 The replacement is a separate accepted local motion registry. Each accepted entry must carry the character/action identity, source-art hash, H3 request ID, prompt hash, seed, source resolution, frame metadata, feet anchor, sprite pivot, loop policy, and validation state.
 
-The replacement library is identified as `H3_LIBRARY_V2` (library version `2`) and must cover human idle/listen/talk/react/walk performances, purposeful gestures and reactions, and Bork idle/listen/bark/wag/sniff/walk performances. Its accepted frames remain under the existing `/bullshit-factory/motion/v1/` public asset root so the logical library can be versioned without duplicating the runtime tree. Only accepted entries may be added to the runtime catalog.
+The replacement library is identified as `H3_LIBRARY_V2` (library version `2`) and must cover human idle/listen/talk/react/walk performances, purposeful gestures and reactions, and Bork idle/listen/bark/wag/sniff/walk performances. Its accepted frames remain under the existing `/bullshit-factory/motion/v2/` public asset root so the logical library can be versioned without duplicating the runtime tree. Only accepted entries may be added to the runtime catalog.
 
 Orange Idiot is a TV-only authoring subject and remains outside the ten-character cast catalog. His replacement proof set is `talk` plus `walk`: both must preserve the supplied south-facing identity, keep his head and eyes aimed at the camera, and remain readable as bounded left-to-right pacing during speech. The compositor owns scene-scale travel; reviewed local H3 clips supply the reusable character performance. His voice profile is an original low-to-mid, slightly nasal, raspy/breathy, mildly congested New York/Queens-inspired delivery with short bursts, pauses, repetitions, stretched vowels, and abrupt emphasis changes.
 
@@ -45,7 +45,9 @@ never consume the H3 visual-motion budget or run from the normal render path.
 
 ## Transition status
 
-The replacement registry is active with 53 reviewed runtime clips plus 4 superseded historical entries, the selector is switched to replacement mode, and legacy runtime motion is no longer eligible. Legacy files remain only as rollback assets in the isolated worktree; the canonical accepted H3 motion tree is the sole runtime animation source.
+The replacement registry is active with 53 reviewed runtime clips plus 4 superseded historical entries, the selector is switched to replacement mode, and legacy runtime motion is no longer eligible. The canonical accepted H3 motion tree is the sole runtime animation source; the renderer fails closed if an approved H3 clip is unavailable instead of consulting a legacy animation path.
+
+The generated catalog now uses H3 clip IDs for primary actions, exposes only `h3-max-local` clips, and marks `legacyRuntimeEligible` false. The old motion-generation command and batch manifest are removed. The remaining PixelLab brand manifest is unrelated artwork authoring and is intentionally retained.
 
 ## H3 authoring evidence
 

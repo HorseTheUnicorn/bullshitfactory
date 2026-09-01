@@ -26,17 +26,6 @@
           "north-west": "Idle/rotations/north-west.png",
           "west": "Idle/rotations/west.png",
           "south-west": "Idle/rotations/south-west.png"
-        },
-        "animations": {
-          "talking_with_slight_arm_movement_and_head_bob": {
-            "south": [
-              "Idle/animations/talking_with_slight_arm_movement_and_head_bob/south/frame_000.png",
-              "Idle/animations/talking_with_slight_arm_movement_and_head_bob/south/frame_001.png",
-              "Idle/animations/talking_with_slight_arm_movement_and_head_bob/south/frame_002.png",
-              "Idle/animations/talking_with_slight_arm_movement_and_head_bob/south/frame_003.png",
-              "Idle/animations/talking_with_slight_arm_movement_and_head_bob/south/frame_004.png"
-            ]
-          }
         }
       }
     }

@@ -19,6 +19,7 @@ const inventoryPath = path.join(productionRoot, 'INVENTORY.json');
 const anchorsPath = path.join(productionRoot, 'character-anchors.json');
 const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
 const H3_LIBRARY_VERSION = 2;
+const H3_ASSET_ROOT = '/bullshit-factory/motion/v2';
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const exists = async (filePath) => fs.access(filePath).then(() => true).catch(() => false);
@@ -63,6 +64,11 @@ const characters = Array.isArray(catalog.characters) ? catalog.characters : [];
 const bibleCharacters = Array.isArray(bibles.characters) ? bibles.characters : [];
 
 assert(catalog.showId === 'bullshit-factory', 'character catalog showId must be bullshit-factory', errors);
+assert(catalog.motionLibrary?.id === H3_LIBRARY_ID, `character catalog must use ${H3_LIBRARY_ID}`, errors);
+assert(Number(catalog.motionLibrary?.version) === H3_LIBRARY_VERSION, `character catalog must use H3 library version ${H3_LIBRARY_VERSION}`, errors);
+assert(catalog.motionLibrary?.assetRoot === H3_ASSET_ROOT, `character catalog must use ${H3_ASSET_ROOT}`, errors);
+assert(catalog.motionLibrary?.replacementActive === true, 'character catalog must have the H3 replacement active', errors);
+assert(catalog.motionLibrary?.legacyRuntimeEligible === false, 'legacy motion must not be runtime eligible', errors);
 assert(characters.length === 10, `expected 10 locked characters, found ${characters.length}`, errors);
 assert(characters.filter((character) => character.isDog).length === 1, 'exactly one bark-only dog is required', errors);
 assert(bibleCharacters.length === characters.length, 'character bible must cover the locked cast', errors);
@@ -80,7 +86,6 @@ assert(orangeIdiot.mainCast === false, 'Orange Idiot must remain outside the loc
 assert(orangeIdiot.view === 'south', 'Orange Idiot must be south-facing only', errors);
 assert(orangeIdiot.sceneId === 'orange-idiot-house', 'Orange Idiot must use the new standalone house scene', errors);
 const orangeStandaloneScene = LOCATION_SPECS[orangeIdiot.standaloneSceneId];
-const orangeTalkingFrames = Array.isArray(orangeIdiot.talkingFrames) ? orangeIdiot.talkingFrames : [];
 const orangeReviewedMotionClips = (Array.isArray(motionRegistry.clips) ? motionRegistry.clips : [])
   .filter((clip) => clip?.characterId === orangeIdiot.id
     && clip?.status === 'accepted'
@@ -96,11 +101,11 @@ assert(orangeIdiot.standaloneBackground === orangeStandaloneScene?.background, '
 assert(typeof orangeIdiot.standaloneBackground === 'string' && await exists(localPublicPath(orangeIdiot.standaloneBackground)), 'Orange Idiot standalone background is missing', errors);
 assert(motionRegistry.status === 'active' && motionRegistry.runtimePolicy === 'replacement', 'Orange Idiot H3 motion registry must be active with replacement policy', errors);
 assert(motionRegistry.libraryId === H3_LIBRARY_ID && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION, `H3 motion registry must be ${H3_LIBRARY_ID} version ${H3_LIBRARY_VERSION}`, errors);
+assert(motionRegistry.assetRoot === H3_ASSET_ROOT, `H3 motion registry must use ${H3_ASSET_ROOT}`, errors);
 assert(orangeRequiredMotionClips.every(Boolean), 'Orange Idiot must provide reviewed south-facing H3 talk and walk clips', errors);
 for (const clip of orangeRequiredMotionClips.filter(Boolean)) {
   for (const frame of clip.frames) assert(typeof frame?.file === 'string' && await exists(localPublicPath(frame.file)), `Orange Idiot H3 ${clip.action} frame is missing: ${frame?.file || '(unnamed)'}`, errors);
 }
-for (const frame of orangeTalkingFrames) assert(await exists(localPublicPath(frame)), 'Orange Idiot talking frame is missing: ' + frame, errors);
 assert(typeof orangeIdiot.preview === 'string' && await exists(localPublicPath(orangeIdiot.preview)), 'Orange Idiot south preview is missing', errors);
 
 const characterReports = [];
@@ -125,12 +130,9 @@ for (const character of characters) {
   for (const clip of clips) {
     const frames = Array.isArray(clip.frames) ? clip.frames : [];
     report.frames += frames.length;
-    const clipId = String(clip.id || '');
-    const isGeneratedPixelLab = /pixellab-/iu.test(clipId);
-    const isAnimateWithTextV3 = /(?:^|[-_])v3(?:$|[-_])/iu.test(clipId);
-    const minimumFrames = isGeneratedPixelLab ? 6 : 7;
-    assert(frames.length >= minimumFrames, `${character.id}/${clip.id}: clip must have at least ${minimumFrames} frames`, report.errors);
-    if (isAnimateWithTextV3) assert(frames.length === 6 && Number(clip.frameCount) === 6, `${character.id}/${clip.id}: animate-with-text-v3 clips must have exactly 6 frames`, report.errors);
+    assert(clip.source?.kind === 'h3-max-local', `${character.id}/${clip.id}: non-H3 motion source is not allowed`, report.errors);
+    assert(frames.length >= 6, `${character.id}/${clip.id}: H3 clip must have at least six frames`, report.errors);
+    assert(frames.every((frame) => !/\/characters\/v1\/[^/]+\/Idle\/animations\//u.test(String(frame.file || ''))), `${character.id}/${clip.id}: legacy animation path is not allowed`, report.errors);
     for (const frame of frames) assert(await exists(localPublicPath(frame.file)), `${character.id}/${clip.id}: missing ${frame.file}`, report.errors);
   }
   if (report.errors.length) errors.push(...report.errors);
@@ -174,7 +176,7 @@ if (errors.length) {
     music: rightsReports,
     writingTraining: { schemaVersion: writingTraining.schemaVersion, sourceIds: writingTraining.sources.map((source) => source.id), beatCount: writingTraining.beatSheet.length, minimumScore: writingTraining.evaluation?.minimumScore || null },
     animationTraining: { schemaVersion: animationTraining.schemaVersion, requiredAnchors: animationTraining.anchorContract.requiredAnchors, parserFields: animationTraining.parserSchema.requiredFields, validationIds: animationTraining.validationCriteria.map((criterion) => criterion.id) },
-    tvOnly: { id: orangeIdiot.id, displayName: orangeIdiot.displayName, sceneId: orangeIdiot.sceneId, standaloneSceneId: orangeIdiot.standaloneSceneId, standaloneBackground: orangeIdiot.standaloneBackground, view: orangeIdiot.view, preview: orangeIdiot.preview, talkingFrames: orangeTalkingFrames, motionRegistry: orangeIdiot.animationContract?.motionRegistry || '/bullshit-factory/production/motion-registry.json', motionLibrary: { id: H3_LIBRARY_ID, version: H3_LIBRARY_VERSION, assetRoot: motionRegistry.assetRoot || '/bullshit-factory/motion/v1' }, motionPolicy: motionRegistry.runtimePolicy, acceptedMotionClipIds: orangeRequiredMotionClips.filter(Boolean).map((clip) => clip.id), mainCast: false },
+    tvOnly: { id: orangeIdiot.id, displayName: orangeIdiot.displayName, sceneId: orangeIdiot.sceneId, standaloneSceneId: orangeIdiot.standaloneSceneId, standaloneBackground: orangeIdiot.standaloneBackground, view: orangeIdiot.view, preview: orangeIdiot.preview, motionRegistry: orangeIdiot.animationContract?.motionRegistry || '/bullshit-factory/production/motion-registry.json', motionLibrary: { id: H3_LIBRARY_ID, version: H3_LIBRARY_VERSION, assetRoot: motionRegistry.assetRoot || '/bullshit-factory/motion/v2' }, motionPolicy: motionRegistry.runtimePolicy, acceptedMotionClipIds: orangeRequiredMotionClips.filter(Boolean).map((clip) => clip.id), mainCast: false },
     resolver: { module: 'lib/bullshit-factory-location.mjs', positionRule: 'feet-touch-ground', depthRule: 'feet-y', noArbitraryWorldCoordinates: true },
   }, null, 2)}\n`, 'utf8');
   console.log(`WROTE Bullshit Factory runtime inventory: ${characterReports.length} characters, ${sceneReports.length} scenes, ${rightsReports.filter((track) => track.approved && track.fileValid).length} approved music files.`);
