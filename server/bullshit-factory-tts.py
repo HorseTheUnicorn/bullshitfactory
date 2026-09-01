@@ -62,11 +62,13 @@ if CUSTOM_VOICE_RAW_FALLBACKS:
 ORANGE_IDIOT_MIX_VOICE = os.environ.get("BF_TTS_ORANGE_IDIOT_MIX_VOICE", "orangeidiot-child-mix").strip() or "orangeidiot-child-mix"
 _requested_orange_sources = tuple(
     value.strip()
-    for value in os.environ.get("BF_TTS_ORANGE_IDIOT_MIX_SOURCES", "bm_daniel,af_nicole").split(",")
+    for value in os.environ.get("BF_TTS_ORANGE_IDIOT_MIX_SOURCES", "am_echo,am_michael").split(",")
     if value.strip()
 )
-ORANGE_IDIOT_MIX_SOURCES = _requested_orange_sources[:2] if len(_requested_orange_sources) >= 2 else ("bm_daniel", "af_nicole")
+ORANGE_IDIOT_MIX_SOURCES = _requested_orange_sources[:2] if len(_requested_orange_sources) >= 2 else ("am_echo", "am_michael")
 ORANGE_IDIOT_MIX_WEIGHTS = (0.55, 0.45)
+ORANGE_IDIOT_MIX_STYLE = "original low-to-mid-pitched, slightly nasal New York/Queens-style fictional broadcast voice"
+ORANGE_IDIOT_MIX_PROSODY = "raspy, breathy, mildly congested; short bursts, pauses, repetitions, stretched vowels, and abrupt emphasis changes"
 
 MODEL: Kokoro | None = None
 MODEL_VOICES: frozenset[str] = frozenset()
@@ -129,16 +131,18 @@ def load_model() -> Kokoro:
 def voice_argument_for(name: str, fallback: str | None = None) -> str | np.ndarray:
     requested_name = str(name).strip()
     argument: str | np.ndarray = CUSTOM_VOICES.get(requested_name, requested_name)
-    if isinstance(argument, str) and MODEL_VOICES and argument not in MODEL_VOICES:
+    if isinstance(argument, str):
         fallback_name = str(fallback or CUSTOM_VOICE_FALLBACKS.get(requested_name, "")).strip()
         fallback_argument: str | np.ndarray = CUSTOM_VOICES.get(fallback_name, fallback_name)
-        if isinstance(fallback_argument, np.ndarray):
+        requested_is_missing = bool(MODEL_VOICES) and argument not in MODEL_VOICES
+        configured_fallback = bool(fallback_name) and (requested_name in CUSTOM_VOICE_FALLBACKS or bool(fallback))
+        if configured_fallback and (requested_is_missing or not MODEL_VOICES) and isinstance(fallback_argument, np.ndarray):
             logging.warning("Voice %s is unavailable; using custom fallback vector %s", requested_name, fallback_name)
             argument = fallback_argument
-        elif fallback_name and fallback_argument in MODEL_VOICES:
+        elif configured_fallback and (requested_is_missing or not MODEL_VOICES) and fallback_name and (not MODEL_VOICES or fallback_argument in MODEL_VOICES):
             logging.warning("Voice %s is unavailable; using stock Kokoro fallback %s", requested_name, fallback_name)
             argument = fallback_argument
-        else:
+        elif requested_is_missing:
             raise ValueError(f"Voice {requested_name!r} is not present in the installed model.")
     return argument
 
@@ -241,8 +245,9 @@ def create_child_voice_mix(model: Kokoro, text: str, speed: float, lang: str) ->
         )
     except (KeyError, TypeError, ValueError, RuntimeError) as error:
         # A broken or incompatible voice archive must never bring back the old
-        # double-performance sound. Use Daniel alone until the archive is fixed.
-        logging.warning("Orange Idiot vector blend unavailable (%s); using one Daniel performance", error)
+        # A broken or incompatible vector must never stop a broadcast. Keep the
+        # fallback to one configured stock source so the path remains local.
+        logging.warning("Orange Idiot vector blend unavailable (%s); using one configured stock performance", error)
         samples, sample_rate = model.create(
             text.strip(),
             voice=voice_argument_for(ORANGE_IDIOT_MIX_SOURCES[0]),
@@ -293,7 +298,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
         if self.path == "/healthz":
             load_custom_voices()
-            self.send_json(200, {"ok": True, "service": "bullshit-factory-kokoro", "modelLoaded": MODEL is not None, "serialized": True, "voiceAuthoring": "kokovoicelab", "customVoiceCount": len(CUSTOM_VOICES), "customVoiceError": CUSTOM_VOICE_ERROR, "blendCacheCount": len(VOICE_BLEND_CACHE), "voiceMix": {"id": ORANGE_IDIOT_MIX_VOICE, "sources": list(ORANGE_IDIOT_MIX_SOURCES), "enabled": all(voice_is_available(source) for source in ORANGE_IDIOT_MIX_SOURCES), "strategy": "voice-vector-single-performance", "style": "single-performance voice-vector blend"}})
+            self.send_json(200, {"ok": True, "service": "bullshit-factory-kokoro", "modelLoaded": MODEL is not None, "serialized": True, "voiceAuthoring": "kokovoicelab", "customVoiceCount": len(CUSTOM_VOICES), "customVoiceError": CUSTOM_VOICE_ERROR, "blendCacheCount": len(VOICE_BLEND_CACHE), "voiceMix": {"id": ORANGE_IDIOT_MIX_VOICE, "sources": list(ORANGE_IDIOT_MIX_SOURCES), "enabled": all(voice_is_available(source) for source in ORANGE_IDIOT_MIX_SOURCES), "strategy": "voice-vector-single-performance", "style": ORANGE_IDIOT_MIX_STYLE, "prosody": ORANGE_IDIOT_MIX_PROSODY, "weights": list(ORANGE_IDIOT_MIX_WEIGHTS)}})
             return
         if self.path == "/voices":
             self.send_json(200, {"voices": available_voice_names()})

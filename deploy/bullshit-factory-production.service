@@ -15,6 +15,11 @@ Environment=BF_PUBLIC_ROOT=/opt/bullshit-factory/public
 Environment=BF_DATA_ROOT=/var/lib/bullshit-factory/runtime
 Environment=BF_PRODUCTION_HOST=127.0.0.1
 Environment=BF_PRODUCTION_PORT=8793
+Environment=BF_TTS_FASTAPI_ORANGE_VOICE=am_echo
+Environment=BF_TTS_ORANGE_IDIOT_MIX_SOURCES=am_echo,am_michael
+Environment=BF_ORANGE_IDIOT_VOICE=orangeidiot-child-mix
+Environment=BF_ORANGE_IDIOT_TTS_SPEED=0.93
+Environment=BF_ORANGE_IDIOT_PITCH_MULTIPLIER=0.93
 ExecStart=/usr/bin/node server/bullshit-factory-production.mjs
 Restart=on-failure
 RestartSec=8

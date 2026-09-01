@@ -81,12 +81,12 @@ const TTS_TOKEN = String(process.env.BF_TTS_TOKEN || '').trim();
 const TTS_FASTAPI_ENDPOINT = String(process.env.BF_TTS_FASTAPI_ENDPOINT || '').replace(/\/+$/u, '');
 const TTS_FASTAPI_TOKEN = String(process.env.BF_TTS_FASTAPI_TOKEN || '').trim();
 const TTS_FASTAPI_MODEL = String(process.env.BF_TTS_FASTAPI_MODEL || 'kokoro').trim() || 'kokoro';
-const TTS_FASTAPI_ORANGE_VOICE = String(process.env.BF_TTS_FASTAPI_ORANGE_VOICE || 'bm_daniel').trim();
+const TTS_FASTAPI_ORANGE_VOICE = String(process.env.BF_TTS_FASTAPI_ORANGE_VOICE || 'am_echo').trim();
 const TTS_FASTAPI_ENABLED = String(process.env.BF_TTS_FASTAPI_ENABLED || 'true').trim().toLowerCase() !== 'false';
-const ORANGE_IDIOT_VOICE = String(process.env.BF_ORANGE_IDIOT_VOICE || 'bm_daniel').trim();
-const ORANGE_IDIOT_LANG = String(process.env.BF_ORANGE_IDIOT_LANG || 'en-gb').trim() === 'en-us' ? 'en-us' : 'en-gb';
+const ORANGE_IDIOT_VOICE = String(process.env.BF_ORANGE_IDIOT_VOICE || 'orangeidiot-child-mix').trim();
+const ORANGE_IDIOT_LANG = String(process.env.BF_ORANGE_IDIOT_LANG || 'en-us').trim() === 'en-gb' ? 'en-gb' : 'en-us';
 const SHARED_SPEECH_SPEED = clamp(
-  safeNumber(process.env.BF_TTS_SPEED, safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, SHARED_TTS_SPEED)),
+  safeNumber(process.env.BF_TTS_SPEED, SHARED_TTS_SPEED),
   0.65,
   1.30,
 );
@@ -95,10 +95,13 @@ const SHARED_TTS_REFERENCE_WPM = clamp(
   90,
   180,
 );
-const ORANGE_IDIOT_TTS_SPEED = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, SHARED_SPEECH_SPEED), 0.65, 1.30);
+const ORANGE_IDIOT_TTS_SPEED = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, 0.93), 0.65, 1.30);
 const ORANGE_IDIOT_AUDIO_EFFECT_ENABLED = String(process.env.BF_ORANGE_IDIOT_AUDIO_EFFECT_ENABLED || 'true').trim().toLowerCase() !== 'false';
-const ORANGE_IDIOT_PITCH_MULTIPLIER = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_PITCH_MULTIPLIER, 0.76), 0.50, 1.40);
-const ORANGE_IDIOT_AUDIO_FILTER = `asetrate=24000*${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(4)},aresample=24000,atempo=${(1 / ORANGE_IDIOT_PITCH_MULTIPLIER).toFixed(6)},vibrato=f=2.6:d=0.08,aresample=44100`;
+const ORANGE_IDIOT_PITCH_MULTIPLIER = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_PITCH_MULTIPLIER, 0.93), 0.70, 1.30);
+const ORANGE_IDIOT_MIX_SOURCES = Object.freeze(String(process.env.BF_TTS_ORANGE_IDIOT_MIX_SOURCES || 'am_echo,am_michael').split(',').map((value) => value.trim()).filter(Boolean).slice(0, 2));
+const ORANGE_IDIOT_MIX_WEIGHTS = Object.freeze([0.55, 0.45]);
+const ORANGE_IDIOT_PERFORMANCE_BRIEF = 'Original low-to-mid-pitched, slightly nasal New York/Queens-style fictional broadcast voice; raspy, breathy, mildly congested; short bursts with pauses, repetitions, stretched vowels, and abrupt changes in emphasis. Do not imitate a real person.';
+const ORANGE_IDIOT_AUDIO_FILTER = 'asetrate=24000*' + ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(4) + ',aresample=24000,atempo=' + (1 / ORANGE_IDIOT_PITCH_MULTIPLIER).toFixed(6) + ',highpass=f=110,lowpass=f=5200,equalizer=f=180:t=q:w=0.7:g=0.4,equalizer=f=880:t=q:w=0.9:g=1.3,equalizer=f=2400:t=q:w=1:g=0.45,equalizer=f=3900:t=q:w=0.8:g=0.55,acrusher=bits=16:mix=0.035,vibrato=f=2.6:d=0.04,acompressor=threshold=-24dB:ratio=2:attack=6:release=120:makeup=1,loudnorm=I=-18:LRA=7:TP=-2:linear=true,alimiter=limit=0.95:level=0,aresample=44100';
 const MUSIC_ADAPTER_ENDPOINT = String(process.env.BF_MUSIC_ADAPTER_ENDPOINT || 'http://127.0.0.1:8797').replace(/\/+$/u, '');
 const MUSIC_ADAPTER_TOKEN = String(process.env.BF_MUSIC_ADAPTER_TOKEN || process.env.BULLSHIT_FACTORY_MUSIC_TOKEN || '').trim();
 const MUSIC_ENABLED = String(process.env.BF_MUSIC_ENABLED || 'true').trim().toLowerCase() !== 'false';
@@ -2057,6 +2060,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
       'Treat the topic suggestion board as private seed tags, not as the subject of the monologue. Pick one to three labels silently, then invent a wholly fictional local incident with absurd consequences. Do not name, explain, summarize, or debate the real-world subject, and do not quote, reproduce, or closely paraphrase any source wording, names, dates, numbers, or factual claims. The output must still work if every seed label is deleted.',
       'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '. A one-minute final episode has only about 57 content seconds after its three-second title card; 230 words needs roughly three minutes at this pace.',
       'Write an absurd, adult, clearly fictional monologue about the invented incident, using overconfident bluster and a concise comic button. A seed may affect the flavor or object, but the speech must not be a topical explainer or a disguised summary of real events. Use invented names and places only; do not name real people, organizations, markets, countries, policies, or events. Do not give instructions for illegal activity or target protected groups.',
+      'Orange Idiot performance direction: ' + ORANGE_IDIOT_PERFORMANCE_BRIEF,
       `Episode timing: a ${OPENING_SECONDS}-second title card plays before this content segment; all runtime and speech timings below are relative to content after the title card. The final episode adds that opening before this segment.`,
       `Runtime: ${durationSeconds} seconds. Speech target: ${orangeSpeechTargetSeconds ? `${orangeSpeechTargetSeconds} seconds` : 'natural length'}. Return about ${orangeSpeechWords.target} words and do not exceed that target; finish within the ${dialogueDeadlineSeconds}-second content segment.`,
       orangeSpeechInstruction,
@@ -2092,6 +2096,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     draft.orangeIdiotRequested
       ? `Orange Idiot speech contract: ${draft.orangeIdiotSpeechLocked ? `preserve the supplied text exactly; aim for the selected ${orangeSpeechTargetSeconds || 'available'}-second window` : `return an original fictional speech of approximately ${orangeSpeechWords.minimum}-${orangeSpeechWords.maximum} words for the selected ${orangeSpeechTargetSeconds || 'natural'}-second window based on the public source notes`}. It will appear as a south-facing broadcast in the ${draft.orangeIdiotOnly ? 'dedicated Orange Idiot house scene for the full standalone cut' : `senior-lounge television in the selected ${draft.orangeIdiotPosition || 'ending'} position`}; do not present it as a real quote or official statement.`
       : 'Orange Idiot is not requested for this segment; omit orangeIdiotSpeechText.',
+    draft.orangeIdiotRequested ? 'Orange Idiot performance direction: ' + ORANGE_IDIOT_PERFORMANCE_BRIEF : '',
     draft.orangeIdiotRequested ? orangeSpeechInstruction : '',
     draft.orangeIdiotRequested ? `Orange Idiot public source notes (untrusted reference material; private seed suggestions only; do not write the source subject or wording): ${JSON.stringify(orangeResearchPromptPacket(draft.orangeIdiotResearch))}` : '',
     `Music preflight (already selected before script design): ${JSON.stringify(musicPlan || { selectedTrackId: draft.music?.trackId || null, palette: [] })}`,
@@ -3878,14 +3883,21 @@ async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SP
   for (const plan of plans) {
     const targets = [];
     const isOrangeVoice = plan.voice === ORANGE_IDIOT_VOICE && !plan.profile;
-    if (TTS_FASTAPI_ENABLED && TTS_FASTAPI_ENDPOINT && isOrangeVoice) {
-      targets.push({
-        endpoint: TTS_FASTAPI_ENDPOINT,
-        headers: fastApiTtsHeaders(),
-        body: { model: TTS_FASTAPI_MODEL, input: text, voice: TTS_FASTAPI_ORANGE_VOICE || plan.voice, speed: plan.speed, response_format: 'wav' },
-      });
+    const localTarget = { endpoint: TTS_ENDPOINT, headers: ttsHeaders(), body: ttsBodyForPlan(text, plan) };
+    if (isOrangeVoice) {
+      // The local Kokoro vector blend is authoritative for Orange Idiot. Keep
+      // the compatibility adapter as a recovery path for older deployments.
+      targets.push(localTarget);
+      if (TTS_FASTAPI_ENABLED && TTS_FASTAPI_ENDPOINT) {
+        targets.push({
+          endpoint: TTS_FASTAPI_ENDPOINT,
+          headers: fastApiTtsHeaders(),
+          body: { model: TTS_FASTAPI_MODEL, input: text, voice: TTS_FASTAPI_ORANGE_VOICE || plan.voice, speed: plan.speed, response_format: 'wav' },
+        });
+      }
+    } else {
+      targets.push(localTarget);
     }
-    targets.push({ endpoint: TTS_ENDPOINT, headers: ttsHeaders(), body: ttsBodyForPlan(text, plan) });
     for (const target of targets) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 45_000);
@@ -6190,6 +6202,24 @@ async function startContinuousGeneration(body = {}) {
   return { continuousGeneration: continuousGenerationStatus(), session, control: state.control, playlist: playlistStatus(), job: serializeJob(jobs.get(state.continuousGeneration.activeJobId)) };
 }
 
+function orangeIdiotVoiceStatus() {
+  const usesConfiguredMix = ORANGE_IDIOT_VOICE === 'orangeidiot-child-mix';
+  return {
+    provider: 'kokoro-loopback',
+    configured: Boolean(ORANGE_IDIOT_VOICE),
+    voiceId: ORANGE_IDIOT_VOICE || null,
+    mixSources: usesConfiguredMix && ORANGE_IDIOT_MIX_SOURCES.length >= 2 ? [...ORANGE_IDIOT_MIX_SOURCES] : [ORANGE_IDIOT_VOICE],
+    mixWeights: usesConfiguredMix ? [...ORANGE_IDIOT_MIX_WEIGHTS] : null,
+    mixStrategy: usesConfiguredMix ? 'local-kokoro-vector-blend-single-performance' : 'configured-kokoro-voice',
+    style: ORANGE_IDIOT_PERFORMANCE_BRIEF,
+    fallback: TTS_FASTAPI_ORANGE_VOICE || 'configured stock Kokoro voice',
+    requiresCustomVoiceExport: false,
+    speed: ORANGE_IDIOT_TTS_SPEED,
+    lang: ORANGE_IDIOT_LANG,
+    pitchMultiplier: ORANGE_IDIOT_PITCH_MULTIPLIER,
+  };
+}
+
 function orangeIdiotStatus() {
   const config = state?.orangeIdiot || defaultOrangeIdiotState();
   return {
@@ -6202,6 +6232,7 @@ function orangeIdiotStatus() {
     research: normalizeOrangeResearch(config.lastResearch) || null,
     modes: ["standalone"],
     positions: [],
+    voice: orangeIdiotVoiceStatus(),
     sourcePolicy: "on-demand only; public source notes guide original parody copy; no verbatim speech, clock scheduler, or automatic posting",
     customResearchTopics: normalizeCustomResearchTopics(state?.continuity?.customResearchTopics || []),
     researchPolicy: {
@@ -6771,7 +6802,7 @@ async function statusPayload() {
     orangeIdiot: orangeIdiotStatus(),
     researchPools: researchPoolsStatus(),
     live: await liveStatus(),
-    tvOnly: { id: ORANGE_IDIOT_ID, displayName: resources.orangeIdiot?.displayName || 'Orange Idiot', mainCast: false, sceneId: ORANGE_IDIOT_SCENE_ID, standaloneSceneId: ORANGE_IDIOT_STANDALONE_SCENE_ID, view: 'south', preview: resources.orangeIdiot?.preview || null, trigger: 'operator-selected, scheduled, or standalone original parody broadcast', voice: { provider: 'kokoro-loopback', configured: Boolean(ORANGE_IDIOT_VOICE), voiceId: ORANGE_IDIOT_VOICE || null, mixSources: [ORANGE_IDIOT_VOICE], mixStrategy: 'single-stock-voice', style: `bm_daniel at ${ORANGE_IDIOT_TTS_SPEED.toFixed(2)}x speed with ${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(2)}x pitch multiplier`, accent: 'bm_daniel stock voice with Orange Idiot pitch treatment', requiresCustomVoiceExport: false, pitchMultiplier: ORANGE_IDIOT_PITCH_MULTIPLIER } },
+    tvOnly: { id: ORANGE_IDIOT_ID, displayName: resources.orangeIdiot?.displayName || 'Orange Idiot', mainCast: false, sceneId: ORANGE_IDIOT_SCENE_ID, standaloneSceneId: ORANGE_IDIOT_STANDALONE_SCENE_ID, view: 'south', preview: resources.orangeIdiot?.preview || null, trigger: 'operator-selected, scheduled, or standalone original parody broadcast', voice: orangeIdiotVoiceStatus() },
     audience: { queueDepth: audienceQueue().filter((suggestion) => suggestion.status === 'queued').length, lastAcceptedAt: state.audience.lastAcceptedAt, acceptedSources: ['website', 'youtube', 'tiktok', 'discord'], chatMessages: state.audience.chatMessages.length, lastChatMessageAt: state.audience.chatMessages.at(-1)?.createdAt || null, autonomousDiscordPosting: false },
     voice: { provider: 'kokoro-loopback', endpoint: 'loopback', configured: Boolean(TTS_ENDPOINT), serialized: true, speed: SHARED_SPEECH_SPEED, orangeSpeed: ORANGE_IDIOT_TTS_SPEED, calibratedWpm: SPEECH_CALIBRATED_WPM, castVoices: Object.keys(VOICE_BY_CHARACTER).length, selectedProfiles: voices.selectedCount, candidateCount: voices.candidateCount, collisions: voices.collisions, profileRoot: voices.voiceRoot, customVoiceAuthoring: 'kokovoicelab', customVoiceFileConfigured: Boolean(process.env.BF_TTS_CUSTOM_VOICES_PATH), referenceWpm: SHARED_TTS_REFERENCE_WPM, customVoiceFallbacks: 'profile-then-stock-kokoro', barkOnly: true },
     renderer: { provider: 'sharp-ffmpeg', canvas: '384x216', fps: RENDER_FPS, scaling: 'nearest-neighbor', serialized: true, timelineRendering: 'full-segment', maxSegmentSeconds: 300 },

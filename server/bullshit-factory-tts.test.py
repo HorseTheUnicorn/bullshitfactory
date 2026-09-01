@@ -89,7 +89,19 @@ class TtsVoiceTests(unittest.TestCase):
             )
             self.assertEqual(len(self.service.VOICE_BLEND_CACHE), 1)
 
+    def test_orange_idiot_uses_the_original_local_kokoro_mix_profile(self):
+        self.assertEqual(self.service.ORANGE_IDIOT_MIX_VOICE, "orangeidiot-child-mix")
+        self.assertEqual(self.service.ORANGE_IDIOT_MIX_SOURCES, ("am_echo", "am_michael"))
+        self.assertEqual(self.service.ORANGE_IDIOT_MIX_WEIGHTS, (0.55, 0.45))
+        self.assertIn("New York/Queens", self.service.ORANGE_IDIOT_MIX_STYLE)
+        self.assertIn("short bursts", self.service.ORANGE_IDIOT_MIX_PROSODY)
+
     def test_missing_custom_voice_uses_stock_fallback(self):
+        self.service.CUSTOM_VOICE_FALLBACKS["rookboss"] = "am_michael"
+        self.assertEqual(self.service.voice_argument_for("rookboss"), "am_michael")
+
+    def test_stock_fallback_still_resolves_when_model_inventory_is_unavailable(self):
+        self.service.MODEL_VOICES = frozenset()
         self.service.CUSTOM_VOICE_FALLBACKS["rookboss"] = "am_michael"
         self.assertEqual(self.service.voice_argument_for("rookboss"), "am_michael")
 

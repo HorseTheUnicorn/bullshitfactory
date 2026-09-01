@@ -288,3 +288,11 @@ test('episode presets map to the final short, standard, and extended lengths', (
   assert.equal(episodeDurationSeconds({ duration: 15 }), 300);
   assert.equal(episodeDurationSeconds({ duration: 60 }), 300);
 });
+
+test('Orange Idiot prompt carries the original New York performance direction', () => {
+  const draft = buildSegmentDraft({ templateId: 'old-timer-override', seed: 20260901, durationSeconds: 30, castIds: [], orangeIdiotRequested: true, orangeIdiotOnly: true, orangeIdiotSpeechText: 'A supplied fictional broadcast line.' });
+  const prompt = buildScriptWriterPrompt(draft, { characters: [] }, '', null, {}, 'Goblin');
+  assert.match(prompt, /low-to-mid-pitched/i);
+  assert.match(prompt, /New York\/Queens/i);
+  assert.match(prompt, /short bursts/i);
+});

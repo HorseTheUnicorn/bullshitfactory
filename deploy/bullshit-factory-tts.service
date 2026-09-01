@@ -13,7 +13,7 @@ Environment=BF_TTS_HOST=127.0.0.1
 Environment=BF_TTS_PORT=8798
 Environment=BF_TTS_MODEL_PATH=/opt/bullshit-factory/models/kokoro/kokoro-v1.0.onnx
 Environment=BF_TTS_VOICES_PATH=/opt/bullshit-factory/models/kokoro/voices-v1.0.bin
-Environment=BF_TTS_ORANGE_IDIOT_MIX_SOURCES=bm_daniel,af_nicole
+Environment=BF_TTS_ORANGE_IDIOT_MIX_SOURCES=am_echo,am_michael
 Environment=BF_TTS_CUSTOM_VOICES_PATH=/home/goblin/cave/kokovoicelab/exported_voices/bullshit-factory-custom.bin
 Environment=BF_TTS_VOICE_FALLBACKS=rookboss:am_michael,magsrust:af_sarah,kernelkline:am_eric,sudsmcgee:am_adam,dooby:am_echo,spaulding:am_onyx,string:am_fenrir,karen:af_nicole,nico:am_liam
 ExecStart=/opt/bullshit-factory/.venv/bin/python3 /opt/bullshit-factory/server/bullshit-factory-tts.py
