@@ -86,6 +86,27 @@ test('loading-dock five-actor shot finds open gaps across the full cast', () => 
   assert.equal(new Set(layout.placements.map((placement) => placement.feet.x)).size, cast.length);
 });
 
+test('server-room layout packs the real H3 envelope without cross-band collisions', () => {
+  const cast = ['kernelkline', 'string', 'karen', 'bork'];
+  const envelope = (alphaBounds) => ({ width: 92, height: 92, alphaBounds });
+  const layout = buildSceneLayout('server-room', cast, {
+    kernelkline: { walkBand: 'rear', near: 'left_rack', x: 0.2, frameGeometry: envelope({ left: 0, top: 4, right: 81, bottom: 87 }) },
+    string: { walkBand: 'middle', near: 'server_rack', x: 0.5, frameGeometry: envelope({ left: 22, top: 3, right: 89, bottom: 87 }) },
+    karen: { walkBand: 'front', near: 'terminal', x: 0.64, frameGeometry: envelope({ left: 11, top: 4, right: 68, bottom: 87 }) },
+    bork: { walkBand: 'rear', near: 'right_rack', x: 0.8, frameGeometry: envelope({ left: 0, top: 8, right: 90, bottom: 87 }) },
+  });
+  const placements = layout.placements;
+  for (let leftIndex = 0; leftIndex < placements.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < placements.length; rightIndex += 1) {
+      const left = placements[leftIndex].visibleBounds;
+      const right = placements[rightIndex].visibleBounds;
+      const overlap = left.left < right.right + 10 && right.left < left.right + 10
+        && left.top < right.bottom + 10 && right.top < left.bottom + 10;
+      assert.equal(overlap, false, `${placements[leftIndex].characterId} and ${placements[rightIndex].characterId} overlap`);
+    }
+  }
+});
+
 test('full-cast layouts rebalance crowded bands without overlapping sprites', () => {
   const cast = ['rookboss', 'magsrust', 'kernelkline', 'sudsmcgee', 'dooby', 'spaulding', 'string', 'karen', 'nico', 'bork'];
   for (const sceneId of Object.keys(LOCATION_SPECS)) {
@@ -96,7 +117,7 @@ test('full-cast layouts rebalance crowded bands without overlapping sprites', ()
 });
 
 test('every production location defines a floor and three walk bands', () => {
-  assert.equal(Object.keys(LOCATION_SPECS).length, 11);
+  assert.equal(Object.keys(LOCATION_SPECS).length, 10);
   for (const scene of Object.values(LOCATION_SPECS)) {
     assert.ok(scene.floor.id && Number.isFinite(scene.floor.baselineY));
     assert.deepEqual(scene.walkBands.map((item) => item.id), ['rear', 'middle', 'front']);

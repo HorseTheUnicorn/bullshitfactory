@@ -4586,6 +4586,44 @@ function placementForFrame(layoutPlacement, characterId, fileGeometry) {
   return normalized;
 }
 
+async function renderLayoutForDraft(draft, resources) {
+  if (draft.__renderLayout && draft.__renderGeometryByActor) {
+    return { layout: draft.__renderLayout, geometryByActor: draft.__renderGeometryByActor };
+  }
+  const characters = resources.catalog.characters || [];
+  const authoredLayout = draft.layout?.placements?.length
+    ? draft.layout
+    : buildSceneLayout(draft.sceneId, draft.castIds);
+  const geometryByActor = new Map();
+  const requests = {};
+  for (const actorId of draft.castIds || []) {
+    const character = characters.find((item) => item.id === actorId);
+    if (!character) continue;
+    const geometryKey = actorId + ':stable-h3-envelope';
+    let geometry = draft.__renderClipGeometry.get(geometryKey);
+    if (!geometry) {
+      geometry = await renderGeometryForCharacter(character, actorId, getCharacterGeometry(actorId));
+      draft.__renderClipGeometry.set(geometryKey, geometry);
+    }
+    geometryByActor.set(actorId, geometry);
+    const authoredPlacement = authoredLayout.placements.find((placement) => placement.characterId === actorId);
+    if (!authoredPlacement) continue;
+    const wasRebalanced = authoredPlacement.intent?.placementReason === 'crowd-avoidance';
+    requests[actorId] = {
+      // Re-resolve the layout against the stable H3 envelope, not the legacy
+      // 64px anchor fallback. Preserve a prior crowd move as a band decision;
+      // replaying its named station would undo that correction.
+      walkBand: authoredPlacement.walkBand,
+      near: wasRebalanced ? null : (authoredPlacement.intent?.near || null),
+      x: authoredPlacement.intent?.x ?? 0.5,
+      frameGeometry: geometry,
+    };
+  }
+  const renderLayout = buildSceneLayout(draft.sceneId, draft.castIds, requests);
+  Object.defineProperty(draft, '__renderLayout', { value: renderLayout, writable: true });
+  Object.defineProperty(draft, '__renderGeometryByActor', { value: geometryByActor, writable: true });
+  return { layout: renderLayout, geometryByActor };
+}
 function actorFeetAt(layoutPlacement, timeSeconds, motion, actorId) {
   const timeMs = Math.round(timeSeconds * 1000);
   const travelActions = new Set(['spawn', 'enter', 'walk', 'cross', 'move', 'exit']);
@@ -5224,7 +5262,7 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
   const timeMs = Math.floor(timeSeconds * 1000);
   if (!draft.__renderClipGeometry) Object.defineProperty(draft, '__renderClipGeometry', { value: new Map(), writable: true });
   if (!draft.__stableActorFeet) Object.defineProperty(draft, '__stableActorFeet', { value: Object.create(null), writable: true });
-  const layout = draft.layout?.placements?.length ? draft.layout : buildSceneLayout(draft.sceneId, draft.castIds);
+  const { layout, geometryByActor } = await renderLayoutForDraft(draft, resources);
   const actorLayers = [];
   const characters = resources.catalog.characters || [];
   const activeCaptionSpeakerId = (draft.captions || []).find((caption) => timeMs >= Number(caption.startMs || 0) && timeMs <= Number(caption.endMs || 0))?.speakerId || null;
@@ -5262,13 +5300,7 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const source = frameSources[sourceIndex] || frameSources[0];
     if (!source?.file) continue;
     let sourcePath = publicAssetPath(source.file);
-    const canonical = getCharacterGeometry(actorId);
-    const geometryKey = actorId + ':stable-h3-envelope';
-    let sourceGeometry = draft.__renderClipGeometry.get(geometryKey);
-    if (!sourceGeometry) {
-      sourceGeometry = await renderGeometryForCharacter(character, actorId, canonical);
-      draft.__renderClipGeometry.set(geometryKey, sourceGeometry);
-    }
+    const sourceGeometry = geometryByActor.get(actorId) || getCharacterGeometry(actorId);
     const basePlacement = placementForFrame(layoutPlacement, actorId, sourceGeometry);
     // Authored clips and semantic state transitions own visible motion.
     // Never move an idle/listening actor with a frame-time sine wave.
