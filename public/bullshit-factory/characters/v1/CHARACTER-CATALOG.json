@@ -53,6 +53,18 @@
       "recoil",
       "interact"
     ],
+    "dogActions": [
+      "idle",
+      "listen",
+      "react",
+      "bark",
+      "wag_tail",
+      "sniff",
+      "recoil",
+      "enter",
+      "walk",
+      "exit"
+    ],
     "fallbackActions": {
       "idle": "idle",
       "listen": "idle",
@@ -126,6 +138,36 @@
       "quote": "The breakdown is now official company policy.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/RookBoss/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/RookBoss-spritesheet/Create_a_single_full-bod-Idle.png",
@@ -1652,6 +1694,36 @@
       "quote": "I remember when this machine only caught fire once a week.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/MagsRust/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/MagsRust-spritesheet/Tough_elderly_woman_with-Idle.png",
@@ -3178,6 +3250,36 @@
       "quote": "The server is emotionally unavailable.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/KernelKline/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/KernelKline-spritesheet/Nervous_thin_systems_adm-Idle.png",
@@ -4704,6 +4806,36 @@
       "quote": "This problem needs a meeting and a drink.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/SudsMcGee/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/SudsMcGee-spritesheet/Broad_middle-aged_break--Idle.png",
@@ -6230,6 +6362,36 @@
       "quote": "What if the forklift is just a very slow thought?",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/Dooby/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/Dooby-spritesheet/Lanky_relaxed_philosophe-Idle.png",
@@ -7756,6 +7918,36 @@
       "quote": "Every crisis is a rigging problem.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/Spaulding/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/Spaulding-spritesheet/Weathered_sailor_with_gr-Idle.png",
@@ -9282,6 +9474,36 @@
       "quote": "This argument needs a guitar solo.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/String/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/String-spritesheet/Lean_rebellious_employee-Idle.png",
@@ -10808,6 +11030,36 @@
       "quote": "I need that violation in triplicate.",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/Karen/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/Karen-spritesheet/Strict_exhausted_complia-Idle.png",
@@ -12334,6 +12586,36 @@
       "quote": "Is this where I sign, or where I quit?",
       "status": "active",
       "isDog": false,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "talk",
+        "react",
+        "turn",
+        "point",
+        "present",
+        "lift",
+        "inspect",
+        "type",
+        "drink",
+        "hand_off",
+        "carry",
+        "push",
+        "repair",
+        "look_left",
+        "look_right",
+        "enter",
+        "walk",
+        "stop",
+        "exit",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "shrug",
+        "jump",
+        "recoil",
+        "interact"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/Nico/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/Nico-spritesheet/Young_overwhelmed_delive-Idle.png",
@@ -13860,6 +14142,18 @@
       "quote": "Bark bark bark.",
       "status": "active",
       "isDog": true,
+      "supportedActions": [
+        "idle",
+        "listen",
+        "react",
+        "bark",
+        "wag_tail",
+        "sniff",
+        "recoil",
+        "enter",
+        "walk",
+        "exit"
+      ],
       "source": {
         "metadata": "/bullshit-factory/characters/v1/Bork/metadata.json",
         "spritesheet": "/bullshit-factory/characters/v1/Bork-spritesheet/Scruffy_mutt_with_one_fl-Idle.png",
@@ -14915,29 +15209,6 @@
           "mirroringSafe": false,
           "reason": "verified clip classified for requested action"
         },
-        "talk": {
-          "clipId": "h3-bork-bark-neutral-1e72d399e43b",
-          "resolvedAction": "bark",
-          "status": "fallback",
-          "fallbackAction": "bark",
-          "fallbackChain": [
-            "bark",
-            "idle"
-          ],
-          "purpose": "a dog-only bark loop with muzzle movement, head lift, ear flick, and tail response",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
         "react": {
           "clipId": "h3-bork-idle-neutral-b913a014f564",
           "resolvedAction": "idle",
@@ -14947,380 +15218,6 @@
             "idle"
           ],
           "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "turn": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "point": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "present": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "lift": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "inspect": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "type": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "drink": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "hand_off": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "carry": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "push": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "repair": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "look_left": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "look_right": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "enter": {
-          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
-          "resolvedAction": "walk",
-          "status": "fallback",
-          "fallbackAction": "walk",
-          "fallbackChain": [
-            "walk",
-            "idle"
-          ],
-          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "walk": {
-          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
-          "resolvedAction": "walk",
-          "status": "approved",
-          "fallbackAction": null,
-          "fallbackChain": [],
-          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "verified clip classified for requested action"
-        },
-        "stop": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "exit": {
-          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
-          "resolvedAction": "walk",
-          "status": "fallback",
-          "fallbackAction": "walk",
-          "fallbackChain": [
-            "walk",
-            "idle"
-          ],
-          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
           "anchors": {
             "feetAnchor": {
               "x": 46,
@@ -15394,73 +15291,7 @@
           "mirroringSafe": false,
           "reason": "verified clip classified for requested action"
         },
-        "shrug": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "jump": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
         "recoil": {
-          "clipId": "h3-bork-idle-neutral-b913a014f564",
-          "resolvedAction": "idle",
-          "status": "fallback",
-          "fallbackAction": "idle",
-          "fallbackChain": [
-            "idle"
-          ],
-          "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
-          "anchors": {
-            "feetAnchor": {
-              "x": 46,
-              "y": 91
-            },
-            "spritePivot": {
-              "x": 46,
-              "y": 91
-            }
-          },
-          "mirroringSafe": false,
-          "reason": "no local exact action clip; accepted replacement fallback selected"
-        },
-        "interact": {
           "clipId": "h3-bork-idle-neutral-b913a014f564",
           "resolvedAction": "idle",
           "status": "fallback",
@@ -15470,6 +15301,72 @@
             "idle"
           ],
           "purpose": "a readable looping idle with breathing, a small weight shift, and a restrained secondary head or hand motion",
+          "anchors": {
+            "feetAnchor": {
+              "x": 46,
+              "y": 91
+            },
+            "spritePivot": {
+              "x": 46,
+              "y": 91
+            }
+          },
+          "mirroringSafe": false,
+          "reason": "no local exact action clip; accepted replacement fallback selected"
+        },
+        "enter": {
+          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
+          "resolvedAction": "walk",
+          "status": "fallback",
+          "fallbackAction": "walk",
+          "fallbackChain": [
+            "walk",
+            "idle"
+          ],
+          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
+          "anchors": {
+            "feetAnchor": {
+              "x": 46,
+              "y": 91
+            },
+            "spritePivot": {
+              "x": 46,
+              "y": 91
+            }
+          },
+          "mirroringSafe": false,
+          "reason": "no local exact action clip; accepted replacement fallback selected"
+        },
+        "walk": {
+          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
+          "resolvedAction": "walk",
+          "status": "approved",
+          "fallbackAction": null,
+          "fallbackChain": [],
+          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
+          "anchors": {
+            "feetAnchor": {
+              "x": 46,
+              "y": 91
+            },
+            "spritePivot": {
+              "x": 46,
+              "y": 91
+            }
+          },
+          "mirroringSafe": false,
+          "reason": "verified clip classified for requested action"
+        },
+        "exit": {
+          "clipId": "h3-bork-walk-neutral-4d7723cd1adc",
+          "resolvedAction": "walk",
+          "status": "fallback",
+          "fallbackAction": "walk",
+          "fallbackChain": [
+            "walk",
+            "idle"
+          ],
+          "purpose": "a short purposeful walk cycle in place with stable identity, feet, and silhouette",
           "anchors": {
             "feetAnchor": {
               "x": 46,

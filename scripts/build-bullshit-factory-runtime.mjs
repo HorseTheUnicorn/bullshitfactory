@@ -20,6 +20,7 @@ const anchorsPath = path.join(productionRoot, 'character-anchors.json');
 const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
 const H3_LIBRARY_VERSION = 2;
 const H3_ASSET_ROOT = '/bullshit-factory/motion/v2';
+const BORK_ACTIONS = Object.freeze(['idle', 'listen', 'react', 'bark', 'wag_tail', 'sniff', 'recoil', 'enter', 'walk', 'exit']);
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const exists = async (filePath) => fs.access(filePath).then(() => true).catch(() => false);
@@ -71,6 +72,12 @@ assert(catalog.motionLibrary?.replacementActive === true, 'character catalog mus
 assert(catalog.motionLibrary?.legacyRuntimeEligible === false, 'legacy motion must not be runtime eligible', errors);
 assert(characters.length === 10, `expected 10 locked characters, found ${characters.length}`, errors);
 assert(characters.filter((character) => character.isDog).length === 1, 'exactly one bark-only dog is required', errors);
+const bork = characters.find((character) => character.isDog);
+if (bork) {
+  const borkActions = Object.keys(bork.actionRegistry || {});
+  assert(borkActions.length === BORK_ACTIONS.length && BORK_ACTIONS.every((action) => borkActions.includes(action)), 'Bork catalog must expose exactly the dog-only action vocabulary', errors);
+  assert(!borkActions.some((action) => ['talk', 'point', 'present', 'lift', 'inspect', 'type', 'drink', 'hand_off', 'carry', 'push', 'repair', 'interact'].includes(action)), 'Bork catalog must not expose human speech or prop actions', errors);
+}
 assert(bibleCharacters.length === characters.length, 'character bible must cover the locked cast', errors);
 assert(writingTraining.schemaVersion, 'Goblin writing training must declare a schema version', errors);
 assert(Array.isArray(writingTraining.sources) && writingTraining.sources.length >= 2, 'Goblin writing training must retain its two technique sources', errors);

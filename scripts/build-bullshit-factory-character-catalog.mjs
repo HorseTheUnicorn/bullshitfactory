@@ -143,6 +143,23 @@ const ACTION_REGISTRY = Object.freeze([
   'interact',
 ]);
 
+// Bork's catalog must describe the same dog-only vocabulary enforced by the
+// runtime semantic resolver. Keeping the allowed set explicit prevents the
+// generated character catalog from advertising human speech or human props as
+// valid dog performance actions.
+const DOG_ACTION_REGISTRY = Object.freeze([
+  'idle',
+  'listen',
+  'react',
+  'bark',
+  'wag_tail',
+  'sniff',
+  'recoil',
+  'enter',
+  'walk',
+  'exit',
+]);
+
 const ACTION_FALLBACKS = Object.freeze({
   idle: 'idle',
   listen: 'idle',
@@ -174,24 +191,35 @@ const ACTION_FALLBACKS = Object.freeze({
   interact: 'react',
 });
 
+const DOG_ACTION_FALLBACKS = Object.freeze({
+  idle: 'idle',
+  listen: 'idle',
+  react: 'idle',
+  bark: 'bark',
+  wag_tail: 'react',
+  sniff: 'react',
+  recoil: 'react',
+  enter: 'walk',
+  walk: 'walk',
+  exit: 'walk',
+});
+
 function buildActionRegistry(clips, isDog) {
   const usable = clips.filter((clip) => clip.status === 'approved'
     && clip.source?.kind === 'h3-max-local'
     && Array.isArray(clip.frames)
     && clip.frames.length);
-  return Object.fromEntries(ACTION_REGISTRY.map((action) => {
-    const fallbackAction = isDog
-      ? ({ talk: 'bark', bark: 'bark', wag_tail: 'wag_tail', sniff: 'sniff', walk: 'walk', enter: 'walk', exit: 'walk', interact: 'react' }[action] || 'idle')
-      : (ACTION_FALLBACKS[action] || 'idle');
+  const actions = isDog ? DOG_ACTION_REGISTRY : ACTION_REGISTRY;
+  const fallbackRules = isDog ? DOG_ACTION_FALLBACKS : ACTION_FALLBACKS;
+  return Object.fromEntries(actions.map((action) => {
+    const fallbackAction = fallbackRules[action] || 'idle';
     const newest = (left, right) => String(right?.acceptedAt || right?.generatedAt || right?.id || '')
       .localeCompare(String(left?.acceptedAt || left?.generatedAt || left?.id || ''));
     const fallbackChain = [];
     let nextFallback = fallbackAction;
-    while (nextFallback && !fallbackChain.includes(nextFallback) && fallbackChain.length < ACTION_REGISTRY.length) {
+    while (nextFallback && !fallbackChain.includes(nextFallback) && fallbackChain.length < actions.length) {
       fallbackChain.push(nextFallback);
-      nextFallback = isDog
-        ? ({ talk: 'bark', bark: 'bark', wag_tail: 'wag_tail', sniff: 'sniff', walk: 'walk', enter: 'walk', exit: 'walk', interact: 'react' }[nextFallback] || 'idle')
-        : (ACTION_FALLBACKS[nextFallback] || 'idle');
+      nextFallback = fallbackRules[nextFallback] || 'idle';
     }
     if (!fallbackChain.includes('idle')) fallbackChain.push('idle');
     const local = (predicate) => usable.filter((clip) => predicate(clip) && clip.source?.kind === 'h3-max-local').sort(newest)[0] || null;
@@ -380,6 +408,7 @@ async function inspectCharacter(spec, motionRegistry) {
     quote: spec.quote,
     status: 'active',
     isDog: Boolean(spec.isDog),
+    supportedActions: Object.keys(actionRegistry),
     source: {
       metadata: publicPath(metadataPath),
       spritesheet: publicPath(sheetPath),
@@ -453,6 +482,7 @@ async function main() {
       registryPolicy: 'accepted H3_LIBRARY_V2 local motion registry only; legacy motion assets are not runtime eligible',
       actionRegistryVersion: '2.0',
       actions: ACTION_REGISTRY,
+      dogActions: DOG_ACTION_REGISTRY,
       fallbackActions: ACTION_FALLBACKS,
       directions: directionOrder,
     },
