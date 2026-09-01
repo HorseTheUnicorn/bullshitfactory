@@ -14,8 +14,11 @@ const rightsPath = path.join(factoryRoot, 'music', 'rights.json');
 const writingTrainingPath = path.join(productionRoot, 'goblin-writing-training.json');
 const animationTrainingPath = path.join(productionRoot, 'animation-assembly-training.json');
 const orangeIdiotPath = path.join(factoryRoot, 'tv', 'orange-idiot', 'orange-idiot.json');
+const motionRegistryPath = path.join(productionRoot, 'motion-registry.json');
 const inventoryPath = path.join(productionRoot, 'INVENTORY.json');
 const anchorsPath = path.join(productionRoot, 'character-anchors.json');
+const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
+const H3_LIBRARY_VERSION = 2;
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const exists = async (filePath) => fs.access(filePath).then(() => true).catch(() => false);
@@ -54,6 +57,7 @@ const rights = await readJson(rightsPath);
 const writingTraining = await readJson(writingTrainingPath);
 const animationTraining = await readJson(animationTrainingPath);
 const orangeIdiot = await readJson(orangeIdiotPath);
+const motionRegistry = await readJson(motionRegistryPath, { status: 'missing', runtimePolicy: 'hybrid-pilot', clips: [] });
 const errors = [];
 const characters = Array.isArray(catalog.characters) ? catalog.characters : [];
 const bibleCharacters = Array.isArray(bibles.characters) ? bibles.characters : [];
@@ -74,13 +78,28 @@ assert(Array.isArray(animationTraining.validationCriteria) && animationTraining.
 assert(orangeIdiot.id === 'orange-idiot', 'Orange Idiot TV metadata must use the orange-idiot id', errors);
 assert(orangeIdiot.mainCast === false, 'Orange Idiot must remain outside the locked main cast', errors);
 assert(orangeIdiot.view === 'south', 'Orange Idiot must be south-facing only', errors);
-assert(orangeIdiot.sceneId === 'senior-lounge', 'Orange Idiot must be assigned to the senior-lounge TV', errors);
+assert(orangeIdiot.sceneId === 'orange-idiot-house', 'Orange Idiot must use the new standalone house scene', errors);
 const orangeStandaloneScene = LOCATION_SPECS[orangeIdiot.standaloneSceneId];
 const orangeTalkingFrames = Array.isArray(orangeIdiot.talkingFrames) ? orangeIdiot.talkingFrames : [];
+const orangeReviewedMotionClips = (Array.isArray(motionRegistry.clips) ? motionRegistry.clips : [])
+  .filter((clip) => clip?.characterId === orangeIdiot.id
+    && clip?.status === 'accepted'
+    && ['accepted', 'approved'].includes(clip?.reviewStatus)
+    && clip?.direction === 'south'
+    && Array.isArray(clip?.frames)
+    && clip.frames.length);
+const orangeRequiredMotionClips = ['talk', 'walk'].map((action) => orangeReviewedMotionClips
+  .filter((clip) => clip.action === action)
+  .sort((left, right) => String(right.acceptedAt || right.generatedAt || '').localeCompare(String(left.acceptedAt || left.generatedAt || '')) || String(right.id || '').localeCompare(String(left.id || '')))[0] || null);
 assert(Boolean(orangeStandaloneScene), 'Orange Idiot standalone scene must be registered in LOCATION_SPECS', errors);
 assert(orangeIdiot.standaloneBackground === orangeStandaloneScene?.background, 'Orange Idiot standalone background must match its registered scene', errors);
 assert(typeof orangeIdiot.standaloneBackground === 'string' && await exists(localPublicPath(orangeIdiot.standaloneBackground)), 'Orange Idiot standalone background is missing', errors);
-assert(orangeTalkingFrames.length >= 1, 'Orange Idiot must provide at least one south-facing talking frame', errors);
+assert(motionRegistry.status === 'active' && motionRegistry.runtimePolicy === 'replacement', 'Orange Idiot H3 motion registry must be active with replacement policy', errors);
+assert(motionRegistry.libraryId === H3_LIBRARY_ID && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION, `H3 motion registry must be ${H3_LIBRARY_ID} version ${H3_LIBRARY_VERSION}`, errors);
+assert(orangeRequiredMotionClips.every(Boolean), 'Orange Idiot must provide reviewed south-facing H3 talk and walk clips', errors);
+for (const clip of orangeRequiredMotionClips.filter(Boolean)) {
+  for (const frame of clip.frames) assert(typeof frame?.file === 'string' && await exists(localPublicPath(frame.file)), `Orange Idiot H3 ${clip.action} frame is missing: ${frame?.file || '(unnamed)'}`, errors);
+}
 for (const frame of orangeTalkingFrames) assert(await exists(localPublicPath(frame)), 'Orange Idiot talking frame is missing: ' + frame, errors);
 assert(typeof orangeIdiot.preview === 'string' && await exists(localPublicPath(orangeIdiot.preview)), 'Orange Idiot south preview is missing', errors);
 
@@ -155,7 +174,7 @@ if (errors.length) {
     music: rightsReports,
     writingTraining: { schemaVersion: writingTraining.schemaVersion, sourceIds: writingTraining.sources.map((source) => source.id), beatCount: writingTraining.beatSheet.length, minimumScore: writingTraining.evaluation?.minimumScore || null },
     animationTraining: { schemaVersion: animationTraining.schemaVersion, requiredAnchors: animationTraining.anchorContract.requiredAnchors, parserFields: animationTraining.parserSchema.requiredFields, validationIds: animationTraining.validationCriteria.map((criterion) => criterion.id) },
-    tvOnly: { id: orangeIdiot.id, displayName: orangeIdiot.displayName, sceneId: orangeIdiot.sceneId, standaloneSceneId: orangeIdiot.standaloneSceneId, standaloneBackground: orangeIdiot.standaloneBackground, view: orangeIdiot.view, preview: orangeIdiot.preview, talkingFrames: orangeTalkingFrames, mainCast: false },
+    tvOnly: { id: orangeIdiot.id, displayName: orangeIdiot.displayName, sceneId: orangeIdiot.sceneId, standaloneSceneId: orangeIdiot.standaloneSceneId, standaloneBackground: orangeIdiot.standaloneBackground, view: orangeIdiot.view, preview: orangeIdiot.preview, talkingFrames: orangeTalkingFrames, motionRegistry: orangeIdiot.animationContract?.motionRegistry || '/bullshit-factory/production/motion-registry.json', motionLibrary: { id: H3_LIBRARY_ID, version: H3_LIBRARY_VERSION, assetRoot: motionRegistry.assetRoot || '/bullshit-factory/motion/v1' }, motionPolicy: motionRegistry.runtimePolicy, acceptedMotionClipIds: orangeRequiredMotionClips.filter(Boolean).map((clip) => clip.id), mainCast: false },
     resolver: { module: 'lib/bullshit-factory-location.mjs', positionRule: 'feet-touch-ground', depthRule: 'feet-y', noArbitraryWorldCoordinates: true },
   }, null, 2)}\n`, 'utf8');
   console.log(`WROTE Bullshit Factory runtime inventory: ${characterReports.length} characters, ${sceneReports.length} scenes, ${rightsReports.filter((track) => track.approved && track.fileValid).length} approved music files.`);

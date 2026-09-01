@@ -2,7 +2,8 @@
   "schemaVersion": "1.1",
   "showId": "bullshit-factory",
   "generatedAt": "2026-08-28T18:42:49.469Z",
-  "policy": "Original internal masters and local Stable Audio 3 generations are selected by metadata, generated before playout, and retained as reviewable Bullshit Factory assets.",
+  "policy": "Original internal masters and local Stable Audio 3 generations are generated before playout and retained as reviewable Bullshit Factory assets. Runtime content music is disabled; only the opening theme and the String guitar performance cue are used.",
+  "runtimePolicy": "opening-theme-and-string-guitar-only",
   "stableAudio": {
     "provider": "stable-audio-3-small-music",
     "backend": "tflite-cpu",
@@ -24,6 +25,24 @@
       "rightsHolder": "Bullshit Factory",
       "source": "original procedural composition",
       "file": "/bullshit-factory/music/themes/bf-theme-main.wav",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
+      "id": "bf-string-guitar",
+      "title": "String Guitar: Three Chords and a Liability",
+      "category": "characters",
+      "mood": "warm overdriven guitar sting",
+      "duration": 6,
+      "energy": 7,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original local Stable Audio 3 TFLite character cue",
+      "file": "/bullshit-factory/music/characters/bf-string-guitar.mp3",
       "permittedUse": [
         "livestream",
         "VOD",

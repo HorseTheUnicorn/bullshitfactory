@@ -32,6 +32,7 @@ yarn-error.log*
 
 # local environment
 .env*
+.h3-authoring.env
 !.env.example
 .dev.vars
 .dev.vars.*

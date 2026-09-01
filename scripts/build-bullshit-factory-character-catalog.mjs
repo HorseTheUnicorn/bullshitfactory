@@ -11,6 +11,10 @@ const characterRoot = path.join(publicRoot, 'bullshit-factory', 'characters', 'v
 const productionRoot = path.join(siteRoot, 'animation-production', 'bullshit-factory', 'production');
 const publicCatalogPath = path.join(characterRoot, 'CHARACTER-CATALOG.json');
 const productionCatalogPath = path.join(productionRoot, 'character-catalog.json');
+const motionRegistryPath = path.join(publicRoot, 'bullshit-factory', 'production', 'motion-registry.json');
+const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
+const H3_LIBRARY_VERSION = 2;
+const H3_ASSET_ROOT = '/bullshit-factory/motion/v1';
 
 const characterSpecs = [
   {
@@ -180,21 +184,50 @@ const ACTION_FALLBACKS = Object.freeze({
   interact: 'react',
 });
 
-function buildActionRegistry(clips, isDog) {
-  const usable = clips.filter((clip) => clip.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length);
+function buildActionRegistry(clips, isDog, { replacementActive = false } = {}) {
+  const usable = clips.filter((clip) => clip.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length && (!replacementActive || clip.source?.kind === 'h3-max-local'));
   return Object.fromEntries(ACTION_REGISTRY.map((action) => {
     const fallbackAction = isDog
       ? ({ talk: 'bark', bark: 'bark', wag_tail: 'wag_tail', sniff: 'sniff', walk: 'walk', enter: 'walk', exit: 'walk', interact: 'react' }[action] || 'idle')
       : (ACTION_FALLBACKS[action] || 'idle');
-    const exact = usable.find((clip) => clip.action === action);
-    const fallback = usable.find((clip) => clip.action === fallbackAction) || usable.find((clip) => clip.action === 'idle') || usable[0] || null;
-    const selected = exact || fallback;
+    const preferred = (clip) => {
+      const source = String(clip?.source?.kind || '');
+      return source === 'h3-max-local' ? 100000 : source === 'character-authored' ? 10000 : /pixellab/iu.test(source) ? 0 : 1000;
+    };
+    const newest = (left, right) => preferred(right) - preferred(left) || String(right?.id || '').localeCompare(String(left?.id || ''));
+    const fallbackChain = [];
+    let nextFallback = fallbackAction;
+    while (nextFallback && !fallbackChain.includes(nextFallback) && fallbackChain.length < ACTION_REGISTRY.length) {
+      fallbackChain.push(nextFallback);
+      nextFallback = isDog
+        ? ({ talk: 'bark', bark: 'bark', wag_tail: 'wag_tail', sniff: 'sniff', walk: 'walk', enter: 'walk', exit: 'walk', interact: 'react' }[nextFallback] || 'idle')
+        : (ACTION_FALLBACKS[nextFallback] || 'idle');
+    }
+    if (!fallbackChain.includes('idle')) fallbackChain.push('idle');
+    const local = (predicate) => usable.filter((clip) => predicate(clip) && clip.source?.kind === 'h3-max-local').sort(newest)[0] || null;
+    const any = (predicate) => usable.filter(predicate).sort(newest)[0] || null;
+    // Prefer an accepted local replacement fallback over an older exact clip.
+    // This keeps pilot renders visually consistent while legacy assets remain
+    // on disk for rollback and audit.
+    const exactLocal = local((clip) => clip.action === action);
+    const fallbackLocal = fallbackChain
+      .map((fallbackName) => local((clip) => clip.action === fallbackName))
+      .find(Boolean)
+      || null;
+    const exactLegacy = any((clip) => clip.action === action);
+    const fallbackLegacy = fallbackChain.map((fallbackName) => any((clip) => clip.action === fallbackName)).find(Boolean) || null;
+    const selected = exactLocal || fallbackLocal || exactLegacy || fallbackLegacy;
+    const exactSelected = Boolean(selected && selected.action === action);
     return [action, {
       clipId: selected?.id || null,
       resolvedAction: selected?.action || null,
-      status: exact ? 'approved' : selected ? 'fallback' : 'missing',
-      fallbackAction: exact ? null : fallbackAction,
-      reason: exact ? 'verified clip classified for requested action' : selected ? 'no exact action clip; verified fallback selected' : 'no verified clip available',
+      status: exactSelected ? 'approved' : selected ? 'fallback' : 'missing',
+      fallbackAction: exactSelected ? null : fallbackAction,
+      fallbackChain: exactSelected ? [] : fallbackChain,
+      purpose: selected?.purpose || selected?.performance || null,
+      anchors: selected?.anchors || null,
+      mirroringSafe: selected?.mirroringSafe === true,
+      reason: exactSelected ? 'verified clip classified for requested action' : selected ? 'no local exact action clip; accepted replacement fallback selected' : 'no verified clip available',
     }];
   }));
 }
@@ -214,6 +247,80 @@ function fileIn(rootPath, relativePath) {
   const filePath = path.resolve(rootPath, relativePath.replaceAll('/', path.sep));
   if (!isInside(rootPath, filePath)) throw new Error('Path escapes character root: ' + relativePath);
   return filePath;
+}
+
+function publicFile(assetPath) {
+  const value = String(assetPath || '');
+  if (!value.startsWith('/bullshit-factory/motion/') || value.includes('..') || value.includes('\\')) {
+    throw new Error('Motion registry path must stay under /bullshit-factory/motion/: ' + value);
+  }
+  const filePath = path.resolve(publicRoot, '.' + value);
+  if (!isInside(publicRoot, filePath)) throw new Error('Motion registry path escapes public root: ' + value);
+  return filePath;
+}
+
+async function inspectRegistryClip(spec, entry) {
+  if (!entry || entry.status !== 'accepted' || !['accepted', 'approved'].includes(entry.reviewStatus)) return null;
+  if (entry.characterId !== spec.id || entry.direction !== 'south') return null;
+  const frames = [];
+  const errors = [];
+  let dimensions = null;
+  for (const frame of Array.isArray(entry.frames) ? entry.frames : []) {
+    const imagePath = publicFile(frame.file);
+    try {
+      const info = await inspectPng(imagePath, spec.folder + ' local motion frame');
+      if (dimensions && (info.width !== dimensions.width || info.height !== dimensions.height)) {
+        errors.push('frame dimensions do not match');
+      }
+      dimensions ||= { width: info.width, height: info.height };
+      frames.push({ file: publicPath(imagePath), width: info.width, height: info.height });
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : 'unreadable local motion frame');
+    }
+  }
+  if (!frames.length || errors.length) {
+    throw new Error(spec.folder + ' accepted motion ' + String(entry.id || 'unnamed') + ' failed catalog validation: ' + (errors.join(' ') || 'no frames'));
+  }
+  return {
+    id: String(entry.id),
+    action: ACTION_REGISTRY.includes(entry.action) ? entry.action : 'react',
+    direction: 'south',
+    frameCount: frames.length,
+    fps: Number(entry.fps) || 12,
+    loop: entry.loop !== false,
+    status: 'approved',
+    quality: 'h3-local-accepted',
+    qualityErrors: [],
+    purpose: entry.purpose || entry.performance || String(entry.action || 'motion') + ' is a reusable local performance selected by the semantic director',
+    mirroringSafe: entry.mirroringSafe === true,
+    source: {
+      kind: 'h3-max-local',
+      model: entry.source?.model || 'minimax/h3-max/image-to-video',
+      requestId: entry.source?.requestId || null,
+      sourceCharacterHash: entry.sourceCharacterHash || entry.source?.sourceCharacterHash || null,
+      promptHash: entry.promptHash || entry.source?.promptHash || null,
+      resolution: entry.source?.resolution || null,
+      generatedAt: entry.generatedAt || null,
+    },
+    performance: entry.performance || entry.purpose || null,
+    emotion: entry.emotion || null,
+    validation: entry.validation || {},
+    anchors: entry.anchors || {
+      feetAnchor: entry.feetAnchor || null,
+      spritePivot: entry.spritePivot || null,
+    },
+    frames,
+  };
+}
+
+async function acceptedMotionClips(spec, motionRegistry) {
+  const entries = Array.isArray(motionRegistry?.clips) ? motionRegistry.clips : [];
+  const clips = [];
+  for (const entry of entries) {
+    const clip = await inspectRegistryClip(spec, entry);
+    if (clip) clips.push(clip);
+  }
+  return clips;
 }
 
 async function readJson(filePath) {
@@ -316,7 +423,7 @@ async function inspectAnimationClip(spec, root, animationId, isDog) {
   };
 }
 
-async function inspectCharacter(spec) {
+async function inspectCharacter(spec, motionRegistry) {
   const root = path.join(characterRoot, spec.folder);
   const sheetRoot = path.join(characterRoot, spec.folder + '-spritesheet');
   const metadataPath = path.join(root, 'metadata.json');
@@ -350,16 +457,33 @@ async function inspectCharacter(spec) {
 
   const clips = [];
   const animationRoot = path.join(root, 'Idle', 'animations');
-  const animationEntries = (await fs.readdir(animationRoot, { withFileTypes: true }))
-    .filter((entry) => entry.isDirectory())
-    .sort((left, right) => left.name.localeCompare(right.name));
+  let animationEntries = [];
+  try {
+    animationEntries = (await fs.readdir(animationRoot, { withFileTypes: true }))
+      .filter((entry) => entry.isDirectory())
+      .sort((left, right) => left.name.localeCompare(right.name));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
   for (const entry of animationEntries) {
     clips.push(await inspectAnimationClip(spec, root, entry.name, Boolean(spec.isDog)));
   }
+  const acceptedEntries = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted') : [];
+  const replacementActive = motionRegistry.status === 'active'
+    && motionRegistry.runtimePolicy === 'replacement'
+    && motionRegistry.libraryId === H3_LIBRARY_ID
+    && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION
+    && acceptedEntries.length > 0
+    && acceptedEntries.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
+  const legacyClips = clips.splice(0, clips.length).map((clip) => replacementActive
+    ? { ...clip, status: 'compatibility-only', quality: 'compatibility-only', runtimeEligible: false }
+    : clip);
+  clips.push(...legacyClips);
+  clips.push(...await acceptedMotionClips(spec, motionRegistry));
   const animationNames = clips.map((clip) => clip.id);
   const primaryAnimation = choosePrimaryAnimation(animationNames, spec.preferredAnimation);
   if (!primaryAnimation) throw new Error(spec.folder + ' has no animation clips.');
-  const actionRegistry = buildActionRegistry(clips, Boolean(spec.isDog));
+  const actionRegistry = buildActionRegistry(clips, Boolean(spec.isDog), { replacementActive });
 
   return {
     id: spec.id,
@@ -404,7 +528,22 @@ async function main() {
   }
 
   const characters = [];
-  for (const spec of characterSpecs) characters.push(await inspectCharacter(spec));
+  const motionRegistry = await readJson(motionRegistryPath, {
+    schemaVersion: '1.0',
+    status: 'missing',
+    runtimePolicy: 'hybrid-pilot',
+    clips: [],
+  });
+  const acceptedEntries = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted') : [];
+  const replacementActive = motionRegistry.status === 'active'
+    && motionRegistry.runtimePolicy === 'replacement'
+    && motionRegistry.libraryId === H3_LIBRARY_ID
+    && Number(motionRegistry.libraryVersion) === H3_LIBRARY_VERSION
+    && acceptedEntries.length > 0
+    && acceptedEntries.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
+  const acceptedMotionCount = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus)).length : 0;
+  const reviewPendingMotionCount = Array.isArray(motionRegistry.clips) ? motionRegistry.clips.filter((clip) => clip?.status === 'accepted' && !['accepted', 'approved'].includes(clip?.reviewStatus)).length : 0;
+  for (const spec of characterSpecs) characters.push(await inspectCharacter(spec, motionRegistry));
 
   const catalog = {
     catalogVersion: '2.0',
@@ -425,10 +564,24 @@ async function main() {
       loop: true,
       sourceFramesPerClip: 6,
       sourceFrameVariants: [6, 7, 8],
-      registryPolicy: 'all south-facing animation directories with verified frames are runtime candidates',
-      actionRegistryVersion: '1.0',
+      registryPolicy: replacementActive ? 'accepted local motion registry only; legacy directories removed after replacement acceptance' : 'accepted local motion registry first; legacy directories remain compatibility candidates until replacement activation',
+      actionRegistryVersion: '2.0',
       actions: ACTION_REGISTRY,
+      fallbackActions: ACTION_FALLBACKS,
       directions: directionOrder,
+    },
+    motionLibrary: {
+      id: motionRegistry.libraryId || H3_LIBRARY_ID,
+      version: Number(motionRegistry.libraryVersion) || H3_LIBRARY_VERSION,
+      assetRoot: motionRegistry.assetRoot || H3_ASSET_ROOT,
+      registry: '/bullshit-factory/production/motion-registry.json',
+      runtimePolicy: motionRegistry.runtimePolicy || 'hybrid-pilot',
+      status: motionRegistry.status || 'missing',
+      model: motionRegistry.model || 'minimax/h3-max/image-to-video',
+      acceptedClipCount: acceptedMotionCount,
+      reviewPendingClipCount: reviewPendingMotionCount,
+      replacementActive,
+      legacyRuntimeEligible: !replacementActive,
     },
     retiredReplacements: [
       {

@@ -123,8 +123,15 @@ def load_model() -> Kokoro:
     if MODEL is None:
         MODEL = Kokoro(MODEL_PATH, VOICES_PATH)
         voices = getattr(MODEL, "voices", {})
-        if isinstance(voices, dict):
-            MODEL_VOICES = frozenset(str(value) for value in voices)
+        # kokoro-onnx exposes the voice archive as an ``NpzFile`` rather than
+        # a plain dict.  Read its mapping keys so stock voices remain usable
+        # for blends and custom-profile fallbacks on the real runtime.
+        voice_names = getattr(voices, "files", None)
+        if voice_names is None:
+            keys = getattr(voices, "keys", None)
+            voice_names = keys() if callable(keys) else None
+        if voice_names is not None:
+            MODEL_VOICES = frozenset(str(value) for value in voice_names)
     return MODEL
 
 

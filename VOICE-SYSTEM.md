@@ -21,7 +21,10 @@ processing. Candidate generation never changes the live cast.
 
 Bork remains bark-only and is intentionally absent from Kokoro candidate
 generation. Orange Idiot continues through its dedicated local Kokoro vector
-blend with the existing pitch/speed treatment and compatibility fallback.
+blend with a low-to-mid pitch, slightly nasal, raspy/breathy, mildly congested
+fictional New York/Queens-inspired delivery, short bursts, pauses, repetitions,
+stretched vowels, abrupt emphasis, and a stock fallback. It is not a real-person
+voice imitation.
 
 If an operator asks for a voice reminiscent of a real performer or fictional
 film character, the designer records only original performance traits—such as
@@ -78,3 +81,15 @@ curl -H "x-bullshit-factory-production-token: $BF_PRODUCTION_TOKEN" \
 ```
 
 No paid cloud TTS service is required for normal character speech.
+
+## Episode audio policy
+
+The existing local audio mixer remains the production path. The runtime policy
+is `opening-theme-and-string-guitar-only`: the opening title card uses the
+approved theme, normal content segments use dialogue plus purposeful SFX, and
+String's `bf-string-guitar` cue is added only when a locked String performance
+mentions a guitar, solo, riff, strum, amp, or related stage action. The former
+procedural ambience bed and automatic music/stinger selection are not eligible
+for content playback. Missing optional cues fall back to silence and never to a
+different music track. All audio is normalized through the existing loudness
+and true-peak limits.

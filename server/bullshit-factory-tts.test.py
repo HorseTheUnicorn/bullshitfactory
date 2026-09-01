@@ -16,8 +16,10 @@ except ModuleNotFoundError:  # The production host supplies numpy with Kokoro.
 
 
 class FakeKokoro:
+    voices = {}
+
     def __init__(self, *_args, **_kwargs):
-        self.voices = {}
+        self.voices = self.__class__.voices
 
 
 def load_service():
@@ -99,6 +101,27 @@ class TtsVoiceTests(unittest.TestCase):
     def test_missing_custom_voice_uses_stock_fallback(self):
         self.service.CUSTOM_VOICE_FALLBACKS["rookboss"] = "am_michael"
         self.assertEqual(self.service.voice_argument_for("rookboss"), "am_michael")
+
+    def test_model_inventory_reads_kokoro_npz_voice_archive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = Path(directory) / "voices.bin"
+            np.savez(
+                bundle,
+                am_michael=np.array([1, 1, 1, 1], dtype=np.float32),
+                bm_george=np.array([2, 2, 2, 2], dtype=np.float32),
+            )
+            archive = np.load(str(bundle) + ".npz", allow_pickle=False)
+            original_model = self.service.MODEL
+            try:
+                self.service.MODEL = None
+                self.service.MODEL_VOICES = frozenset()
+                FakeKokoro.voices = archive
+                self.service.load_model()
+                self.assertEqual(self.service.MODEL_VOICES, frozenset({"am_michael", "bm_george"}))
+            finally:
+                archive.close()
+                FakeKokoro.voices = {}
+                self.service.MODEL = original_model
 
     def test_stock_fallback_still_resolves_when_model_inventory_is_unavailable(self):
         self.service.MODEL_VOICES = frozenset()

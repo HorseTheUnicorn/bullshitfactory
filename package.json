@@ -9,7 +9,7 @@
     "dev": "vinext dev",
     "prebuild": "node scripts/build-bullshit-factory-character-catalog.mjs && node scripts/build-bullshit-factory-runtime.mjs",
     "build": "vinext build",
-    "test": "node --test *.test.mjs server/*.test.mjs",
+    "test": "node --test *.test.mjs server/*.test.mjs scripts/*.test.mjs",
     "start": "vinext start",
     "assets:build-bullshit-cast": "node scripts/build-bullshit-factory-character-catalog.mjs",
     "assets:generate-bullshit-pixellab": "node scripts/generate-bullshit-factory-pixellab-assets.mjs",

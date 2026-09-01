@@ -37,7 +37,7 @@ Every new episode title is numbered and its title body is checked independently,
 - Authored clips, the deterministic compositor, Sharp, and FFmpeg produce the media.
 - PixelLab is optional asset authoring and does not consume credits during production.
 - Kokoro FastAPI is the loopback voice backend; Orange Idiot has separate pitch/effect controls.
-- Production music is local and original. The opening theme and optional generated beds are used; third-party songs are not pulled automatically.
+- Production music is local and original. The opening theme is the only continuous music; content segments do not receive ambient beds or musical stingers. String's guitar-performance cue may play when a locked performance calls for it, and third-party songs are not pulled automatically.
 
 ## Quick start
 

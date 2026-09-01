@@ -6,6 +6,7 @@ import {
   buildGoblinPrompt,
   buildScriptWriterPrompt,
   buildSegmentDraft,
+  characterClip,
   deterministicTopicDialogue,
   timedDialogue,
   ensureAdultLanguageBeats,
@@ -97,7 +98,7 @@ test('deterministic fallback keeps enough unique dialogue after collision repair
   const draft = buildSegmentDraft({ templateId: 'old-timer-override', seed: 2000338723, durationSeconds: 57, castIds: ['magsrust', 'kernelkline', 'karen', 'bork'] });
   const lines = deterministicTopicDialogue(draft);
   const timed = timedDialogue(lines, draft.dialogue, draft.castIds, draft.durationSeconds);
-  assert.equal(lines.length, 6);
+  assert.equal(lines.length, dialogueLineBudget(57));
   assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
   assert.equal(lines.some((line) => /\(case \d+\)/iu.test(line.text)), false);
   assert.ok(timed.length >= 6, 'collision repair must survive timeline filtering');
@@ -117,6 +118,17 @@ test('long deterministic fallback rotates per-speaker turns without repeating li
   assert.ok(lines.length >= 18, 'expected the long fallback to scale to at least 18 lines');
   assert.equal(new Set(lines.map((line) => line.text.toLowerCase())).size, lines.length);
 });
+
+test('deterministic fallback repairs lines that collide with recent script history', () => {
+  const draft = buildSegmentDraft({ templateId: 'old-timer-override', seed: 77224, durationSeconds: 57, castIds: ['magsrust', 'kernelkline', 'bork'] });
+  const first = deterministicTopicDialogue({ ...draft, noveltySeed: 'history-collision' });
+  const previousSpeech = first.map((line) => line.text).join(' | ');
+  const second = deterministicTopicDialogue({ ...draft, noveltySeed: 'history-collision', recentScriptTexts: [previousSpeech] });
+  const previousKeys = new Set(first.map((line) => line.text.toLowerCase().replace(/[^a-z0-9]+/giu, ' ').trim()));
+  assert.ok(second.every((line) => !previousKeys.has(line.text.toLowerCase().replace(/[^a-z0-9]+/giu, ' ').trim())));
+  assert.equal(new Set(second.map((line) => line.text.toLowerCase())).size, second.length);
+});
+
 test('deterministic drafts carry a complete writing beat sheet', () => {
   const draft = buildSegmentDraft({ templateId: 'break-policy', seed: 42, durationSeconds: 30, castIds: ['rookboss', 'sudsmcgee'] });
   assert.deepEqual(draft.story.beats.map((beat) => beat.id), ['hook', 'want', 'obstacle', 'escalation', 'reversal', 'button']);
@@ -156,6 +168,12 @@ test('semantic motion gives every line a listener, motivated shot, and locked pu
   assert.ok(draft.motion.shots.some((shot) => shot.type === 'two_shot'));
   assert.ok(draft.motion.shots.some((shot) => shot.type === 'final_button'));
   assert.equal(validateSegmentContract(draft).ok, true);
+});
+
+test('replacement renderer resolves an omitted action through the semantic clip kind', () => {
+  const idle = { id: 'h3-kernel-idle', action: 'idle', status: 'approved', frames: [{ file: '/motion/frame.png' }], source: { kind: 'h3-max-local' } };
+  const character = { clips: [idle], actionRegistry: { idle: { clipId: idle.id } } };
+  assert.equal(characterClip(character, 'idle', '', true), idle);
 });
 
 test('post-line reactions stay inside the measured 30 ms media tail', () => {

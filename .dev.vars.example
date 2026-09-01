@@ -44,6 +44,13 @@ PIXELLAB_API_KEY=
 BF_ANIMATION_MODEL=local-authored-clips
 BF_ANIMATION_MAX_CONCURRENT_JOBS=8
 
+# H3 Max is an offline authoring tool. Production uses the accepted local
+# motion registry and never needs this key or a runtime H3 request.
+FAL_API_KEY=
+BF_H3_RUNTIME_ENABLED=false
+BF_H3_HARD_BUDGET_USD=30
+BF_H3_INTERNAL_STOP_USD=29
+
 BF_AUDIENCE_QUEUE_MAX=100
 BF_AUDIENCE_INGEST_TOKEN=
 BF_YOUTUBE_ENABLED=false

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "showId": "bullshit-factory",
-  "generatedAt": "2026-08-31T16:49:04.137Z",
+  "generatedAt": "2026-09-01T10:04:47.669Z",
   "canvas": {
     "width": 384,
     "height": 216,
@@ -12,15 +12,15 @@
   "counts": {
     "characters": 10,
     "scenes": 11,
-    "approvedMusic": 14
+    "approvedMusic": 15
   },
   "characters": [
     {
       "id": "rookboss",
       "folder": "RookBoss",
       "rotations": 8,
-      "clips": 73,
-      "frames": 441,
+      "clips": 78,
+      "frames": 553,
       "grounded": true,
       "errors": []
     },
@@ -28,8 +28,8 @@
       "id": "magsrust",
       "folder": "MagsRust",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -37,8 +37,8 @@
       "id": "kernelkline",
       "folder": "KernelKline",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -46,8 +46,8 @@
       "id": "sudsmcgee",
       "folder": "SudsMcGee",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -55,8 +55,8 @@
       "id": "dooby",
       "folder": "Dooby",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -64,8 +64,8 @@
       "id": "spaulding",
       "folder": "Spaulding",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -73,8 +73,8 @@
       "id": "string",
       "folder": "String",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -82,8 +82,8 @@
       "id": "karen",
       "folder": "Karen",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -91,8 +91,8 @@
       "id": "nico",
       "folder": "Nico",
       "rotations": 8,
-      "clips": 73,
-      "frames": 443,
+      "clips": 78,
+      "frames": 555,
       "grounded": true,
       "errors": []
     },
@@ -100,8 +100,8 @@
       "id": "bork",
       "folder": "Bork",
       "rotations": 8,
-      "clips": 72,
-      "frames": 438,
+      "clips": 78,
+      "frames": 570,
       "grounded": true,
       "errors": []
     }
@@ -188,6 +188,12 @@
   "music": [
     {
       "id": "bf-theme-main",
+      "status": "approved",
+      "approved": true,
+      "fileValid": true
+    },
+    {
+      "id": "bf-string-guitar",
       "status": "approved",
       "approved": true,
       "fileValid": true
@@ -326,17 +332,22 @@
   "tvOnly": {
     "id": "orange-idiot",
     "displayName": "Orange Idiot",
-    "sceneId": "senior-lounge",
+    "sceneId": "orange-idiot-house",
     "standaloneSceneId": "orange-idiot-house",
     "standaloneBackground": "/bullshit-factory/scenes/orange-idiot-house.png",
     "view": "south",
-    "preview": "/bullshit-factory/tv/orange-idiot/orange-idiot-south.png",
-    "talkingFrames": [
-      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
-      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
-      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
-      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
-      "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
+    "preview": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-h3-source.png",
+    "talkingFrames": [],
+    "motionRegistry": "/bullshit-factory/production/motion-registry.json",
+    "motionLibrary": {
+      "id": "H3_LIBRARY_V2",
+      "version": 2,
+      "assetRoot": "/bullshit-factory/motion/v1"
+    },
+    "motionPolicy": "replacement",
+    "acceptedMotionClipIds": [
+      "h3-orange-idiot-talk-neutral-2c36c08e3dc4",
+      "h3-orange-idiot-walk-neutral-f1eebe4f6e78"
     ],
     "mainCast": false
   },
