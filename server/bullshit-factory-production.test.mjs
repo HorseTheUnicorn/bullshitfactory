@@ -21,6 +21,7 @@ import {
   selectContinuousDurationPreset,
   resolveGenerationWho,
   selectGenerationWho,
+  splitSpeechTextForTts,
   stripTrailingCaseTag,
   evaluateWritingCandidate,
   validateSegmentContract,
@@ -121,6 +122,15 @@ test('spoken dialogue strips trailing case labels before captions and Kokoro', (
   assert.equal(timed.length, 2);
   assert.deepEqual(timed.map((line) => line.text), ['The memo is breathing', 'The server is watching us']);
   assert.equal(timed.some((line) => /\(case\s+[a-z0-9_-]+\)/iu.test(line.text)), false);
+});
+
+test('long Orange speech is split into bounded, lossless Kokoro requests', () => {
+  const source = `${Array.from({ length: 90 }, (_, index) => `Sentence ${index + 1} keeps the broadcast moving.`).join(' ')} (case 123).`;
+  const chunks = splitSpeechTextForTts(source, 180);
+  assert.ok(chunks.length > 1);
+  assert.ok(chunks.every((chunk) => chunk.length <= 180));
+  assert.equal(chunks.join(' '), source.replace(/\s+\(case\s+123\)\.?$/iu, '').replace(/\s+/gu, ' ').trim());
+  assert.equal(chunks.some((chunk) => !chunk.trim()), false);
 });
 
 test('measured voice timelines fill long segments and leave only the authored reaction tail', () => {

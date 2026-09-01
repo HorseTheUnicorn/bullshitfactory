@@ -107,6 +107,15 @@ test('server-room layout packs the real H3 envelope without cross-band collision
   }
 });
 
+test('crowd rebalancing preserves the measured H3 envelope', () => {
+  const cast = ['rookboss', 'magsrust', 'kernelkline', 'sudsmcgee', 'dooby', 'spaulding', 'string', 'karen', 'nico', 'bork'];
+  const envelope = { width: 92, height: 92, alphaBounds: { left: 0, top: 3, right: 90, bottom: 87 } };
+  const layout = buildSceneLayout('break-room', cast, Object.fromEntries(cast.map((characterId) => [characterId, { frameGeometry: envelope }])));
+  const rebalanced = layout.placements.filter((placement) => placement.intent?.placementReason === 'crowd-avoidance');
+  assert.ok(rebalanced.length > 0, 'the crowded test cast should exercise band rebalancing');
+  for (const placement of rebalanced) assert.deepEqual(placement.layoutGeometry, envelope, `${placement.characterId} lost its H3 envelope during rebalance`);
+});
+
 test('full-cast layouts rebalance crowded bands without overlapping sprites', () => {
   const cast = ['rookboss', 'magsrust', 'kernelkline', 'sudsmcgee', 'dooby', 'spaulding', 'string', 'karen', 'nico', 'bork'];
   for (const sceneId of Object.keys(LOCATION_SPECS)) {

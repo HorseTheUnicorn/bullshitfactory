@@ -78,6 +78,7 @@ const H3_LIBRARY_ID = 'H3_LIBRARY_V2';
 const H3_LIBRARY_VERSION = 2;
 const H3_ASSET_ROOT = '/bullshit-factory/motion/v2';
 const H3_LEDGER_PATH = path.join(DATA_ROOT, 'h3-authoring-ledger.json');
+const H3_LEDGER_FALLBACK_PATH = path.join(APP_ROOT, 'runtime/h3-authoring-ledger.json');
 const LIVE_ROOT = path.join(DATA_ROOT, 'live');
 const LIVE_SECRETS_PATH = path.join(LIVE_ROOT, 'stream-secrets.json');
 const LIVE_PLAYLIST_PATH = path.join(LIVE_ROOT, 'published-playlist.txt');
@@ -108,6 +109,7 @@ const SHARED_TTS_REFERENCE_WPM = clamp(
   180,
 );
 const ORANGE_IDIOT_TTS_SPEED = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, ORANGE_IDIOT_VOICE_PROFILE.speed), 0.65, 1.30);
+const ORANGE_IDIOT_TTS_CHUNK_MAX_CHARACTERS = 640;
 const ORANGE_IDIOT_AUDIO_EFFECT_ENABLED = String(process.env.BF_ORANGE_IDIOT_AUDIO_EFFECT_ENABLED || 'true').trim().toLowerCase() !== 'false';
 const ORANGE_IDIOT_PITCH_MULTIPLIER = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_PITCH_MULTIPLIER, ORANGE_IDIOT_VOICE_PROFILE.pitchMultiplier), 0.70, 1.30);
 const ORANGE_IDIOT_MIX_SOURCES = Object.freeze(String(process.env.BF_TTS_ORANGE_IDIOT_MIX_SOURCES || 'am_echo,am_michael').split(',').map((value) => value.trim()).filter(Boolean).slice(0, 2));
@@ -4076,6 +4078,54 @@ function ttsBodyForPlan(text, plan) {
   return body;
 }
 
+export function splitSpeechTextForTts(text, maximumCharacters = ORANGE_IDIOT_TTS_CHUNK_MAX_CHARACTERS) {
+  const normalized = stripTrailingCaseTag(String(text || '')).replace(/\s+/gu, ' ').trim();
+  if (!normalized) return [];
+  const limit = Math.max(120, Math.floor(Number(maximumCharacters) || ORANGE_IDIOT_TTS_CHUNK_MAX_CHARACTERS));
+  if (normalized.length <= limit) return [normalized];
+
+  const chunks = [];
+  let current = '';
+  const flush = () => {
+    if (current) chunks.push(current);
+    current = '';
+  };
+  const appendWords = (textPart) => {
+    for (const word of textPart.trim().split(/\s+/u).filter(Boolean)) {
+      if (word.length > limit) {
+        flush();
+        for (let offset = 0; offset < word.length; offset += limit) chunks.push(word.slice(offset, offset + limit));
+        continue;
+      }
+      const candidate = current ? `${current} ${word}` : word;
+      if (candidate.length > limit) {
+        flush();
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+  };
+
+  const sentences = normalized.match(/[^.!?…]+(?:[.!?…]+|$)/gu) || [normalized];
+  for (const sentence of sentences) {
+    const part = sentence.trim();
+    if (!part) continue;
+    const candidate = current ? `${current} ${part}` : part;
+    if (part.length <= limit && candidate.length <= limit) {
+      current = candidate;
+    } else if (part.length <= limit) {
+      flush();
+      current = part;
+    } else {
+      flush();
+      appendWords(part);
+    }
+  }
+  flush();
+  return chunks;
+}
+
 async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SPEED, lang = 'en-us', voiceProfile = null } = {}) {
   const spokenText = stripTrailingCaseTag(text);
   const plans = speechPlans(voice, speed, lang, voiceProfile);
@@ -4140,6 +4190,39 @@ async function requestSpeech(text, voice, outputPath, { speed = SHARED_SPEECH_SP
     if (plan.fallbackUsed === false && plans.length > 1) logEvent('voice-fallback', 'Selected character voice failed; using its stock Kokoro fallback.', { voice: plan.voice, fallback: plans[1].voice, error: lastError.message });
   }
   throw lastError;
+}
+
+async function requestChunkedSpeech(text, voice, outputPath, options = {}) {
+  const chunks = splitSpeechTextForTts(text);
+  if (!chunks.length) throw new Error('TTS received no speakable text.');
+  if (chunks.length === 1) return requestSpeech(chunks[0], voice, outputPath, options);
+
+  const chunkPaths = chunks.map((_, index) => `${outputPath}.chunk-${String(index).padStart(3, '0')}.wav`);
+  const concatPath = `${outputPath}.concat.txt`;
+  try {
+    const measurements = [];
+    for (let index = 0; index < chunks.length; index += 1) {
+      measurements.push(await requestSpeech(chunks[index], voice, chunkPaths[index], options));
+    }
+    await writeFile(concatPath, `${chunkPaths.map((chunkPath) => `file '${ffmpegPath(chunkPath)}'`).join('\n')}\n`, 'utf8');
+    await execFileAsync('ffmpeg', [
+      '-hide_banner', '-loglevel', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', concatPath,
+      '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', outputPath,
+    ], { timeout: 120_000, maxBuffer: 16 * 1024 });
+    const measured = await probeAudio(outputPath);
+    const firstMeasurement = measurements[0];
+    return {
+      ...measured,
+      voiceId: firstMeasurement?.voiceId || voice,
+      selectedVersion: firstMeasurement?.selectedVersion || 0,
+      fallbackUsed: measurements.some((measurement) => measurement.fallbackUsed === true),
+      latencyMs: measurements.reduce((total, measurement) => total + Number(measurement.latencyMs || 0), 0),
+      ttsChunkCount: chunks.length,
+    };
+  } finally {
+    await rm(concatPath, { force: true }).catch(() => {});
+    await Promise.all(chunkPaths.map((chunkPath) => rm(chunkPath, { force: true }).catch(() => {})));
+  }
 }
 
 async function inspectVoiceAudio(filePath) {
@@ -4576,14 +4659,19 @@ function movePlacementToFeet(placement, feet) {
 }
 
 function placementForFrame(layoutPlacement, characterId, fileGeometry) {
+  // Rebuild the sprite envelope with the actual frame geometry, but honor the
+  // already-resolved feet position. A named station is useful during layout,
+  // yet keeping `near` here would discard a later collision-solver move and
+  // snap the rendered sprite back onto the crowded station on every frame.
   const normalized = resolveScenePlacement({
     sceneId: layoutPlacement.sceneId,
     characterId,
     walkBand: layoutPlacement.walkBand,
     x: layoutPlacement.intent?.x ?? 0.5,
+    near: null,
     frameGeometry: fileGeometry,
   });
-  return normalized;
+  return movePlacementToFeet(normalized, layoutPlacement.feet);
 }
 
 async function renderLayoutForDraft(draft, resources) {
@@ -5257,19 +5345,117 @@ function assertRenderedActorSeparation(draft, actorLayers, frameIndex) {
   throw new Error('Rendered actor collision at frame ' + frameIndex + ' (' + timeSeconds.toFixed(2) + 's): ' + pairs.join(', ') + '. Reroute the timed movement or quarantine the segment.');
 }
 
+const MAX_VISIBLE_ACTORS_PER_FRAME = 4;
+
+function renderedLayoutCollisionCount(layout) {
+  const placements = Array.isArray(layout?.placements) ? layout.placements : [];
+  let count = 0;
+  for (let leftIndex = 0; leftIndex < placements.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < placements.length; rightIndex += 1) {
+      if (renderBoundsOverlap({ placement: placements[leftIndex] }, { placement: placements[rightIndex] }, RENDER_COLLISION_GAP_PX)) count += 1;
+    }
+  }
+  return count;
+}
+
+function renderLayoutForActorSet(draft, actorIds, baseLayout, geometryByActor) {
+  const ids = [...new Set(actorIds || [])].filter((actorId) => baseLayout?.placements?.some((placement) => placement.characterId === actorId));
+  const key = ids.slice().sort().join('|');
+  if (!draft.__renderLayoutByActorSet) Object.defineProperty(draft, '__renderLayoutByActorSet', { value: new Map(), writable: true });
+  const cached = draft.__renderLayoutByActorSet.get(key);
+  if (cached) return cached;
+
+  const requests = {};
+  for (const actorId of ids) {
+    const authoredPlacement = baseLayout.placements.find((placement) => placement.characterId === actorId);
+    if (!authoredPlacement) continue;
+    const wasRebalanced = authoredPlacement.intent?.placementReason === 'crowd-avoidance';
+    requests[actorId] = {
+      walkBand: authoredPlacement.walkBand,
+      near: wasRebalanced ? null : (authoredPlacement.intent?.near || null),
+      x: authoredPlacement.intent?.x ?? 0.5,
+      frameGeometry: geometryByActor.get(actorId),
+    };
+  }
+
+  // A full-cast authored layout can leave a useful station request that is
+  // impossible once the camera stages only a few participants. Prefer that
+  // request, but keep a station-free deterministic pass available so a
+  // collision-free shot never depends on a crowded background layout.
+  const authored = buildSceneLayout(draft.sceneId, ids, requests);
+  const genericRequests = Object.fromEntries(ids.map((actorId, index) => {
+    const authoredPlacement = baseLayout.placements.find((placement) => placement.characterId === actorId);
+    return [actorId, {
+      walkBand: authoredPlacement?.walkBand || null,
+      x: (index + 1) / (ids.length + 1),
+      frameGeometry: geometryByActor.get(actorId),
+    }];
+  }));
+  const generic = buildSceneLayout(draft.sceneId, ids, genericRequests);
+  const layout = renderedLayoutCollisionCount(generic) < renderedLayoutCollisionCount(authored) ? generic : authored;
+  draft.__renderLayoutByActorSet.set(key, layout);
+  return layout;
+}
+
+function visibleActorIdsForFrame(draft, timeMs, activeCaptionSpeakerId, baseLayout, geometryByActor) {
+  const actorIds = [...new Set(draft.castIds || [])];
+  const activeShot = activeShotForFrame(draft.motion, timeMs);
+  const preferred = [];
+  const addPreferred = (actorId) => {
+    if (!actorId || !actorIds.includes(actorId) || preferred.includes(actorId)) return;
+    preferred.push(actorId);
+  };
+
+  // A 384px sitcom frame cannot display a ten-person cast at full readable
+  // sprite scale without forcing silhouettes into one another. Stage the
+  // shot's semantic participants instead of rendering every cast member as a
+  // permanently visible crowd. The ordering is deterministic and anchored
+  // to the locked line/shot, so this is a camera/staging decision rather than
+  // random culling or actor motion.
+  addPreferred(activeCaptionSpeakerId);
+  addPreferred(activeShot?.focusActorId);
+  addPreferred(activeShot?.listenerId);
+  for (const actorId of activeShot?.participants || []) addPreferred(actorId);
+  for (const actorId of actorIds) {
+    const cue = cueForActor(draft.motion, actorId, timeMs);
+    if (cue?.baseState === 'traveling' || cue?.baseState === 'speaking' || cue?.baseState === 'reacting' || cue?.baseState === 'listening') addPreferred(actorId);
+  }
+  for (const actorId of actorIds) addPreferred(actorId);
+
+  const selected = [];
+  for (const actorId of preferred) {
+    if (selected.length >= MAX_VISIBLE_ACTORS_PER_FRAME) break;
+    const candidate = [...selected, actorId];
+    const candidateLayout = renderLayoutForActorSet(draft, candidate, baseLayout, geometryByActor);
+    if (renderedLayoutCollisionCount(candidateLayout) === 0) selected.push(actorId);
+  }
+  // A single actor is always a valid fallback, but retain a useful invariant
+  // if malformed draft data ever omits every actor from the layout cache.
+  if (!selected.length && actorIds.length) selected.push(actorIds[0]);
+  return new Set(selected);
+}
+
 async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites = true } = {}) {
   const timeSeconds = frameIndex / RENDER_FPS;
   const timeMs = Math.floor(timeSeconds * 1000);
   if (!draft.__renderClipGeometry) Object.defineProperty(draft, '__renderClipGeometry', { value: new Map(), writable: true });
   if (!draft.__stableActorFeet) Object.defineProperty(draft, '__stableActorFeet', { value: Object.create(null), writable: true });
-  const { layout, geometryByActor } = await renderLayoutForDraft(draft, resources);
+  const { layout: fullLayout, geometryByActor } = await renderLayoutForDraft(draft, resources);
   const actorLayers = [];
   const characters = resources.catalog.characters || [];
   const activeCaptionSpeakerId = (draft.captions || []).find((caption) => timeMs >= Number(caption.startMs || 0) && timeMs <= Number(caption.endMs || 0))?.speakerId || null;
+  const visibleActorIds = visibleActorIdsForFrame(draft, timeMs, activeCaptionSpeakerId, fullLayout, geometryByActor);
+  const visibleLayout = renderLayoutForActorSet(draft, [...visibleActorIds], fullLayout, geometryByActor);
+  const visibleLayoutKey = [...visibleActorIds].sort().join('|');
+  if (draft.__visibleActorSetKey !== visibleLayoutKey) {
+    draft.__stableActorFeet = Object.create(null);
+    draft.__visibleActorSetKey = visibleLayoutKey;
+  }
   for (const actorId of draft.castIds || []) {
+    if (!visibleActorIds.has(actorId)) continue;
     const character = characters.find((item) => item.id === actorId);
     if (!character) continue;
-    const layoutPlacement = layout.placements.find((placement) => placement.characterId === actorId);
+    const layoutPlacement = visibleLayout.placements.find((placement) => placement.characterId === actorId);
     if (!layoutPlacement) continue;
     const cue = cueForActor(draft.motion, actorId, timeMs);
     const actorState = actorFeetAt(layoutPlacement, timeSeconds, draft.motion, actorId);
@@ -5478,6 +5664,7 @@ async function rehearseRenderGeometry(draft, resources) {
   const frameBottom = 216;
   const scene = sceneForRender(draft.sceneId);
   draft.__stableActorFeet = Object.create(null);
+  draft.__visibleActorSetKey = null;
   let maxForegroundActors = 0;
   let maxCollisionPairs = 0;
   let firstCameraViolation = null;
@@ -5612,6 +5799,7 @@ async function renderVideo(draft, resources, outputPath, posterPath) {
   // moving forward, which read as a storyboard instead of a scene.
   const frameCount = Math.max(1, Math.ceil(Number(draft.durationSeconds) * RENDER_FPS));
   if (draft.__stableActorFeet) draft.__stableActorFeet = Object.create(null);
+  draft.__visibleActorSetKey = null;
   try {
     for (let index = 0; index < frameCount; index += 1) {
       await writeFile(path.join(workRoot, `frame_${String(index).padStart(4, '0')}.png`), await composeFrame(draft, resources, index));
@@ -5689,8 +5877,8 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   for (const interruption of draft.tvInterruptions || []) {
     if (!ORANGE_IDIOT_VOICE) throw new Error('Orange Idiot speech is enabled, but the Kokoro voice is not configured.');
     const filePath = path.join(segmentDirectory, `${interruption.id}.wav`);
-    const measurement = await requestSpeech(interruption.text, ORANGE_IDIOT_VOICE, filePath, { speed: ORANGE_IDIOT_TTS_SPEED, lang: ORANGE_IDIOT_LANG });
-    rawLineFiles.push({ speakerId: ORANGE_IDIOT_ID, ...interruption, filePath, duration: measurement.duration });
+    const measurement = await requestChunkedSpeech(interruption.text, ORANGE_IDIOT_VOICE, filePath, { speed: ORANGE_IDIOT_TTS_SPEED, lang: ORANGE_IDIOT_LANG });
+    rawLineFiles.push({ speakerId: ORANGE_IDIOT_ID, ...interruption, filePath, duration: measurement.duration, ttsChunkCount: measurement.ttsChunkCount || 1 });
   }
   const dogBarkSource = publicAssetPath('/sfx/dog_bark.wav');
   if (await fileIsUsable(dogBarkSource, 100)) {
@@ -7456,7 +7644,7 @@ function serializeJob(job) {
 
 async function motionAuthoringStatus(resources) {
   const registry = await readJson(MOTION_REGISTRY_PATH, { showId: 'bullshit-factory', status: 'missing', runtimePolicy: 'hybrid-pilot', clips: [] });
-  const ledger = await readJson(H3_LEDGER_PATH, { policy: {}, totals: {}, requests: [], rejections: [] });
+  const ledger = await readJson(H3_LEDGER_PATH, null) || await readJson(H3_LEDGER_FALLBACK_PATH, { policy: {}, totals: {}, requests: [], rejections: [] });
   const clips = Array.isArray(registry.clips) ? registry.clips : [];
   const reviewed = clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus));
   const reviewPending = clips.filter((clip) => clip?.status === 'accepted' && !['accepted', 'approved'].includes(clip?.reviewStatus));
