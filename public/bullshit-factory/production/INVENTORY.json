@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "showId": "bullshit-factory",
-  "generatedAt": "2026-09-01T13:59:08.618Z",
+  "generatedAt": "2026-09-01T17:30:46.063Z",
   "canvas": {
     "width": 384,
     "height": 216,
@@ -11,7 +11,7 @@
   },
   "counts": {
     "characters": 10,
-    "scenes": 11,
+    "scenes": 10,
     "approvedMusic": 15
   },
   "characters": [
@@ -168,13 +168,6 @@
       "background": "/bullshit-factory/scenes/arcade-closet.png",
       "walkBands": 3,
       "floorY": 191,
-      "valid": true
-    },
-    {
-      "id": "senior-lounge",
-      "background": "/bullshit-factory/scenes/senior-lounge.png",
-      "walkBands": 3,
-      "floorY": 190,
       "valid": true
     },
     {
