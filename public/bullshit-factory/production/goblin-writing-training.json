@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.3",
+  "schemaVersion": "1.4",
   "name": "Bullshit Factory sitcom writing room",
   "purpose": "Compact operating rules for original Bullshit Factory episode writing. The source guides are references for technique; do not reproduce their prose or imitate their examples.",
   "sources": [
@@ -29,10 +29,12 @@
     "Write for performance: short playable lines, clear reaction opportunities, physical business, and room for pauses and overlapping intent.",
     "Prefer an original concrete image or analogy over a pile of random non sequiturs.",
     "Keep the cast and location manageable so every speaking character earns a beat and every action can be animated.",
-    "Use the first selected topic as the shared subject of one fictional incident from hook through button; do not switch topics between speakers.",
-    "Give every selected human speaker at least one purposeful line when the runtime allows; use topicFocus for point of view, tactic, or emotion, not a separate subject.",
-    "Write this as a vulgar adult sitcom: spread 2-5 natural profane beats per 30-second segment across the argument, scaled to runtime, without using slurs or protected-group harassment.",
-    "Keep Bork bark-only, but make every bark or yip a reaction to the same shared incident rather than a disconnected sound gag."
+    "The writer may choose any fresh fictional subject; research, audience suggestions, and topicFocus are optional seeds, never mandatory topics or an outline.",
+    "Make nonsense specific and escalating: a bizarre object, adult grudge, bad policy, relationship problem, or impossible consequence should still create a playable conversation rather than a disconnected list of random words.",
+    "Give every selected human speaker at least one purposeful line when the runtime allows; use the character bible and relationships to give each speaker a different tactic or point of view.",
+    "Write this as a vulgar adult sitcom: spread natural profanity and mature adult problems across the argument, scaled to runtime, without slurs or protected-group harassment.",
+    "Never repeat a recent premise, title, punchline, sentence pattern, or line. Each line must add a new detail, tactic, image, escalation, or consequence.",
+    "Keep Bork bark-only, but make every bark or yip a reaction to the same fictional incident."
   ],
   "beatSheet": [
     {
@@ -110,14 +112,15 @@
       2,
       64
     ],
-    "dialogueDensity": "At the shared 1.0 Kokoro speed, normalize every measured voice take to the 129 WPM reference pace; budget enough words for the selected window, with speech ending 30 ms before the measured segment end and never overrunning the rendered media. Speaker handoffs use a measured 5 ms gap after the prior take ends.",
+    "dialogueDensity": "Use the measured 140 WPM cast planning calibration to budget enough words for the selected window; this number does not change Kokoro playback speed. Speech ends 30 ms before the measured segment end and never overruns the rendered media. Speaker handoffs use an exact 2 ms gap after the prior take ends.",
     "dialogueRules": [
       "Use at least two human speakers when the cast allows it.",
       "Keep every line complete and speakable in one breath or intentional comic pause.",
       "Do not put stage directions, URLs, model commentary, or a Bork line in dialogue.",
       "Make the last line a turn, punchline, or consequence rather than a summary.",
-      "Every selected human speaker must advance or react to the same primary topic incident.",
-      "Use 2-5 well-placed profane beats per 30 seconds, distributed naturally among the cast rather than forced into one speaker."
+      "Every selected human speaker must advance or react to the same fictional incident, but the writer may choose that incident freely.",
+      "Use well-placed profane beats per 30 seconds, distributed naturally among the cast rather than forced into one speaker.",
+      "Do not repeat a line, punchline, premise, or conspicuous phrase from the current script or continuity memory."
     ]
   },
   "evaluation": {
@@ -159,9 +162,9 @@
         "question": "Does the ending land a turn, punchline, or forward-moving consequence?"
       },
       {
-        "id": "topic-coherence",
+        "id": "fictional-coherence",
         "weight": 1,
-        "question": "Do premise, beats, and every speaker stay on one primary topic-based incident?"
+        "question": "Do premise, beats, and every speaker stay on one fresh fictional incident even when the premise is absurd?"
       },
       {
         "id": "cast-coverage",
@@ -212,8 +215,8 @@
       "button"
     ],
     "jokeEngine": "A character applies the wrong professional logic to a concrete factory problem, another character makes the cost visible, and the final button changes what the audience thought the problem was.",
-    "topicHandling": "Use the first fresh public topic as a private seed for one original fictional workplace incident. Keep that incident continuous across every beat, speaker, prop, and Bork reaction; let each character's topicFocus change the angle, not the subject. Never copy headline wording or present a real person as speaking.",
-    "adultLanguage": "This is a vulgar adult sitcom. Use 2-5 natural profane beats per 30 seconds, scaled to runtime and spread across character conflict and punchlines. Strong words such as fuck, fucking, motherfucker, asshole, dickhead, shit, bullshit, and goddamn are permitted when they fit the voice; never use slurs, protected-group harassment, or sexual content involving minors.",
+    "topicHandling": "Research, audience suggestions, and topicFocus are optional creative seeds, never a required subject. Let the writer choose any fresh fictional adult incident, keep that incident continuous across every beat, speaker, prop, and Bork reaction, and never copy headline wording or present a real person as speaking.",
+    "adultLanguage": "This is a vulgar adult sitcom. Let adults talk about work, money, relationships, drinking, resentment, bad decisions, bodily complaints, and other mature problems with natural profanity spread across character conflict and punchlines. Strong words such as fuck, fucking, motherfucker, asshole, dickhead, shit, bullshit, and goddamn are permitted when they fit the voice; never use slurs, protected-group harassment, or sexual content involving minors.",
     "alteredStateHandling": "Alcohol and marijuana can bend perception, confidence, or associations, but every altered character still has a concrete want and a visible consequence. No use, acquisition, dosing, preparation, or optimization instructions.",
     "endingRule": "End with a playable turn, consequence, dog reaction, policy stamp, or new problem. Do not summarize the episode.",
     "realTopicPolicy": {
@@ -454,7 +457,7 @@
     },
     {
       "id": "topic-critic",
-      "question": "Is at least one fresh public topic paraphrased into the premise or dialogue when notes exist?",
+      "question": "Does the writer create a fresh fictional premise rather than copying or mechanically paraphrasing a source?",
       "rejectIf": "The draft copies a headline, invents a fact, or ignores all fresh notes."
     },
     {

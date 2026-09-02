@@ -40,10 +40,8 @@ import {
   orangeIdiotSpeechWordRange,
   normalizeOrangeIdiotSpeechDurationSeconds,
   SCRIPT_END_BUFFER_MS,
-  VOICE_REACTION_TAIL_MS,
   MAX_DIALOGUE_TAIL_MS,
   serializeVoiceTimeline,
-  spreadVoiceTimeline,
   validateSegmentContract,
 } from '../lib/bullshit-factory-production.mjs';
 import { buildSceneLayout, getCharacterGeometry, getLocationSpec, resolveScenePlacement, validateSceneLayout } from '../lib/bullshit-factory-location.mjs';
@@ -2150,7 +2148,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
       'Return JSON only. This is satirical original copy for a fictional character, not a real statement, endorsement, transcript, or news report.',
       'Treat the topic suggestion board as private seed tags, not as the subject of the monologue. Pick one to three labels silently, then invent a wholly fictional local incident with absurd consequences. Do not name, explain, summarize, or debate the real-world subject, and do not quote, reproduce, or closely paraphrase any source wording, names, dates, numbers, or factual claims. The output must still work if every seed label is deleted.',
       `Orange Idiot voice direction: ${ORANGE_IDIOT_VOICE_PROFILE.accent}; ${ORANGE_IDIOT_VOICE_PROFILE.pitch}-pitched, ${ORANGE_IDIOT_VOICE_PROFILE.timbre}; deliver ${ORANGE_IDIOT_VOICE_PROFILE.delivery}. Write punctuation and sentence lengths that give Kokoro real pauses and abrupt emphasis; do not imitate or quote any real person.`,
-      'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '. A one-minute final episode has only about 57 content seconds after its three-second title card; 230 words needs roughly three minutes at this pace.',
+      'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM for planning at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '; this planning number controls the word budget, not the speaking speed. A one-minute final episode has about 57 content seconds after its three-second title card, so fill the requested window with a complete monologue rather than a short excerpt.',
       'Write an absurd, adult, clearly fictional monologue about the invented incident, using overconfident bluster and a concise comic button. A seed may affect the flavor or object, but the speech must not be a topical explainer or a disguised summary of real events. Use invented names and places only; do not name real people, organizations, markets, countries, policies, or events. Do not give instructions for illegal activity or target protected groups.',
       'Orange Idiot performance direction: ' + ORANGE_IDIOT_PERFORMANCE_BRIEF,
       `Episode timing: a ${OPENING_SECONDS}-second title card plays before this content segment; all runtime and speech timings below are relative to content after the title card. The final episode adds that opening before this segment.`,
@@ -2169,18 +2167,18 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     'Orange Idiot is not a cast member. He is a south-facing standalone broadcast in the dedicated Orange Idiot house scene. Never place him in the floor cast grid or a factory scene.',
     'Use only the supplied character IDs. This is a vulgar adult sitcom: use 2-5 natural profane beats per 30-second segment, scaled to runtime and spread across the argument instead of dumped into one line. Bullshit, goddamn, shit, asshole, dickhead, fuck, fucking, and motherfucker are allowed when they fit the character and joke; never use slurs, protected-group harassment, or sexual content involving minors.',
     `Vulgarity is a hard acceptance gate: include at least ${adultLanguageMinimum} separate, natural profane beats in the cast dialogue for this runtime. Distribute them across the conflict and punchlines; do not hide them in stage directions or the premise.`,
-    'Write an original playable sitcom beat around one concrete fictional incident: hook, want, obstacle, escalating official fix, reversal, and final button. Give every speaker a concrete want and a distinct tactic, reveal subtext, and create a visible reaction opportunity; do not fill space with unrelated random objects.',
+    'Write an original playable sitcom beat around a fresh fictional incident of your choice: hook, want, obstacle, escalating official fix, reversal, and final button. You may choose any subject that suits the characters and scene. Nonsense is welcome when it is specific, escalating, and funny; use a concrete object, rule, relationship, grudge, or bizarre premise instead of repeating a research headline. Give every speaker a concrete want and a distinct tactic, reveal subtext, and create a visible reaction opportunity.',
       `Episode timing: a ${OPENING_SECONDS}-second title card plays before this content segment; all runtime and speech timings below are relative to content after the title card. The final episode adds that opening before this segment.`,
     'If alcohol or marijuana is part of the premise, show a specific point of view and consequence; never provide use, acquisition, dosing, preparation, or optimization details.',
     `Runtime: ${durationSeconds} seconds. Return ${minimumLines}-${targetLines} timed dialogue lines. Every spoken line and bark must finish within the ${dialogueDeadlineSeconds}-second content segment; do not overrun the rendered media. Aim to fill roughly 55-80% of the runtime with spoken words and intentional reaction pauses. Never return only two or three lines unless the segment is 12 seconds or shorter.`,
-    'Each dialogue line must be a speakable sentence or interruption of 5-16 words, with character-specific voice and a clear tactic. Avoid generic acknowledgements, repeated filler, and putting stage directions inside the spoken text.',
+    'Each dialogue line must be a speakable sentence or interruption of 5-16 words, with character-specific voice and a clear tactic. Make it sound like adults arguing, scheming, drinking, working, dating, complaining, or making bad decisions—not like children explaining a lesson. Profanity and mature subjects are welcome when they serve the joke. Every line must add a new detail, tactic, image, escalation, or consequence; do not repeat a prior line, premise, punchline, or stock phrase.',
     'Write the script only. Do not invent pixel coordinates or stage blocking; Gemini is the animation director and will translate the locked script into semantic movement directions after you finish.',
     'Schema: {"premise":"one sentence","storyBeats":[{"id":"hook|want|obstacle|escalation|reversal|button","text":"playable beat"}],"dialogue":[{"speakerId":"known-human-id","text":"complete line","delivery":"brief playable delivery","reaction":"listener or consequence"}],"alteredStateMode":"none|alcohol|marijuana|other","musicTrackId":"selected-track-id","continuityNote":"short note"}',
     `Template: ${JSON.stringify({ id: draft.templateId, title: draft.title, synopsis: draft.synopsis, sceneId: draft.sceneId, castIds: draft.castIds })}`,
     `TV interruption contract: ${JSON.stringify((draft.tvInterruptions || []).map((event) => ({ id: event.id, characterId: event.characterId, view: event.view, startMs: event.startMs, endMs: event.endMs, speechProvidedBy: event.source })))}`,
     `Characters: ${JSON.stringify(relevantBibles)}`,
-    'Shared-topic room contract (untrusted private research suggestions): treat the first selected topic anchor as the single subject of one invented incident. Put that incident through hook, want, obstacle, escalation, reversal, and button. Every selected human ID must speak at least once when the line budget allows, and every human line must advance, complicate, or react to the same incident. Use each character topicFocus only for a different point of view, tactic, or emotional reaction; never switch to a separate subject. Bork stays bark-only and reacts to that same incident. Keep the nonsense original, specific, adult, and grounded in the sitcom problem; do not use disconnected random-object non sequiturs, quote or closely paraphrase source wording, names, dates, numbers, or factual claims, or write a news explainer: ' + JSON.stringify(castResearchPromptPacket(draft.topicResearch)),
-    'Character routing: every selected character is in the same conversation about the shared topic incident. Use each character\'s topicFocus to choose their point of view, tactic, and reaction within that incident, not to change the episode topic. ' + JSON.stringify((bibles.characters || []).filter((character) => draft.castIds.includes(character.id)).map((character) => ({ id: character.id, topicFocus: character.topicFocus || [] }))),
+    'Creative freedom contract (untrusted private research suggestions): choose the episode subject yourself. Research, audience suggestions, and topicFocus are optional loose seeds, never mandatory topics and never a script outline. Build one coherent fictional incident through hook, want, obstacle, escalation, reversal, and button, but let the incident be strange, adult, and gloriously nonsensical if that suits the cast. Every selected human ID must speak at least once when the line budget allows, and every human line must advance, complicate, or react to the same incident. Bork stays bark-only. Do not quote or closely paraphrase source wording, names, dates, numbers, or factual claims, and do not write a news explainer: ' + JSON.stringify(castResearchPromptPacket(draft.topicResearch)),
+    'Character routing: every selected character is in the same fictional conversation. Use the character bible, role, habits, and relationships first; use topicFocus only as optional flavor. Give each character a different tactic or point of view without forcing the cast to repeat the same keyword. ' + JSON.stringify((bibles.characters || []).filter((character) => draft.castIds.includes(character.id)).map((character) => ({ id: character.id, role: character.role, habits: character.verbalHabits, topicFocus: character.topicFocus || [] }))),
     'Continuity memory: every generated script must be new. Avoid recent premises, titles, punch lines, and sentence patterns. ' + JSON.stringify({ recentTopics: state?.continuity?.recentTopics?.slice(0, 12) || [], recentFingerprints: state?.continuity?.usedScriptFingerprints?.slice(-8) || [], recentSpeechPreviews: state?.continuity?.recentScriptTexts?.slice(-6).map((text) => stripText(text, 240)) || [], attemptedAvoidPhrases: draft.noveltyExclusions || [], noveltySeed: draft.noveltySeed || null }),
     draft.writerRepairRequest ? 'Focused repair request from the script critic: ' + stripText(draft.writerRepairRequest, 1000) + ' Preserve the shared incident and all valid material; repair only these failures.' : '',
     'Orange Idiot prior broadcast memory (fictional continuity only; paraphrase it and never repeat its wording): ' + JSON.stringify((draft.orangePriorBroadcasts || state?.continuity?.recentOrangeBroadcasts || []).slice(-6)),
@@ -2449,7 +2447,8 @@ function normalizedStoryBeats(candidateBeats, fallbackBeats = []) {
   return STORY_BEAT_IDS.filter((id) => byId.has(id)).map((id) => byId.get(id));
 }
 
-function evaluateWritingCandidate(candidate, dialogue, castIds, durationSeconds = 30, topicResearch = null, topicFallback = []) {
+function evaluateWritingCandidate(candidate, dialogue, castIds, durationSeconds = 30, topicResearch = null, topicFallback = [], options = {}) {
+  const topicRequired = options?.topicRequired === true;
   const checks = [];
   let score = 0;
   const beats = normalizedStoryBeats(candidate?.storyBeats);
@@ -2481,8 +2480,8 @@ function evaluateWritingCandidate(candidate, dialogue, castIds, durationSeconds 
   const primaryTopic = topicAnchors[0] ? readableResearchTopic(topicAnchors[0]) : '';
   const primaryKeywords = primaryTopic ? researchTopicKeywords(primaryTopic) : [];
   const matchedTopics = topicAnchors.filter((topic) => containsTopicKeyword(topicText, researchTopicKeywords(topic))).length;
-  const topicCoveragePass = !primaryKeywords.length || containsTopicKeyword(topicText, primaryKeywords);
-  checks.push({ id: 'topic-grounding', pass: topicCoveragePass, detail: topicAnchors.length ? `${primaryTopic} primary topic grounded; ${matchedTopics}/${topicAnchors.length} selected anchors represented` : 'no topic anchors supplied' });
+  const topicCoveragePass = !topicRequired || !primaryKeywords.length || containsTopicKeyword(topicText, primaryKeywords);
+  checks.push({ id: 'topic-grounding', pass: topicCoveragePass, detail: topicAnchors.length ? `${primaryTopic} primary topic ${topicRequired ? 'grounded' : 'optional'}; ${matchedTopics}/${topicAnchors.length} selected anchors represented` : 'no topic anchors supplied' });
   if (topicCoveragePass) score += 1;
   const humanSpeakers = [...new Set(castIds.filter((id) => id !== 'bork'))];
   const speakerSet = new Set(dialogue.map((line) => line.speakerId));
@@ -2509,8 +2508,8 @@ function evaluateWritingCandidate(candidate, dialogue, castIds, durationSeconds 
     return directTopic || sharedIncident || contextualReaction;
   });
   const speakerTopicCount = speakerIncidentPasses.filter(Boolean).length;
-  const speakerTopicPass = !primaryKeywords.length || speakerIncidentPasses.every(Boolean);
-  checks.push({ id: 'topic-speaker-coverage', pass: speakerTopicPass, detail: primaryKeywords.length ? `${speakerTopicCount}/${humanSpeakers.length} human speakers reference or react to the shared ${primaryTopic} incident` : 'no primary topic to distribute' });
+  const speakerTopicPass = !topicRequired || !primaryKeywords.length || speakerIncidentPasses.every(Boolean);
+  checks.push({ id: 'topic-speaker-coverage', pass: speakerTopicPass, detail: primaryKeywords.length ? `${speakerTopicCount}/${humanSpeakers.length} human speakers reference or react to the ${topicRequired ? 'shared ' : 'optional '}${primaryTopic} incident` : 'no primary topic to distribute' });
   if (speakerTopicPass) score += 1;
   const adultLanguageCount = adultLanguageTermCount(dialogue.map((line) => line.text).join(' '));
   const adultLanguageMinimum = requiredAdultLanguageTerms(durationSeconds);
@@ -2578,7 +2577,7 @@ function timedDialogue(candidateLines, fallbackLines, castIds, durationSeconds) 
     startMs: index ? 1120 : 900,
     mode: 'dialogue',
   }));
-  return spreadVoiceTimeline(draftTimeline, durationSeconds, 220, VOICE_REACTION_TAIL_MS)
+  return serializeVoiceTimeline(draftTimeline, durationSeconds, SPEAKER_HANDOFF_GAP_MS, SCRIPT_END_BUFFER_MS)
     .map((line) => ({
       id: line.id,
       speakerId: line.speakerId,
@@ -3099,7 +3098,7 @@ function deterministicTopicDialogue(draft) {
     ]
       .flatMap((text) => String(text || '').split('|'))
       .map((text) => canonicalNoveltyText(text))
-      .filter((text) => text.length >= 24),
+      .filter((text) => text.length >= 8),
   );
   const speakerTurns = new Map();
   const topicReferenceTokens = ['same', 'current'];
@@ -3366,7 +3365,7 @@ function applyWritingCandidate(candidate, draft, resources, musicPlan, sourceMod
   // locked lines, then may be refined by the separate animation director.
   const stageDirections = deterministicStageDirections(provisionalDraft);
   const movementNotes = defaultMovementNotes(provisionalDraft);
-  const writingEvaluation = evaluateWritingCandidate({ ...candidate, movementNotes, stageDirections }, dialogue, draft.castIds, draft.durationSeconds, draft.topicResearch, draft.topicFocus?.length ? draft.topicFocus : [draft.category || 'factory']);
+  const writingEvaluation = evaluateWritingCandidate({ ...candidate, movementNotes, stageDirections }, dialogue, draft.castIds, draft.durationSeconds, draft.topicResearch, draft.topicFocus?.length ? draft.topicFocus : [draft.category || 'factory'], { topicRequired: false });
   if (writingEvaluation.status !== 'pass') {
     const failedChecks = writingEvaluation.checks.filter((check) => !check.pass).map((check) => `${check.id}: ${check.detail}`).join('; ');
     throw new Error(`Writer quality gate failed (${writingEvaluation.score}/${writingEvaluation.minimum}): ${failedChecks || 'unknown failure'}`);
@@ -4222,6 +4221,50 @@ async function requestChunkedSpeech(text, voice, outputPath, options = {}) {
   } finally {
     await rm(concatPath, { force: true }).catch(() => {});
     await Promise.all(chunkPaths.map((chunkPath) => rm(chunkPath, { force: true }).catch(() => {})));
+  }
+}
+
+async function fitSpeechAudioToWindow(filePath, measurement, targetDurationSeconds) {
+  const sourceDuration = Number(measurement?.duration || 0);
+  const targetDuration = Number(targetDurationSeconds);
+  if (!Number.isFinite(sourceDuration) || sourceDuration <= 0 || !Number.isFinite(targetDuration) || targetDuration <= 0) return measurement;
+  if (targetDuration <= sourceDuration + 0.04) {
+    return { ...measurement, speechWindowTargetSeconds: targetDuration, speechWindowFit: 'not-needed', speechWindowStretchFactor: 1 };
+  }
+  const factor = sourceDuration / targetDuration;
+  if (!Number.isFinite(factor) || factor <= 0) return measurement;
+  // atempo preserves pitch while lengthening the already-characterized Orange
+  // take. Chain filters when a very short supplied excerpt needs more than the
+  // single-filter range; normal generated copy should stay near 1.0.
+  let remaining = factor;
+  const filters = [];
+  while (remaining < 0.5) {
+    filters.push('atempo=0.5');
+    remaining /= 0.5;
+  }
+  while (remaining > 2) {
+    filters.push('atempo=2.0');
+    remaining /= 2;
+  }
+  filters.push('atempo=' + clamp(remaining, 0.5, 2).toFixed(6));
+  const pacedPath = filePath + '.window.wav';
+  try {
+    await execFileAsync('ffmpeg', [
+      '-hide_banner', '-loglevel', 'error', '-y', '-i', filePath,
+      '-af', filters.join(','),
+      '-ar', '44100', '-ac', '1', '-c:a', 'pcm_s16le', pacedPath,
+    ], { timeout: 120_000, maxBuffer: 16 * 1024 });
+    await rename(pacedPath, filePath);
+    const adjusted = await probeAudio(filePath);
+    return {
+      ...measurement,
+      ...adjusted,
+      speechWindowTargetSeconds: targetDuration,
+      speechWindowFit: 'stretched',
+      speechWindowStretchFactor: Number(factor.toFixed(6)),
+    };
+  } finally {
+    await rm(pacedPath, { force: true }).catch(() => {});
   }
 }
 
@@ -5877,8 +5920,25 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   for (const interruption of draft.tvInterruptions || []) {
     if (!ORANGE_IDIOT_VOICE) throw new Error('Orange Idiot speech is enabled, but the Kokoro voice is not configured.');
     const filePath = path.join(segmentDirectory, `${interruption.id}.wav`);
-    const measurement = await requestChunkedSpeech(interruption.text, ORANGE_IDIOT_VOICE, filePath, { speed: ORANGE_IDIOT_TTS_SPEED, lang: ORANGE_IDIOT_LANG });
-    rawLineFiles.push({ speakerId: ORANGE_IDIOT_ID, ...interruption, filePath, duration: measurement.duration, ttsChunkCount: measurement.ttsChunkCount || 1 });
+    const sourceMeasurement = await requestChunkedSpeech(interruption.text, ORANGE_IDIOT_VOICE, filePath, { speed: ORANGE_IDIOT_TTS_SPEED, lang: ORANGE_IDIOT_LANG });
+    const standaloneOrange = draft.sceneId === ORANGE_IDIOT_STANDALONE_SCENE_ID;
+    const targetWindowSeconds = standaloneOrange
+      ? Math.max(0.18, (Number(interruption.endMs) - Number(interruption.startMs)) / 1000)
+      : 0;
+    const measurement = targetWindowSeconds > 0
+      ? await fitSpeechAudioToWindow(filePath, sourceMeasurement, targetWindowSeconds)
+      : sourceMeasurement;
+    rawLineFiles.push({
+      speakerId: ORANGE_IDIOT_ID,
+      ...interruption,
+      filePath,
+      duration: measurement.duration,
+      sourceDuration: sourceMeasurement.duration,
+      speechWindowTargetSeconds: measurement.speechWindowTargetSeconds || null,
+      speechWindowFit: measurement.speechWindowFit || null,
+      speechWindowStretchFactor: measurement.speechWindowStretchFactor || null,
+      ttsChunkCount: measurement.ttsChunkCount || 1,
+    });
   }
   const dogBarkSource = publicAssetPath('/sfx/dog_bark.wav');
   if (await fileIsUsable(dogBarkSource, 100)) {
@@ -5893,14 +5953,12 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     const sourceDurationMs = Math.round(line.duration * 1000);
     return { ...line, durationMs: sourceDurationMs };
   });
-  // Orange Idiot's standalone broadcast keeps its authored pacing. Normal
-  // cast segments use the measured takes to fill the requested runtime so a
-  // short script cannot leave the back half of an episode silent.
-  const distributeMeasuredSpeech = draft.sceneId !== ORANGE_IDIOT_STANDALONE_SCENE_ID
-    && (draft.dialogue || []).length > 1;
-  const timeline = distributeMeasuredSpeech
-    ? spreadVoiceTimeline(measuredEvents, draft.durationSeconds, SPEAKER_HANDOFF_GAP_MS, VOICE_REACTION_TAIL_MS)
-    : serializeVoiceTimeline(measuredEvents, draft.durationSeconds, SPEAKER_HANDOFF_GAP_MS, SCRIPT_END_BUFFER_MS);
+  // Every take is serialized against measured audio. The handoff gap is
+  // exactly two milliseconds; free runtime is not silently converted into
+  // multi-second gaps. The writer must supply enough material, and Orange's
+  // standalone window is fitted to its authored speech target above.
+  const distributeMeasuredSpeech = false;
+  const timeline = serializeVoiceTimeline(measuredEvents, draft.durationSeconds, SPEAKER_HANDOFF_GAP_MS, SCRIPT_END_BUFFER_MS);
   const timelineById = new Map(timeline.map((event) => [event.id, event]));
   const unscheduledSpeech = rawLineFiles.filter((line) => line.speakerId !== 'bork' && !timelineById.has(line.id));
   if (unscheduledSpeech.length) {
@@ -5915,8 +5973,11 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
       ...line,
       startMs: scheduled.startMs,
       endMs: scheduled.endMs,
-      sourceDuration: line.duration,
+      sourceDuration: Number.isFinite(Number(line.sourceDuration)) ? line.sourceDuration : line.duration,
       duration: scheduledDuration,
+      speechWindowTargetSeconds: line.speechWindowTargetSeconds || null,
+      speechWindowFit: line.speechWindowFit || null,
+      speechWindowStretchFactor: line.speechWindowStretchFactor || null,
     });
   }
   lineFiles.sort((a, b) => a.startMs - b.startMs);
@@ -5931,7 +5992,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   const effectiveDurationSeconds = Math.max(requestedDurationSeconds, measuredSpeechDurationSeconds);
   draft.durationSeconds = Number(effectiveDurationSeconds.toFixed(3));
   const speechTailMs = Math.max(0, Math.round(Number(draft.durationSeconds) * 1000 - lastSpeechEndMs));
-  if (distributeMeasuredSpeech && speechTailMs > MAX_DIALOGUE_TAIL_MS) {
+  if (draft.sceneId !== ORANGE_IDIOT_STANDALONE_SCENE_ID && speechTailMs > MAX_DIALOGUE_TAIL_MS) {
     throw new Error(`Measured dialogue leaves an unvoiced tail of ${(speechTailMs / 1000).toFixed(1)} seconds; provide more dialogue or choose a shorter episode.`);
   }
   alignDraftToVoiceTimeline(draft, timeline);
@@ -5948,7 +6009,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   const performanceMusicCues = audioPlan.cues.filter((cue) => cue?.kind === 'music');
   return {
     status: 'ready',
-    lineFiles: lineFiles.map((line) => ({ id: line.id, speakerId: line.speakerId, text: line.text, startMs: line.startMs, endMs: line.endMs, file: relativeRuntimePath(line.filePath), duration: line.duration, sourceDuration: line.sourceDuration })),
+    lineFiles: lineFiles.map((line) => ({ id: line.id, speakerId: line.speakerId, text: line.text, startMs: line.startMs, endMs: line.endMs, file: relativeRuntimePath(line.filePath), duration: line.duration, sourceDuration: line.sourceDuration, ...(line.speechWindowTargetSeconds ? { speechWindowTargetSeconds: line.speechWindowTargetSeconds } : {}), ...(line.speechWindowFit ? { speechWindowFit: line.speechWindowFit, speechWindowStretchFactor: line.speechWindowStretchFactor } : {}) })),
     lineCount: lineFiles.length,
     serialized: true,
     speechSpeed: SHARED_SPEECH_SPEED,
@@ -5956,6 +6017,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     truncatedTakes: 0,
     maxSpeechEndMs: lastSpeechEndMs,
     speechTailMs,
+    handoffGapMs: SPEAKER_HANDOFF_GAP_MS,
     timelineMode: distributeMeasuredSpeech ? 'measured-distributed' : 'measured-serialized',
     measuredSpeechDurationSeconds,
     postSpeechPadMs: SCRIPT_END_BUFFER_MS,
@@ -6241,12 +6303,12 @@ function repeatedDialogueLineKeys(draft) {
     (state?.continuity?.recentScriptTexts || [])
       .flatMap((text) => String(text || '').split('|'))
       .map(normalizeLine)
-      .filter((line) => line.length >= 24),
+      .filter((line) => line.length >= 8),
   );
   return [...new Set(spokenEvents(draft)
     .filter((event) => !['bork', ORANGE_IDIOT_ID].includes(event.speakerId))
     .map((event) => normalizeLine(event.text))
-    .filter((line) => line.length >= 24 && previous.has(line)))];
+    .filter((line) => line.length >= 8 && previous.has(line)))];
 }
 
 function speechShingles(value, size = 6) {
@@ -6355,7 +6417,7 @@ async function generateSegment(job) {
     for (noveltyAttempt = 0; noveltyAttempt < 3; noveltyAttempt += 1) {
       draft.noveltySeed = String(seed) + ":" + String(noveltyAttempt) + ":" + String(Date.now());
       if (noveltyAttempt > 0) {
-        draft.writerRepairRequest = 'Novelty repair: the previous candidate was too similar to existing dialogue. Change the fictional incident, subject, opening, sentence patterns, and punchlines while staying on the same selected topic. Do not reuse these rejected speech previews: ' + attemptedPhrases.slice(-2).join(' | ');
+        draft.writerRepairRequest = 'Novelty repair: the previous candidate was too similar to existing dialogue. Abandon the previous subject if useful and invent a different adult fictional incident, opening, sentence pattern, escalation, and punchline. Do not reuse these rejected speech previews: ' + attemptedPhrases.slice(-2).join(' | ');
       } else {
         delete draft.writerRepairRequest;
       }

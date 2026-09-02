@@ -26,7 +26,7 @@ import {
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
-import { buildMotionPlan, dialogueLineBudget, minimumDialogueLines, spreadVoiceTimeline, VOICE_REACTION_TAIL_MS } from '../lib/bullshit-factory-production.mjs';
+import { buildMotionPlan, buildOrangeIdiotTvPlan, dialogueLineBudget, minimumDialogueLines, serializeVoiceTimeline, spreadVoiceTimeline, SPEAKER_HANDOFF_GAP_MS, VOICE_REACTION_TAIL_MS } from '../lib/bullshit-factory-production.mjs';
 
 test('Goblin prompt includes the sitcom and altered-state writing contract', () => {
   const prompt = buildGoblinPrompt(
@@ -56,6 +56,8 @@ test('the provider prompts keep script writing and animation direction separate'
   assert.match(scriptPrompt, /Groq Qwen 3\.8 27B/i);
   assert.match(scriptPrompt, /Gemini is the animation director/i);
   assert.match(scriptPrompt, /recentSpeechPreviews/i);
+  assert.match(scriptPrompt, /choose the episode subject yourself/i);
+  assert.match(scriptPrompt, /Every line must add a new detail/i);
   assert.match(animationPrompt, /primary animation director/i);
   assert.match(animationPrompt, /never output x\/y pixels/i);
   assert.match(animationPrompt, /locked script/i);
@@ -81,6 +83,8 @@ test('topic quality gate accepts contextual reactions to one shared incident', (
       { speakerId: 'kernelkline', text: 'That rule is a damn permissions bug, and the network hates us.' },
       { speakerId: 'sudsmcgee', text: 'I will reboot the machine before this bastard router gets drunk.' },
       { speakerId: 'rookboss', text: 'Then the server fires the chairs, and we all go to hell.' },
+      { speakerId: 'kernelkline', text: 'The permissions are still arguing, so nobody touch the damn console.' },
+      { speakerId: 'sudsmcgee', text: 'Fine, I will toast the chairs until the paperwork gives up.' },
     ],
     movementNotes: ['Rook plants his feet and guards the server rack.', 'Kernel turns from the console to challenge the fake labor rule.'],
     stageDirections: [{ character: 'rookboss', action: 'talk' }, { character: 'kernelkline', action: 'react' }],
@@ -131,6 +135,22 @@ test('long Orange speech is split into bounded, lossless Kokoro requests', () =>
   assert.ok(chunks.every((chunk) => chunk.length <= 180));
   assert.equal(chunks.join(' '), source.replace(/\s+\(case\s+123\)\.?$/iu, '').replace(/\s+/gu, ' ').trim());
   assert.equal(chunks.some((chunk) => !chunk.trim()), false);
+});
+
+test('standalone Orange speech defaults to the complete content window', () => {
+  const plan = buildOrangeIdiotTvPlan('The button is blinking, and the chair has filed a complaint.', 'orange-idiot-house', 57, 'test', 'ending', 0);
+  assert.equal(plan.length, 1);
+  assert.equal(plan[0].startMs, 0);
+  assert.equal(plan[0].endMs, 56_970);
+});
+
+test('measured speaker handoffs use the exact two-millisecond gap', () => {
+  const timeline = serializeVoiceTimeline([
+    { id: 'line-01', speakerId: 'rookboss', startMs: 900, durationMs: 2100 },
+    { id: 'line-02', speakerId: 'kernelkline', startMs: 4000, durationMs: 1800 },
+  ], 10);
+  assert.equal(SPEAKER_HANDOFF_GAP_MS, 2);
+  assert.equal(timeline[1].startMs - timeline[0].endMs, 2);
 });
 
 test('measured voice timelines fill long segments and leave only the authored reaction tail', () => {
@@ -229,9 +249,9 @@ test('deterministic drafts carry a complete writing beat sheet', () => {
 
 test('dialogue budget scales with runtime instead of stopping at six lines', () => {
   assert.equal(minimumDialogueLines(10), 2);
-  assert.equal(dialogueLineBudget(30), 4);
-  assert.equal(dialogueLineBudget(60), 8);
-  assert.equal(minimumDialogueLines(60), 6);
+  assert.equal(dialogueLineBudget(30), 7);
+  assert.equal(dialogueLineBudget(60), 13);
+  assert.equal(minimumDialogueLines(60), 10);
   const draft = buildSegmentDraft({ templateId: 'break-policy', seed: 7, durationSeconds: 60, castIds: ['rookboss', 'sudsmcgee', 'nico'] });
   assert.ok(draft.dialogue.length >= 6, `expected a full-minute dialogue pass, got ${draft.dialogue.length} lines`);
   assert.equal(draft.stageDirections, undefined);
