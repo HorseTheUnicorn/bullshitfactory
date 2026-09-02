@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "showId": "bullshit-factory",
-  "generatedAt": "2026-09-01T22:25:39.871Z",
+  "generatedAt": "2026-09-02T00:14:55.709Z",
   "canvas": {
     "width": 384,
     "height": 216,
@@ -271,7 +271,7 @@
     }
   ],
   "writingTraining": {
-    "schemaVersion": "1.3",
+    "schemaVersion": "1.4",
     "sourceIds": [
       "altered-state-observation",
       "sitcom-production-discipline"
