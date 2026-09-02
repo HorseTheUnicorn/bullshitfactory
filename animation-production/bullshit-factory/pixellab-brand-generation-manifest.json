@@ -34,13 +34,6 @@
       "file": "/bullshit-factory/scenes/roof-antenna.png"
     },
     {
-      "kind": "scene",
-      "id": "senior-lounge",
-      "width": 256,
-      "height": 144,
-      "file": "/bullshit-factory/scenes/senior-lounge.png"
-    },
-    {
       "kind": "prop",
       "id": "crt-keyboard",
       "width": 64,

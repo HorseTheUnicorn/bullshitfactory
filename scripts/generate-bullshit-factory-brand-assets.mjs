@@ -72,14 +72,6 @@ const imageSpecs = [
     noBackground: false,
   },
   {
-    kind: 'scene',
-    id: 'senior-lounge',
-    relativeFile: 'scenes/senior-lounge.png',
-    size: { width: 256, height: 144 },
-    description: 'wide 16-bit pixel-art background for a dim retirement-home lounge, folding chairs, humming CRT television, card table, potted plant, vending machine, faded carpet, muted early-2000s console palette, maximum 64 colors, crisp hard pixel clusters, no characters, no readable text, no logos',
-    noBackground: false,
-  },
-  {
     kind: 'prop',
     id: 'beer-mug',
     relativeFile: 'props/beer-mug.png',

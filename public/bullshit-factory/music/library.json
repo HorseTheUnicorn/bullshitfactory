@@ -31,6 +31,24 @@
       ]
     },
     {
+      "id": "bf-string-guitar",
+      "title": "String Guitar: Three Chords and a Liability",
+      "category": "characters",
+      "mood": "warm overdriven guitar sting",
+      "duration": 6,
+      "energy": 7,
+      "loopable": false,
+      "approved": true,
+      "rightsHolder": "Bullshit Factory",
+      "source": "original local Stable Audio 3 TFLite character cue",
+      "file": "/bullshit-factory/music/characters/bf-string-guitar.mp3",
+      "permittedUse": [
+        "livestream",
+        "VOD",
+        "commercial"
+      ]
+    },
+    {
       "id": "bf-intro-01",
       "title": "Clock In, Regret It",
       "category": "intros",

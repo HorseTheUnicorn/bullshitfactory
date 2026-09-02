@@ -86,7 +86,10 @@ test('full-cast layouts rebalance crowded bands without overlapping sprites', ()
 });
 
 test('every production location defines a floor and three walk bands', () => {
-  assert.equal(Object.keys(LOCATION_SPECS).length, 11);
+  assert.equal(Object.keys(LOCATION_SPECS).length, 10);
+  assert.equal(Object.hasOwn(LOCATION_SPECS, ['senior', 'lounge'].join('-')), false);
+  assert.equal(Object.hasOwn(LOCATION_SPECS, 'orange-idiot-house'), true);
+  assert.deepEqual(Object.keys(LOCATION_SPECS), ['factory-floor', 'break-room', 'server-room', 'boat-bay', 'loading-dock', 'roof-antenna', 'employee-bar', 'marina-slip', 'arcade-closet', 'orange-idiot-house']);
   for (const scene of Object.values(LOCATION_SPECS)) {
     assert.ok(scene.floor.id && Number.isFinite(scene.floor.baselineY));
     assert.deepEqual(scene.walkBands.map((item) => item.id), ['rear', 'middle', 'front']);

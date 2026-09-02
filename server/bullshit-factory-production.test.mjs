@@ -6,10 +6,13 @@ import {
   buildGoblinPrompt,
   buildScriptWriterPrompt,
   buildSegmentDraft,
+  ORANGE_IDIOT_VOICE_PROFILE,
   deterministicTopicDialogue,
   timedDialogue,
   ensureAdultLanguageBeats,
   episodeTitleBodyKey,
+  orangeIdiotPacingState,
+  orangeIdiotPacingX,
   episodeDurationSeconds,
   normalizeContinuousDurationWeights,
   selectContinuousDurationPreset,
@@ -18,7 +21,7 @@ import {
   evaluateWritingCandidate,
   validateSegmentContract,
 } from './bullshit-factory-production.mjs';
-import { buildMotionPlan, dialogueLineBudget, minimumDialogueLines } from '../lib/bullshit-factory-production.mjs';
+import { buildMotionPlan, buildOrangeIdiotTvPlan, dialogueLineBudget, minimumDialogueLines } from '../lib/bullshit-factory-production.mjs';
 
 test('Goblin prompt includes the sitcom and altered-state writing contract', () => {
   const prompt = buildGoblinPrompt(
@@ -250,6 +253,80 @@ test('episode title novelty ignores numbering and show prefix', () => {
   );
 });
 
+test('Orange Idiot pacing stays south-facing and returns to the podium', () => {
+  const stage = {
+    centerX: 192,
+    leftX: 98,
+    rightX: 286,
+    spriteWidth: 64,
+    pacing: {
+      initialHoldMs: 1000,
+      travelToLeftMs: 1400,
+      leftHoldMs: 900,
+      travelAcrossMs: 2600,
+      rightHoldMs: 900,
+      travelToCenterMs: 1400,
+      finalHoldMs: 1000,
+    },
+  };
+  assert.deepEqual(orangeIdiotPacingState(0, stage, true), {
+    x: 192,
+    phase: 'center-hold',
+    direction: 'south',
+    moving: false,
+  });
+  const leftWalk = orangeIdiotPacingState(1200, stage, true);
+  assert.equal(leftWalk.direction, 'west');
+  assert.equal(leftWalk.moving, true);
+  assert.ok(leftWalk.x < 192);
+  assert.deepEqual(orangeIdiotPacingState(2500, stage, true), {
+    x: 98,
+    phase: 'left-hold',
+    direction: 'south',
+    moving: false,
+  });
+  const rightWalk = orangeIdiotPacingState(4000, stage, true);
+  assert.equal(rightWalk.direction, 'east');
+  assert.equal(rightWalk.moving, true);
+  assert.ok(rightWalk.x > 98);
+  const returnWalk = orangeIdiotPacingState(7000, stage, true);
+  assert.equal(returnWalk.direction, 'west');
+  assert.equal(returnWalk.moving, true);
+  assert.equal(orangeIdiotPacingX(0, stage, true), 192);
+  assert.equal(orangeIdiotPacingX(2400, stage, true), 98);
+  assert.equal(orangeIdiotPacingX(5900, stage, true), 286);
+  assert.equal(orangeIdiotPacingX(8500, stage, true), 192);
+  assert.equal(orangeIdiotPacingX(2000, stage, false), 192);
+});
+
+test('Orange Idiot uses only the new house scene and carries the camera-facing performance contract', () => {
+  const draft = buildSegmentDraft({
+    templateId: 'shift-start',
+    seed: 23,
+    durationSeconds: 30,
+    orangeIdiotRequested: true,
+    orangeIdiotSpeechText: 'Listen, I fixed it. No, I fixed it again. This is tremendous.',
+  });
+  assert.equal(draft.sceneId, 'orange-idiot-house');
+  assert.deepEqual(draft.castIds, []);
+  assert.equal(draft.tvInterruptions.length, 1);
+  assert.equal(draft.tvInterruptions[0].mode, 'house-broadcast');
+  assert.equal(draft.tvInterruptions[0].view, 'south');
+  assert.equal(draft.tvInterruptions[0].performance.headTarget, 'camera');
+  assert.match(draft.tvInterruptions[0].performance.pacing, /left-to-right/i);
+  assert.match(ORANGE_IDIOT_VOICE_PROFILE.timbre, /nasal/i);
+  assert.match(ORANGE_IDIOT_VOICE_PROFILE.delivery, /short bursts/i);
+  const plan = buildOrangeIdiotTvPlan('test', ['senior', 'lounge'].join('-'), 30);
+  assert.deepEqual(plan, []);
+});
+
+test('Orange writer prompt preserves supplied copy while specifying the original voice delivery', () => {
+  const draft = buildSegmentDraft({ templateId: 'shift-start', seed: 24, durationSeconds: 30, orangeIdiotRequested: true, orangeIdiotSpeechText: 'This exact line stays locked.' });
+  const prompt = buildScriptWriterPrompt(draft, { characters: [] }, '', null, {}, 'Groq Qwen 3.8 27B');
+  assert.match(prompt, /New York\/Queens-inspired/i);
+  assert.match(prompt, /short bursts/i);
+  assert.match(prompt, /do not imitate or quote any real person/i);
+});
 test('continuous random mode chooses a new who mode and honors fixed modes', () => {
   assert.equal(resolveGenerationWho('random', 2), 'orange');
   assert.equal(resolveGenerationWho('random', 2, 'orange'), 'cast');

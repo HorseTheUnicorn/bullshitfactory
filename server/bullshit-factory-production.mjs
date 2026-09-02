@@ -33,6 +33,7 @@ import {
   ORANGE_IDIOT_SCENE_ID,
   ORANGE_IDIOT_STANDALONE_SCENE,
   ORANGE_IDIOT_STANDALONE_SCENE_ID,
+  ORANGE_IDIOT_VOICE_PROFILE,
   buildOrangeIdiotTvPlan,
   orangeIdiotSpeechTargetSeconds,
   orangeIdiotSpeechWordRange,
@@ -42,6 +43,8 @@ import {
   validateSegmentContract,
 } from '../lib/bullshit-factory-production.mjs';
 import { buildSceneLayout, getCharacterGeometry, getLocationSpec, resolveScenePlacement, validateSceneLayout } from '../lib/bullshit-factory-location.mjs';
+import { AUDIO_MUSIC_POLICY, AUDIO_POLICY, audioCatalogSummary, buildAudioCuePlan, normalizeAudioCatalog, resolveAudioCuePlan } from '../lib/bullshit-factory-audio.mjs';
+import { resolveSemanticAction } from '../lib/bullshit-factory-performance.mjs';
 
 const execFileAsync = promisify(execFile)
 const MEDIA_DURATION_TOLERANCE_SECONDS = 0.25;
@@ -54,6 +57,8 @@ const SEGMENT_ROOT = path.join(DATA_ROOT, 'segments');
 const AUDIO_ROOT = path.join(DATA_ROOT, 'audio');
 const EPISODE_ROOT = path.join(DATA_ROOT, 'episodes');
 const STATE_PATH = path.join(DATA_ROOT, 'production-state.json');
+const MOTION_REGISTRY_PATH = path.join(PUBLIC_ROOT, 'bullshit-factory/production/motion-registry.json');
+const H3_LEDGER_PATH = path.join(DATA_ROOT, 'h3-authoring-ledger.json');
 const LIVE_ROOT = path.join(DATA_ROOT, 'live');
 const LIVE_SECRETS_PATH = path.join(LIVE_ROOT, 'stream-secrets.json');
 const LIVE_PLAYLIST_PATH = path.join(LIVE_ROOT, 'published-playlist.txt');
@@ -67,10 +72,10 @@ const TTS_TOKEN = String(process.env.BF_TTS_TOKEN || '').trim();
 const TTS_FASTAPI_ENDPOINT = String(process.env.BF_TTS_FASTAPI_ENDPOINT || '').replace(/\/+$/u, '');
 const TTS_FASTAPI_TOKEN = String(process.env.BF_TTS_FASTAPI_TOKEN || '').trim();
 const TTS_FASTAPI_MODEL = String(process.env.BF_TTS_FASTAPI_MODEL || 'kokoro').trim() || 'kokoro';
-const TTS_FASTAPI_ORANGE_VOICE = String(process.env.BF_TTS_FASTAPI_ORANGE_VOICE || 'bm_daniel').trim();
+const TTS_FASTAPI_ORANGE_VOICE = String(process.env.BF_TTS_FASTAPI_ORANGE_VOICE || ORANGE_IDIOT_VOICE_PROFILE.voiceId).trim();
 const TTS_FASTAPI_ENABLED = String(process.env.BF_TTS_FASTAPI_ENABLED || 'true').trim().toLowerCase() !== 'false';
-const ORANGE_IDIOT_VOICE = String(process.env.BF_ORANGE_IDIOT_VOICE || 'bm_daniel').trim();
-const ORANGE_IDIOT_LANG = String(process.env.BF_ORANGE_IDIOT_LANG || 'en-gb').trim() === 'en-us' ? 'en-us' : 'en-gb';
+const ORANGE_IDIOT_VOICE = String(process.env.BF_ORANGE_IDIOT_VOICE || ORANGE_IDIOT_VOICE_PROFILE.voiceId).trim();
+const ORANGE_IDIOT_LANG = String(process.env.BF_ORANGE_IDIOT_LANG || ORANGE_IDIOT_VOICE_PROFILE.language).trim() === 'en-gb' ? 'en-gb' : 'en-us';
 const SHARED_SPEECH_SPEED = clamp(
   safeNumber(process.env.BF_TTS_SPEED, safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, SHARED_TTS_SPEED)),
   0.65,
@@ -83,8 +88,8 @@ const SHARED_TTS_REFERENCE_WPM = clamp(
 );
 const ORANGE_IDIOT_TTS_SPEED = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_TTS_SPEED, SHARED_SPEECH_SPEED), 0.65, 1.30);
 const ORANGE_IDIOT_AUDIO_EFFECT_ENABLED = String(process.env.BF_ORANGE_IDIOT_AUDIO_EFFECT_ENABLED || 'true').trim().toLowerCase() !== 'false';
-const ORANGE_IDIOT_PITCH_MULTIPLIER = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_PITCH_MULTIPLIER, 0.76), 0.50, 1.40);
-const ORANGE_IDIOT_AUDIO_FILTER = `asetrate=24000*${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(4)},aresample=24000,atempo=${(1 / ORANGE_IDIOT_PITCH_MULTIPLIER).toFixed(6)},vibrato=f=2.6:d=0.08,aresample=44100`;
+const ORANGE_IDIOT_PITCH_MULTIPLIER = clamp(safeNumber(process.env.BF_ORANGE_IDIOT_PITCH_MULTIPLIER, ORANGE_IDIOT_VOICE_PROFILE.pitchMultiplier), 0.50, 1.40);
+const ORANGE_IDIOT_AUDIO_FILTER = `asetrate=24000*${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(4)},aresample=24000,atempo=${(1 / ORANGE_IDIOT_PITCH_MULTIPLIER).toFixed(6)},vibrato=f=2.6:d=0.08,equalizer=f=950:t=q:w=1.1:g=2.0,aresample=44100`;
 const MUSIC_ADAPTER_ENDPOINT = String(process.env.BF_MUSIC_ADAPTER_ENDPOINT || 'http://127.0.0.1:8797').replace(/\/+$/u, '');
 const MUSIC_ADAPTER_TOKEN = String(process.env.BF_MUSIC_ADAPTER_TOKEN || process.env.BULLSHIT_FACTORY_MUSIC_TOKEN || '').trim();
 const MUSIC_ENABLED = String(process.env.BF_MUSIC_ENABLED || 'true').trim().toLowerCase() !== 'false';
@@ -352,6 +357,7 @@ function defaultState() {
       noveltySchemaVersion: 4,
     },
     musicApprovals: {},
+    audioGenerationQueue: [],
     generatedMusic: [],
     episodes: [],
     orangeIdiot: defaultOrangeIdiotState(),
@@ -562,6 +568,7 @@ async function loadState() {
     state.generationSelection.lastWho = state.generationSelection.lastWho === 'orange' ? 'orange' : state.generationSelection.lastWho === 'cast' ? 'cast' : null;
     state.musicApprovals = state.musicApprovals && typeof state.musicApprovals === 'object' ? state.musicApprovals : {};
     state.generatedMusic = Array.isArray(state.generatedMusic) ? state.generatedMusic : [];
+    state.audioGenerationQueue = Array.isArray(state.audioGenerationQueue) ? state.audioGenerationQueue : [];
     state.episodes = Array.isArray(state.episodes) ? state.episodes : [];
     state.orangeIdiot = normalizeOrangeIdiotState(state.orangeIdiot);
     state.live = normalizeLiveState(state.live);
@@ -598,6 +605,7 @@ async function loadState() {
       logEvent('playlist-index-normalized', 'The rolling continuous playlist was reindexed after old played items were trimmed.', { itemCount: state.session?.queue?.length || 0 });
       await atomicWrite(STATE_PATH, state);
     }
+    if (await normalizeEpisodeActivityTitles()) await atomicWrite(STATE_PATH, state);
     if (state.control?.restartRequested) {
       state.control.restartRequested = false;
       if (state.session) {
@@ -633,10 +641,12 @@ async function loadResources() {
       const bibles = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/production/character-bibles.json'), { characters: [] });
       const rights = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/music/rights.json'), { tracks: [] });
       const library = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/music/library.json'), { tracks: [] });
+      const audioCatalog = normalizeAudioCatalog(await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/audio/catalog.json'), { showId: 'bullshit-factory', assets: [] }));
       const writingTraining = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/production/goblin-writing-training.json'), { schemaVersion: 'missing', rules: [], beatSheet: [], alteredStatePalettes: {}, characterPerformance: [], outputContract: {} });
       const animationTraining = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/production/animation-assembly-training.json'), { schemaVersion: 'missing', showId: 'missing', anchorContract: {}, parserSchema: {}, validationCriteria: [] });
       const orangeIdiot = await readJson(path.join(PUBLIC_ROOT, 'bullshit-factory/tv/orange-idiot/orange-idiot.json'), { id: ORANGE_IDIOT_ID, displayName: 'Orange Idiot', preview: null, view: 'south', sceneId: ORANGE_IDIOT_SCENE_ID, mainCast: false });
-      return { catalog, bibles, rights, library, writingTraining, animationTraining, orangeIdiot };
+      const motionRegistry = await readJson(MOTION_REGISTRY_PATH, { showId: 'bullshit-factory', status: 'missing', runtimePolicy: 'hybrid-pilot', clips: [] });
+      return { catalog, bibles, rights, library, audioCatalog, writingTraining, animationTraining, orangeIdiot, motionRegistry };
     })();
   }
   return resourcesPromise;
@@ -709,6 +719,95 @@ async function fileIsUsable(filePath, minimumBytes = 1) {
   }
 }
 
+function baseAudioCatalog(resources) {
+  const catalog = normalizeAudioCatalog(resources?.audioCatalog || {});
+  const generated = (state?.generatedMusic || []).map((track) => ({
+    ...track,
+    kind: track.kind || 'music',
+    role: track.role || 'bed',
+    status: track.status || 'approved',
+    storage: 'runtime',
+    provider: track.provider || 'stable-audio-3-small-music',
+  }));
+  const assets = [...catalog.assets, ...generated];
+  return {
+    ...catalog,
+    assets: assets.filter((asset, index, list) => list.findIndex((candidate) => candidate.id === asset.id) === index),
+  };
+}
+
+function audioAssetFilePath(asset) {
+  if (!asset?.file) throw new Error('Audio cue has no file.');
+  return asset.storage === 'runtime' ? runtimeFilePath(asset.file) : publicAssetPath(asset.file);
+}
+
+function audioPlanForDraft(draft) {
+  return buildAudioCuePlan({
+    sceneId: draft.sceneId,
+    durationSeconds: draft.durationSeconds,
+    dialogue: draft.dialogue,
+    barkEvents: draft.barkEvents,
+    tvInterruptions: draft.tvInterruptions,
+    props: draft.props,
+    storyBeats: draft.story?.beats,
+    performanceTimeline: draft.motion?.performanceTimeline || null,
+    audioCues: draft.audioCues || [],
+    seed: draft.director?.seed,
+  });
+}
+
+async function queueMissingAudioCues(missing, draft) {
+  if (!missing.length) return;
+  const queue = Array.isArray(state.audioGenerationQueue) ? state.audioGenerationQueue : [];
+  const existing = new Set(queue.map((item) => item.key));
+  const additions = missing
+    .map((cue) => ({
+      key: [cue.kind, ...(cue.tags || []), cue.sourceLineId || '', cue.purpose || ''].join('|'),
+      status: 'queued',
+      kind: cue.kind,
+      tags: cue.tags || [],
+      purpose: cue.purpose || 'optional semantic audio cue',
+      sourceLineId: cue.sourceLineId || null,
+      requestedBySegmentId: draft.id,
+      provider: 'stable-audio-3-small-music',
+      queuedAt: nowIso(),
+    }))
+    .filter((item) => !existing.has(item.key));
+  if (!additions.length) return;
+  state.audioGenerationQueue = [...queue, ...additions].slice(-100);
+  logEvent('audio-cues-queued', 'Optional semantic audio assets were queued for later local generation; the current episode uses safe silence.', {
+    segmentId: draft.id,
+    count: additions.length,
+    kinds: [...new Set(additions.map((item) => item.kind))],
+  });
+  await persistState();
+}
+
+async function resolveAudioForDraft(draft, resources) {
+  const planned = audioPlanForDraft(draft);
+  const resolved = resolveAudioCuePlan(planned, baseAudioCatalog(resources));
+  const missing = [...resolved.missing];
+  const cues = [];
+  for (const cue of resolved.cues) {
+    try {
+      const filePath = audioAssetFilePath(cue.asset);
+      if (!(await fileIsUsable(filePath, 100))) {
+        missing.push({ ...cue, status: 'missing', reason: 'approved audio file is unavailable' });
+        continue;
+      }
+      cues.push({ ...cue, filePath });
+    } catch (error) {
+      missing.push({ ...cue, status: 'missing', reason: error instanceof Error ? error.message : 'audio path is unsafe' });
+    }
+  }
+  await queueMissingAudioCues(missing, draft);
+  return {
+    ...resolved,
+    cues,
+    missing,
+    status: missing.length ? 'partial' : 'ready',
+  };
+}
 async function readBody(request) {
   const chunks = [];
   let length = 0;
@@ -885,37 +984,12 @@ function staticMusicCandidates(resources, mood) {
 }
 
 async function musicPreflight(draft, resources) {
-  const template = SEGMENT_TEMPLATES.find((candidate) => candidate.id === draft.templateId) || null;
-  const mood = template?.musicMood || draft.music?.mood || 'dusty-16-bit-rock';
-  let generatedTrack = null;
-  let musicWarning = null;
-  // Segment music is opt-in. Finished episodes use the dedicated opening
-  // theme, while the dialogue track stays clean unless a caller requests a
-  // music bed explicitly.
-  if (draft.music?.mode === 'bed' && MUSIC_PRIMARY) {
-    try {
-      generatedTrack = await generateLocalMusicTrack({
-        mood,
-        prompt: `Original instrumental ${mood} track for the ${draft.category} segment "${draft.title}". Muted early-2000s 16-bit rock cartoon texture, no vocals, no speech, room for dialogue.`,
-        // Generate a short loopable bed. Longer episodes loop the approved
-        // bed during mixing, keeping CPU-only pre-generation practical.
-        durationSeconds: Math.min(MUSIC_GENERATION_SECONDS, Math.max(20, draft.durationSeconds)),
-        seed: draft.director.seed,
-        kind: 'bed',
-      });
-    } catch (error) {
-      musicWarning = stripText(error instanceof Error ? error.message : 'Stable Audio 3 is unavailable.', 240);
-      logEvent('music-generation-fallback', musicWarning, { templateId: draft.templateId });
-    }
-  }
-  const candidates = staticMusicCandidates(resources, mood);
-  const selectedTrack = generatedTrack || candidates[0] || null;
-  if (!selectedTrack) throw new Error('Music preflight found no usable first-party track.');
   return {
-    selectedTrack,
-    palette: [selectedTrack, ...candidates.filter((track) => track.id !== selectedTrack.id)].slice(0, 6).map((track) => ({ id: track.id, title: track.title, category: track.category, mood: track.mood, provider: track.provider || 'internal' })),
-    provider: selectedTrack.provider || 'internal',
-    musicWarning,
+    selectedTrack: null,
+    palette: [],
+    provider: 'none',
+    musicWarning: draft.music?.mode === 'bed' ? 'Content music beds are disabled; only the opening theme and String guitar cues are used.' : null,
+    policy: AUDIO_MUSIC_POLICY,
   };
 }
 
@@ -1954,6 +2028,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
       `You are ${writerLabel}, writing a short fictional broadcast monologue for the animated character Orange Idiot.`,
       'Return JSON only. This is satirical original copy for a fictional character, not a real statement, endorsement, transcript, or news report.',
       'Treat the topic suggestion board as private seed tags, not as the subject of the monologue. Pick one to three labels silently, then invent a wholly fictional local incident with absurd consequences. Do not name, explain, summarize, or debate the real-world subject, and do not quote, reproduce, or closely paraphrase any source wording, names, dates, numbers, or factual claims. The output must still work if every seed label is deleted.',
+      `Orange Idiot voice direction: ${ORANGE_IDIOT_VOICE_PROFILE.accent}; ${ORANGE_IDIOT_VOICE_PROFILE.pitch}-pitched, ${ORANGE_IDIOT_VOICE_PROFILE.timbre}; deliver ${ORANGE_IDIOT_VOICE_PROFILE.delivery}. Write punctuation and sentence lengths that give Kokoro real pauses and abrupt emphasis; do not imitate or quote any real person.`,
       'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '. A one-minute final episode has only about 57 content seconds after its three-second title card; 230 words needs roughly three minutes at this pace.',
       'Write an absurd, adult, clearly fictional monologue about the invented incident, using overconfident bluster and a concise comic button. A seed may affect the flavor or object, but the speech must not be a topical explainer or a disguised summary of real events. Use invented names and places only; do not name real people, organizations, markets, countries, policies, or events. Do not give instructions for illegal activity or target protected groups.',
       `Episode timing: a ${OPENING_SECONDS}-second title card plays before this content segment; all runtime and speech timings below are relative to content after the title card. The final episode adds that opening before this segment.`,
@@ -1969,7 +2044,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     'Return JSON only. Write a complete playable sitcom segment, not a summary or a two-line sketch. Do not write executable code, URLs, source-guide prose, or instructions for illegal activity.',
     'Keep the dog bark-only: bork may never appear as a human dialogue speaker.',
     'Speech calibration: ' + SPEECH_CALIBRATED_WPM + ' WPM at TTS speed ' + SHARED_SPEECH_SPEED.toFixed(2) + '. For this segment, target approximately ' + minimumWords + '-' + maximumWords + ' spoken words (target ' + targetWords + ') after reserving the title card and end button.',
-    'Orange Idiot is not a cast member. In ensemble mode he is a south-facing broadcast insert inside the senior-lounge television only; in standalone mode he is composited in the dedicated Orange Idiot house scene. Never place him in the floor cast grid.',
+    'Orange Idiot is not a cast member. He is a south-facing standalone broadcast in the dedicated Orange Idiot house scene. Never place him in the floor cast grid or a factory scene.',
     'Use only the supplied character IDs. This is a vulgar adult sitcom: use 2-5 natural profane beats per 30-second segment, scaled to runtime and spread across the argument instead of dumped into one line. Bullshit, goddamn, shit, asshole, dickhead, fuck, fucking, and motherfucker are allowed when they fit the character and joke; never use slurs, protected-group harassment, or sexual content involving minors.',
     `Vulgarity is a hard acceptance gate: include at least ${adultLanguageMinimum} separate, natural profane beats in the cast dialogue for this runtime. Distribute them across the conflict and punchlines; do not hide them in stage directions or the premise.`,
     'Write an original playable sitcom beat around one concrete fictional incident: hook, want, obstacle, escalating official fix, reversal, and final button. Give every speaker a concrete want and a distinct tactic, reveal subtext, and create a visible reaction opportunity; do not fill space with unrelated random objects.',
@@ -1989,7 +2064,7 @@ function buildScriptWriterPrompt(draft, bibles, inspiration, musicPlan = null, w
     'Orange Idiot prior broadcast memory (fictional continuity only; paraphrase it and never repeat its wording): ' + JSON.stringify((draft.orangePriorBroadcasts || state?.continuity?.recentOrangeBroadcasts || []).slice(-6)),
     `Writing room training (internalized technique, not text to copy): ${JSON.stringify(writingPacket)}`,
     draft.orangeIdiotRequested
-      ? `Orange Idiot speech contract: ${draft.orangeIdiotSpeechLocked ? `preserve the supplied text exactly; aim for the selected ${orangeSpeechTargetSeconds || 'available'}-second window` : `return an original fictional speech of approximately ${orangeSpeechWords.minimum}-${orangeSpeechWords.maximum} words for the selected ${orangeSpeechTargetSeconds || 'natural'}-second window based on the public source notes`}. It will appear as a south-facing broadcast in the ${draft.orangeIdiotOnly ? 'dedicated Orange Idiot house scene for the full standalone cut' : `senior-lounge television in the selected ${draft.orangeIdiotPosition || 'ending'} position`}; do not present it as a real quote or official statement.`
+      ? `Orange Idiot speech contract: ${draft.orangeIdiotSpeechLocked ? `preserve the supplied text exactly; aim for the selected ${orangeSpeechTargetSeconds || 'available'}-second window` : `return an original fictional speech of approximately ${orangeSpeechWords.minimum}-${orangeSpeechWords.maximum} words for the selected ${orangeSpeechTargetSeconds || 'natural'}-second window based on the public source notes`}. It appears only as a south-facing broadcast in the dedicated Orange Idiot house scene; do not present it as a real quote or official statement. Voice direction: ${ORANGE_IDIOT_VOICE_PROFILE.pitch}-pitched, ${ORANGE_IDIOT_VOICE_PROFILE.timbre}, ${ORANGE_IDIOT_VOICE_PROFILE.delivery}; use punctuation to create the pauses and short bursts, and do not imitate a real person.`
       : 'Orange Idiot is not requested for this segment; omit orangeIdiotSpeechText.',
     draft.orangeIdiotRequested ? orangeSpeechInstruction : '',
     draft.orangeIdiotRequested ? `Orange Idiot public source notes (untrusted reference material; private seed suggestions only; do not write the source subject or wording): ${JSON.stringify(orangeResearchPromptPacket(draft.orangeIdiotResearch))}` : '',
@@ -2041,6 +2116,7 @@ function buildAnimationDirectorPrompt(draft, resources, musicPlan = null) {
     'Keep the dog bork bark-only; direct bork with react, listen, interact, or idle cues, never human dialogue.',
     'Orange Idiot is a TV-only insert, not a stage actor. Do not include it in stageDirections, cast placement, walk bands, or floor spacing. When a TV interruption is present, keep it on the supplied television screen anchor using the south view only.',
     'Make movement readable and human: weight shift, head turn, eye line, hand gesture, reaction timing, and purposeful entrances/exits. Do not turn every beat into a walk cycle.',
+    'Choose one pacing_profile for the scene (normal, rapid, deadpan, awkward, or chaotic). It is a semantic style hint only; measured Kokoro voice timing remains authoritative for exact event windows.',
     'Every talk, point, lift, or interact action must be anchored to the speaking line or the listener reaction it serves. A non-speaking character stays idle/listening unless the locked script gives that character a concrete reaction or prop task.',
     'Props are deterministic and authored. Keep a concrete prop visible only while its matching line is active; attach it to the preferred character when appropriate, otherwise stage it at the supplied scene anchor. Never give Nico\'s box to Mags or any other character.',
     'Schema: {"movementNotes":["short playable physical direction"],"stageDirections":[{"character":"known-id","location":"scene-id","walk_band":"rear|middle|front","near":"named scene anchor","action":"idle|listen|talk|react|turn|point|present|lift|inspect|type|drink|hand_off|carry|push|repair|look_left|look_right|enter|walk|stop|exit","clip_action":"registry action","line_id":"locked line id","listener_id":"known-id","intent":"playable objective","reaction":"listener behavior during line","post_line_reaction":"brief authored reaction","shot_type":"wide_scene|two_shot|group_shot|reaction|close_actor|prop_insert|dog_reaction|final_button","start_ms":900,"end_ms":2200,"facing":"south","prop_id":"optional-authored-prop","purpose":"why this action happens","priority":50}]}',
@@ -2130,6 +2206,17 @@ const ORANGE_IDIOT_RESPONSE_SCHEMA = Object.freeze({
 const ANIMATION_DIRECTOR_RESPONSE_SCHEMA = Object.freeze({
   type: 'object',
   properties: {
+    pacing_profile: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        leadMs: { type: 'number' },
+        settleMs: { type: 'number' },
+        reactionDelayMs: { type: 'number' },
+        reactionHoldMs: { type: 'number' },
+        punchlineHoldMs: { type: 'number' },
+      },
+    },
     movementNotes: { type: 'array', items: { type: 'string' } },
     stageDirections: {
       type: 'array',
@@ -2403,10 +2490,11 @@ function normalizeStageDirections(candidate, draft) {
     const nearId = String(raw?.near || '').trim().toLowerCase().replace(/[- ]/gu, '_');
     const near = scene.anchors[nearId] ? nearId : null;
     const rawAction = String(raw?.action || '').trim().toLowerCase().replace(/[- ]+/gu, '_');
-    const action = ANIMATION_ACTIONS.includes(rawAction) ? rawAction : aliases[rawAction] || 'idle';
-    const clipAction = ANIMATION_ACTIONS.includes(String(raw?.clip_action || raw?.clipAction || '').trim().toLowerCase())
-      ? String(raw.clip_action || raw.clipAction).trim().toLowerCase()
-      : action;
+    const actionResolution = resolveSemanticAction(aliases[rawAction] || rawAction, { characterId: character, isDog: character === 'bork', fallback: character === 'bork' ? 'react' : 'idle' });
+    const action = actionResolution.action;
+    const rawClipAction = String(raw?.clip_action || raw?.clipAction || '').trim().toLowerCase().replace(/[- ]+/gu, '_');
+    const clipActionResolution = resolveSemanticAction(rawClipAction || action, { characterId: character, isDog: character === 'bork', fallback: action });
+    const clipAction = clipActionResolution.action;
     const rawStart = raw?.start_ms ?? raw?.startMs;
     const rawEnd = raw?.end_ms ?? raw?.endMs;
     const startMs = rawStart !== null && rawStart !== undefined && Number.isFinite(Number(rawStart))
@@ -2439,6 +2527,9 @@ function normalizeStageDirections(candidate, draft) {
       near: near || null,
       action,
       clip_action: clipAction,
+      requested_action: actionResolution.requestedAction,
+      action_resolution: actionResolution,
+      clip_action_resolution: clipActionResolution,
       start_ms: startMs,
       end_ms: endMs,
       facing,
@@ -2453,7 +2544,11 @@ function normalizeStageDirections(candidate, draft) {
       priority,
     });
   }
-  return { requests, directions };
+  return {
+    requests,
+    directions,
+    pacingProfile: candidate?.pacing_profile || candidate?.pacingProfile || null,
+  };
 }
 
 function defaultMovementNotes(draft) {
@@ -2998,7 +3093,7 @@ function applyOrangeIdiotCandidate(candidate, draft, resources, musicPlan, sourc
     orangeIdiotSpeechText: speech,
     director: { ...draft.director, mode: sourceMode, model: scriptWriterModel, provider: scriptWriterProvider, scriptWriter: { provider: scriptWriterProvider, model: scriptWriterModel }, animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel }, inspirationUsed: Boolean(inspiration) },
     story: { ...draft.story, premise: stripText(candidate?.premise, 320) || draft.story?.premise || draft.synopsis, beats: storyBeats.length ? storyBeats : draft.story?.beats || [] },
-    writing: { ...draft.writing, trainingVersion: resources.writingTraining?.schemaVersion || '1.0', sourceMode, provider: scriptWriterProvider, model: scriptWriterModel, qualityScore: 10, evaluation: [{ id: 'orange-idiot-speech', pass: true, detail: draft.orangeIdiotSpeechLocked ? 'operator-supplied speech preserved exactly' : 'one original research-guided broadcast monologue' }], movementNotes: [draft.orangeIdiotOnly ? 'Orange Idiot stays grounded centered in the new house yard and uses deliberate broadcast gestures.' : 'Orange Idiot remains inside the senior-lounge television frame for the entire broadcast insert.'], stageDirections: [], animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel } },
+    writing: { ...draft.writing, trainingVersion: resources.writingTraining?.schemaVersion || '1.0', sourceMode, provider: scriptWriterProvider, model: scriptWriterModel, qualityScore: 10, evaluation: [{ id: 'orange-idiot-speech', pass: true, detail: draft.orangeIdiotSpeechLocked ? 'operator-supplied speech preserved exactly' : 'one original research-guided broadcast monologue' }], movementNotes: ['Orange Idiot stays grounded in the new house yard and uses deliberate broadcast gestures.'], stageDirections: [], animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel } },
     dialogue: [],
     barkEvents: [],
     tvInterruptions,
@@ -3006,7 +3101,7 @@ function applyOrangeIdiotCandidate(candidate, draft, resources, musicPlan, sourc
     props: [],
     motion: buildMotionPlan([], [], [], draft.director.seed, draft.motion.fps, [], draft.durationSeconds),
     layout: buildSceneLayout(draft.sceneId, []),
-    music: { ...draft.music, trackId: musicPlan?.selectedTrack?.id || draft.music.trackId, status: 'approved', file: musicPlan?.selectedTrack?.file || draft.music.file, provider: musicPlan?.selectedTrack?.provider || draft.music.provider || 'internal' },
+    music: { ...draft.music, trackId: musicPlan?.selectedTrack?.id || null, status: musicPlan?.selectedTrack ? 'approved' : 'disabled', file: musicPlan?.selectedTrack?.file || null, provider: musicPlan?.selectedTrack?.provider || 'none', source: musicPlan?.selectedTrack?.source || 'opening theme and String guitar cues only', policy: AUDIO_MUSIC_POLICY },
     continuity: { ...draft.continuity, directorNote: stripText(candidate?.continuityNote, 240) },
   };
 }
@@ -3073,7 +3168,12 @@ function applyWritingCandidate(candidate, draft, resources, musicPlan, sourceMod
     const failedChecks = writingEvaluation.checks.filter((check) => !check.pass).map((check) => `${check.id}: ${check.detail}`).join('; ');
     throw new Error(`Writer quality gate failed (${writingEvaluation.score}/${writingEvaluation.minimum}): ${failedChecks || 'unknown failure'}`);
   }
-  const stage = normalizeStageDirections({ movementNotes, stageDirections }, provisionalDraft);
+  const stage = normalizeStageDirections({
+    movementNotes,
+    stageDirections,
+    pacing_profile: candidate?.pacing_profile || candidate?.pacingProfile || null,
+  }, provisionalDraft);
+  const pacingProfile = stage.pacingProfile || draft.motion?.performanceTimeline?.pacingProfile || null;
   if (stage.directions.length < 2) throw new Error('Animation blocking returned too few valid semantic directions.');
   const layout = buildSceneLayout(draft.sceneId, draft.castIds, stage.requests);
   const layoutCheck = validateSceneLayout(layout, { requireActors: draft.castIds });
@@ -3106,13 +3206,13 @@ function applyWritingCandidate(candidate, draft, resources, musicPlan, sourceMod
     draft.motion.fps,
     stage.directions,
     draft.durationSeconds,
-    { props, storyBeats },
+    { props, storyBeats, pacingProfile },
   );
   return attachAnimationAssetReport({
     ...draft,
     director: { ...draft.director, mode: sourceMode, model: scriptWriterModel, provider: scriptWriterProvider, scriptWriter: { provider: scriptWriterProvider, model: scriptWriterModel }, animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel }, inspirationUsed: Boolean(inspiration) },
     story: { ...draft.story, premise: stripText(candidate?.premise, 320) || draft.story?.premise || draft.synopsis, alteredStateMode: stripText(candidate?.alteredStateMode, 40).toLowerCase() || 'none', beats: storyBeats },
-    writing: { ...draft.writing, trainingVersion: resources.writingTraining?.schemaVersion || '1.0', sourceMode, provider: scriptWriterProvider, model: scriptWriterModel, qualityScore: writingEvaluation.score, evaluation: writingEvaluation.checks, movementNotes: movementNotes.map((note) => stripText(note, 180)).filter(Boolean).slice(0, 24), stageDirections: stage.directions, animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel } },
+    writing: { ...draft.writing, trainingVersion: resources.writingTraining?.schemaVersion || '1.0', sourceMode, provider: scriptWriterProvider, model: scriptWriterModel, qualityScore: writingEvaluation.score, evaluation: writingEvaluation.checks, movementNotes: movementNotes.map((note) => stripText(note, 180)).filter(Boolean).slice(0, 24), stageDirections: stage.directions, pacingProfile: stage.pacingProfile || null, animationDirector: { provider: animationDirectorProvider, model: animationDirectorModel } },
     dialogue,
     orangeIdiotSpeechText: tvInterruptions[0]?.text || draft.orangeIdiotSpeechText || '',
     tvInterruptions,
@@ -3120,7 +3220,7 @@ function applyWritingCandidate(candidate, draft, resources, musicPlan, sourceMod
     props,
     motion,
     layout,
-    music: { ...draft.music, trackId: musicPlan?.selectedTrack?.id || draft.music.trackId, status: 'approved', file: musicPlan?.selectedTrack?.file || draft.music.file, provider: musicPlan?.selectedTrack?.provider || draft.music.provider || 'internal' },
+    music: { ...draft.music, trackId: musicPlan?.selectedTrack?.id || null, status: musicPlan?.selectedTrack ? 'approved' : 'disabled', file: musicPlan?.selectedTrack?.file || null, provider: musicPlan?.selectedTrack?.provider || 'none', source: musicPlan?.selectedTrack?.source || 'opening theme and String guitar cues only', policy: AUDIO_MUSIC_POLICY },
     continuity: { ...draft.continuity, directorNote: stripText(candidate?.continuityNote, 240) },
   }, resources);
 }
@@ -3139,7 +3239,11 @@ function applyAnimationCandidate(candidate, draft, resources, musicPlan, model) 
   const movementNotes = Array.isArray(candidate?.movementNotes) && candidate.movementNotes.length
     ? candidate.movementNotes.map((note) => stripText(note, 180)).filter(Boolean).slice(0, 24)
     : defaultMovementNotes(draft);
-  const stage = normalizeStageDirections({ stageDirections: mergedDirections }, draft);
+  const stage = normalizeStageDirections({
+    stageDirections: mergedDirections,
+    pacing_profile: candidate?.pacing_profile || candidate?.pacingProfile || null,
+  }, draft);
+  const pacingProfile = stage.pacingProfile || draft.motion?.performanceTimeline?.pacingProfile || null;
   if (stage.directions.length < Math.max(2, draft.dialogue.length)) throw new Error('Animation director returned incomplete locked-line blocking.');
   const layout = buildSceneLayout(draft.sceneId, draft.castIds, stage.requests);
   const layoutCheck = validateSceneLayout(layout, { requireActors: draft.castIds });
@@ -3152,7 +3256,7 @@ function applyAnimationCandidate(candidate, draft, resources, musicPlan, model) 
     draft.motion?.fps || RENDER_FPS,
     stage.directions,
     draft.durationSeconds,
-    { props: draft.props || [], storyBeats: draft.story?.beats || [] },
+    { props: draft.props || [], storyBeats: draft.story?.beats || [], pacingProfile },
   );
   const writerSourceMode = String(draft.writing?.sourceMode || 'script-writer').replace(/-api$/u, '');
   const updated = attachAnimationAssetReport({
@@ -3166,6 +3270,7 @@ function applyAnimationCandidate(candidate, draft, resources, musicPlan, model) 
       ...draft.writing,
       movementNotes,
       stageDirections: stage.directions,
+      pacingProfile: stage.pacingProfile || null,
       animationDirector: { provider: 'gemini', model },
     },
     layout,
@@ -3758,23 +3863,49 @@ function ffmpegPath(filePath) {
   return filePath.replaceAll('\\', '/').replaceAll("'", "'\\''");
 }
 
-async function mixAudio(draft, lineFiles, musicFile, outputPath) {
+function buildSpeechMixFilter(line, index, musicFile = false, maximumDuration = 300) {
+  const delay = Math.max(0, Math.floor(line.startMs));
+  const duration = Math.max(0.18, Math.min(Number(maximumDuration) || 300, Number(line.duration) || Math.max(0.18, (Number(line.endMs) - Number(line.startMs)) / 1000)));
+  const speechFilter = `[${index}:a]aresample=44100,atrim=duration=${duration.toFixed(3)},asetpts=N/SR/TB,adelay=${delay}|${delay},loudnorm=I=${VOICE_TARGET_LUFS}:LRA=7:TP=-2:linear=true`;
+  return musicFile
+    ? `${speechFilter},asplit=2[line${index}][side${index}]`
+    : `${speechFilter}[line${index}]`;
+}
+
+async function mixAudio(draft, lineFiles, musicFile, outputPath, audioPlan = null) {
   if (!lineFiles.length) throw new Error('Cannot mix an episode segment without speech or bark audio.');
   const inputs = [];
   const filters = [];
+  const sidechainLabels = [];
   lineFiles.forEach((line, index) => {
     inputs.push('-i', line.filePath);
-    const delay = Math.max(0, Math.floor(line.startMs));
-    const duration = Math.max(0.18, Math.min(Number(draft.durationSeconds) || 300, Number(line.duration) || Math.max(0.18, (Number(line.endMs) - Number(line.startMs)) / 1000)));
-    filters.push(`[${index}:a]aresample=44100,atrim=duration=${duration.toFixed(3)},asetpts=N/SR/TB,adelay=${delay}|${delay}[line${index}]`);
+    filters.push(buildSpeechMixFilter(line, index, Boolean(musicFile), draft.durationSeconds));
+    if (musicFile) {
+      sidechainLabels.push(`[side${index}]`);
+    }
   });
   const labels = lineFiles.map((_, index) => `[line${index}]`);
   let inputCount = lineFiles.length;
   if (musicFile) {
-    const musicInputIndex = lineFiles.length;
+    const musicInputIndex = inputCount;
     inputs.push('-stream_loop', '-1', '-i', musicFile);
-    filters.push(`[${musicInputIndex}:a]aresample=44100,loudnorm=I=-20:LRA=7:TP=-2:linear=true,volume=0.11[bed]`);
+    filters.push(`[${musicInputIndex}:a]aresample=44100,loudnorm=I=-22:LRA=7:TP=-2:linear=true,volume=0.11[bedraw]`);
+    filters.push(`${sidechainLabels.join('')}amix=inputs=${sidechainLabels.length}:duration=longest:dropout_transition=0:normalize=0[speechduck]`);
+    filters.push('[bedraw][speechduck]sidechaincompress=threshold=0.025:ratio=7:attack=12:release=240:makeup=1[bed]');
     labels.push('[bed]');
+    inputCount += 1;
+  }
+  for (const [cueIndex, cue] of (audioPlan?.cues || []).entries()) {
+    if (!cue?.filePath) continue;
+    const inputIndex = inputCount;
+    const delay = Math.max(0, Math.floor(Number(cue.startMs) || 0));
+    const duration = Math.max(0.08, Math.min(Number(draft.durationSeconds) || 300, Math.max(0.08, (Number(cue.endMs) - Number(cue.startMs)) / 1000)));
+    if (cue.asset?.loopable) inputs.push('-stream_loop', '-1');
+    inputs.push('-i', cue.filePath);
+    const gain = Math.pow(10, Math.max(-48, Math.min(6, Number(cue.gainDb) || 0)) / 20).toFixed(6);
+    const fadeOutStart = Math.max(0.01, duration - 0.02).toFixed(3);
+    filters.push(`[${inputIndex}:a]aresample=44100,atrim=duration=${duration.toFixed(3)},asetpts=N/SR/TB,volume=${gain},loudnorm=I=-24:LRA=7:TP=-2:linear=true,afade=t=in:st=0:d=0.01,afade=t=out:st=${fadeOutStart}:d=0.02,adelay=${delay}|${delay}[cue${cueIndex}]`);
+    labels.push(`[cue${cueIndex}]`);
     inputCount += 1;
   }
   // Keep the mix alive for the effective segment through the 30 ms post-speech pad.
@@ -3795,6 +3926,8 @@ async function mixAudio(draft, lineFiles, musicFile, outputPath) {
 
 function clipActionPreferences(kind, requestedAction = '') {
   const action = String(requestedAction || '').toLowerCase();
+  if (kind === 'listen') return ['listen', 'idle', 'react', 'talk'];
+  if (kind === 'react') return ['react', 'talk', 'interact', 'idle'];
   if (kind === 'bark') return ['bark'];
   if (kind === 'walk') return ['walk'];
   if (kind === 'idle') return ['idle', 'react'];
@@ -3805,15 +3938,16 @@ function clipActionPreferences(kind, requestedAction = '') {
   return ['talk', 'react', 'interact'];
 }
 
-function characterClip(character, kind = 'idle', requestedAction = '') {
+function characterClip(character, kind = 'idle', requestedAction = '', replacementActive = false) {
   const clips = Array.isArray(character?.clips) ? character.clips : [];
-  const usable = clips.filter((clip) => clip?.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length);
+  const usable = clips.filter((clip) => clip?.status === 'approved' && Array.isArray(clip.frames) && clip.frames.length && (!replacementActive || clip.source?.kind === 'h3-max-local'));
   const actionKey = String(requestedAction || '').toLowerCase().replace(/[- ]+/gu, '_');
   const registryClipId = character?.actionRegistry?.[actionKey]?.clipId;
   if (registryClipId) {
     const registered = usable.find((clip) => clip.id === registryClipId);
     if (registered) return registered;
   }
+  if (replacementActive) return null;
   const preferences = clipActionPreferences(kind, requestedAction);
   const score = (clip) => {
     const actionIndex = preferences.indexOf(String(clip?.action || '').toLowerCase());
@@ -3823,8 +3957,10 @@ function characterClip(character, kind = 'idle', requestedAction = '') {
     const idleScore = kind === 'idle' && /idle|loop|breathe|stiff|cautious|hunched|loose|rigid|energetic/iu.test(id) ? 350 : 0;
     const walkScore = kind === 'walk' && /walk|run|step|trot/iu.test(id) ? 350 : 0;
     const barkScore = kind === 'bark' && /bark|yip|woof/iu.test(id) ? 500 : 0;
+    const listenScore = kind === 'listen' && /listen|observe|watch|idle/iu.test(id) ? 400 : 0;
+    const reactScore = kind === 'react' && /react|reaction|turn|shrug|look/iu.test(id) ? 400 : 0;
     const frameScore = Number(clip.frameCount || clip.frames.length) === 6 ? 50 : 0;
-    return actionScore + authoredScore + idleScore + walkScore + barkScore + frameScore;
+    return actionScore + authoredScore + idleScore + walkScore + barkScore + listenScore + reactScore + frameScore;
   };
   return [...usable].sort((left, right) => score(right) - score(left) || String(left.id).localeCompare(String(right.id)))[0] || null;
 }
@@ -3903,7 +4039,8 @@ function placementForFrame(layoutPlacement, characterId, fileGeometry) {
 function actorFeetAt(layoutPlacement, timeSeconds, motion, actorId) {
   const timeMs = Math.round(timeSeconds * 1000);
   const travelActions = new Set(['spawn', 'enter', 'walk', 'cross', 'move', 'exit']);
-  const travelCues = (motion?.cues || [])
+  const motionEvents = motion?.performanceTimeline?.events || motion?.cues || [];
+  const travelCues = motionEvents
     .filter((cue) => cue.actorId === actorId && cue.kind === 'semantic-action' && travelActions.has(String(cue.action || '').toLowerCase()))
     .sort((left, right) => left.startMs - right.startMs);
   if (!travelCues.length) return { point: layoutPlacement.feet, traveling: false, direction: 'south' };
@@ -3959,25 +4096,129 @@ function propAnchorPoint(sceneId, anchorId) {
   };
 }
 
-function propLayerForFrame(prop, owner, timeSeconds) {
+function propLayerForFrame(prop, owner) {
   const spec = FACTORY_PROPS.find((item) => item.id === prop?.propId);
   if (!spec) return null;
   const filePath = publicAssetPath(spec.file);
   const size = owner ? 26 : 24;
-  const bob = /lift|present/i.test(String(prop.action || ''))
-    ? Math.round(Math.sin(timeSeconds * 6) * 2)
-    : 0;
   const point = owner?.placement?.propAttachmentAnchors?.handRight
     || owner?.placement?.interactionAnchor
     || propAnchorPoint(prop.sceneId, prop.anchor);
   const left = Math.round(point.x - size / 2);
-  const top = Math.round(point.y - size + bob);
+  const top = Math.round(point.y - size);
   return sharp(filePath)
     .resize(size, size, { kernel: sharp.kernel.nearest })
     .png()
     .toBuffer()
     .then((input) => ({ input, left: Math.max(0, left), top: Math.max(29, top), propId: prop.propId }))
     .catch(() => null);
+}
+
+function reviewedOrangeMotionClip(resources, action) {
+  const clips = Array.isArray(resources?.motionRegistry?.clips) ? resources.motionRegistry.clips : [];
+  return clips
+    .filter((clip) => clip?.characterId === ORANGE_IDIOT_ID
+      && clip?.status === 'accepted'
+      && ['accepted', 'approved'].includes(clip?.reviewStatus)
+      && clip?.action === action
+      && clip?.direction === 'south'
+      && Array.isArray(clip?.frames)
+      && clip.frames.length)
+    .sort((left, right) => String(right.acceptedAt || right.generatedAt || '').localeCompare(String(left.acceptedAt || left.generatedAt || '')) || String(right.id || '').localeCompare(String(left.id || '')))[0] || null;
+}
+
+function registryFrameForTime(clip, elapsedMs) {
+  if (!clip?.frames?.length) return null;
+  const fps = Math.max(1, Number(clip.fps) || RENDER_FPS);
+  const position = Math.floor(Math.max(0, Number(elapsedMs) || 0) / 1000 * fps);
+  const index = clip.loop === false ? Math.min(clip.frames.length - 1, position) : position % clip.frames.length;
+  return clip.frames[index]?.file || null;
+}
+
+function orangeMotionReplacementActive(resources) {
+  const clips = Array.isArray(resources?.motionRegistry?.clips)
+    ? resources.motionRegistry.clips.filter((clip) => clip?.status === 'accepted')
+    : [];
+  return resources?.motionRegistry?.status === 'active'
+    && resources?.motionRegistry?.runtimePolicy === 'replacement'
+    && clips.length > 0
+    && clips.every((clip) => ['accepted', 'approved'].includes(clip?.reviewStatus));
+}
+
+function orangeIdiotPacingState(elapsedMs, stage, speaking = true) {
+  const spriteWidth = Math.max(1, Math.round(Number(stage?.spriteWidth) || 64));
+  const canvasWidth = 384;
+  const edge = Math.ceil(spriteWidth / 2);
+  const centerX = clamp(Math.round(Number(stage?.centerX) || 192), edge, canvasWidth - edge);
+  const hold = (x, phase, direction = 'south') => ({ x, phase, direction, moving: false });
+  const walk = (x, phase, direction) => ({ x, phase, direction, moving: true });
+  if (!speaking) return hold(centerX, 'standby');
+  const leftX = clamp(Math.round(Number(stage?.leftX) || centerX - 82), edge, canvasWidth - edge);
+  const rightX = clamp(Math.round(Number(stage?.rightX) || centerX + 82), edge, canvasWidth - edge);
+  const pacing = stage?.pacing || {};
+  const durations = [
+    Math.max(0, Math.round(Number(pacing.initialHoldMs) || 1000)),
+    Math.max(1, Math.round(Number(pacing.travelToLeftMs) || 1400)),
+    Math.max(0, Math.round(Number(pacing.leftHoldMs) || 900)),
+    Math.max(1, Math.round(Number(pacing.travelAcrossMs) || 2600)),
+    Math.max(0, Math.round(Number(pacing.rightHoldMs) || 900)),
+    Math.max(1, Math.round(Number(pacing.travelToCenterMs) || 1400)),
+    Math.max(0, Math.round(Number(pacing.finalHoldMs) || 1000)),
+  ];
+  const cycleMs = durations.reduce((total, duration) => total + duration, 0);
+  if (cycleMs <= 0) return hold(centerX, 'empty');
+  let cursor = Math.max(0, Number(elapsedMs) || 0) % cycleMs;
+  const smooth = (progress) => {
+    const t = clamp(progress, 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  const travel = (from, to, duration) => {
+    if (duration <= 0) return to;
+    return Math.round(from + (to - from) * smooth(cursor / duration));
+  };
+  if (cursor < durations[0]) return hold(centerX, 'center-hold');
+  cursor -= durations[0];
+  if (cursor < durations[1]) return walk(travel(centerX, leftX, durations[1]), 'walk-left', 'west');
+  cursor -= durations[1];
+  if (cursor < durations[2]) return hold(leftX, 'left-hold');
+  cursor -= durations[2];
+  if (cursor < durations[3]) return walk(travel(leftX, rightX, durations[3]), 'walk-right', 'east');
+  cursor -= durations[3];
+  if (cursor < durations[4]) return hold(rightX, 'right-hold');
+  cursor -= durations[4];
+  if (cursor < durations[5]) return walk(travel(rightX, centerX, durations[5]), 'walk-center', 'west');
+  return hold(centerX, 'final-hold');
+}
+
+function orangeIdiotPacingX(elapsedMs, stage, speaking = true) {
+  return orangeIdiotPacingState(elapsedMs, stage, speaking).x;
+}
+
+function orangeIdiotPodiumLayer(stage) {
+  const podium = stage?.podium;
+  if (!podium) return null;
+  const left = clamp(Math.round(Number(podium.left) || 158), 0, 383);
+  const top = clamp(Math.round(Number(podium.top) || 143), 29, 200);
+  const width = clamp(Math.round(Number(podium.width) || 68), 30, 384 - left);
+  const height = clamp(Math.round(Number(podium.height) || 48), 20, 216 - top);
+  const lipHeight = Math.min(7, height);
+  const bodyLeft = left + 5;
+  const bodyWidth = Math.max(1, width - 10);
+  const bodyTop = top + lipHeight;
+  const bodyHeight = Math.max(1, height - lipHeight - 6);
+  const baseTop = top + height - 7;
+  const innerWidth = Math.max(1, bodyWidth - 10);
+  const postBottom = Math.max(bodyTop + 8, baseTop - 2);
+  const baseLeft = Math.max(0, left - 3);
+  const baseWidth = Math.min(384 - baseLeft, width + 6);
+  const svg = '<svg width="384" height="216" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">'
+    + '<rect x="' + left + '" y="' + top + '" width="' + width + '" height="' + lipHeight + '" fill="#b27a43" stroke="#17151a" stroke-width="2"/>'
+    + '<rect x="' + bodyLeft + '" y="' + bodyTop + '" width="' + bodyWidth + '" height="' + bodyHeight + '" fill="#704525" stroke="#17151a" stroke-width="2"/>'
+    + '<rect x="' + (bodyLeft + 5) + '" y="' + (bodyTop + 7) + '" width="' + innerWidth + '" height="' + Math.max(1, bodyHeight - 13) + '" fill="#865530"/>'
+    + '<path d="M' + (bodyLeft + 10) + ' ' + (bodyTop + 8) + 'V' + postBottom + 'M' + (left + width - 11) + ' ' + (bodyTop + 8) + 'V' + postBottom + '" stroke="#4a2e22" stroke-width="2"/>'
+    + '<rect x="' + baseLeft + '" y="' + baseTop + '" width="' + baseWidth + '" height="7" fill="#513323" stroke="#17151a" stroke-width="2"/>'
+    + '</svg>';
+  return { input: Buffer.from(svg), left: 0, top: 0 };
 }
 
 async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
@@ -3995,19 +4236,39 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
   const talkingFrameDelayMs = Math.max(50, Number(resources.orangeIdiot?.assetSet?.talking?.frameDelayMs) || 200);
   const speechEndMs = Number(interruption.speechEndMs || interruption.endMs || 0);
   const isSpeaking = timeMs <= speechEndMs;
+  const elapsedMs = Math.max(0, timeMs - Number(interruption.startMs || 0));
+  const h3TalkClip = reviewedOrangeMotionClip(resources, 'talk');
+  const h3WalkClip = reviewedOrangeMotionClip(resources, 'walk');
+  if (orangeMotionReplacementActive(resources) && isSpeaking && !h3TalkClip) {
+    throw new Error('Replacement motion coverage is missing for Orange Idiot action talk.');
+  }
   const talkingFrameIndex = isSpeaking && talkingFrames.length
-    ? Math.floor(Math.max(0, timeMs - Number(interruption.startMs || 0)) / talkingFrameDelayMs) % talkingFrames.length
+    ? Math.floor(elapsedMs / talkingFrameDelayMs) % talkingFrames.length
     : -1;
-  const sourceFile = talkingFrameIndex >= 0 ? talkingFrames[talkingFrameIndex] : preview;
+  const h3TalkFrame = isSpeaking ? registryFrameForTime(h3TalkClip, elapsedMs) : null;
+  const sourceFile = h3TalkFrame || (talkingFrameIndex >= 0 ? talkingFrames[talkingFrameIndex] : preview);
   if (draft.sceneId === ORANGE_IDIOT_STANDALONE_SCENE_ID) {
     const scene = getLocationSpec(draft.sceneId);
     const stage = scene.broadcastAnchors?.orangeIdiot;
     if (!stage) return [];
     const spriteWidth = Math.max(1, Math.round(Number(stage.spriteWidth) || 64));
     const spriteHeight = Math.max(1, Math.round(Number(stage.spriteHeight) || 64));
+    const pacingState = orangeIdiotPacingState(
+      elapsedMs,
+      { ...stage, spriteWidth },
+      isSpeaking,
+    );
+    const walkingFrames = resources.orangeIdiot?.assetSet?.walking?.frames || {};
+    const h3WalkFrame = pacingState.moving ? registryFrameForTime(h3WalkClip, elapsedMs) : null;
+    if (orangeMotionReplacementActive(resources) && pacingState.moving && !h3WalkFrame) {
+      throw new Error('Replacement motion coverage is missing for Orange Idiot action walk.');
+    }
+    const walkingSourceFile = pacingState.moving
+      ? h3WalkFrame || (typeof walkingFrames[pacingState.direction] === 'string' && walkingFrames[pacingState.direction].startsWith('/') ? walkingFrames[pacingState.direction] : null)
+      : null;
     const sourceCrop = stage.spriteSourceCrop;
-    let source = sharp(publicAssetPath(sourceFile));
-    if (sourceCrop) {
+    let source = sharp(publicAssetPath(walkingSourceFile || sourceFile));
+    if (!walkingSourceFile && !h3TalkFrame && sourceCrop) {
       source = source.extract({
         left: Math.max(0, Math.round(Number(sourceCrop.left) || 0)),
         top: Math.max(0, Math.round(Number(sourceCrop.top) || 0)),
@@ -4021,33 +4282,15 @@ async function orangeIdiotLayersForFrame(draft, resources, timeMs) {
       .toBuffer()
       .catch(() => null);
     if (!sprite) return [];
-    const centerX = clamp(Math.round(Number(stage.centerX) || 192), Math.ceil(spriteWidth / 2), 384 - Math.floor(spriteWidth / 2));
+    // Travel uses the supplied full-body sprite turned toward the travel
+    // direction. Stationary delivery stays south-facing for the talking cycle.
     const bottomY = clamp(Math.round(Number(stage.spriteBottomY) || 190), spriteHeight, 216);
-    const spriteLeft = clamp(Math.round(centerX - spriteWidth / 2), 0, 384 - spriteWidth);
+    const spriteLeft = clamp(Math.round(pacingState.x - spriteWidth / 2), 0, 384 - spriteWidth);
     const spriteTop = clamp(bottomY - spriteHeight, 0, 216 - spriteHeight);
-    return [{ input: sprite, left: spriteLeft, top: spriteTop }];
+    const podiumLayer = orangeIdiotPodiumLayer(stage);
+    return [podiumLayer, { input: sprite, left: spriteLeft, top: spriteTop }].filter(Boolean);
   }
-  const screen = getLocationSpec(draft.sceneId).screenAnchors?.television;
-  if (draft.sceneId !== ORANGE_IDIOT_SCENE_ID || !screen) return [];
-  const screenWidth = Math.max(1, Math.round(Number(screen.width) || 27));
-  const screenHeight = Math.max(1, Math.round(Number(screen.height) || 19));
-  const spriteWidth = Math.max(1, Math.min(screenWidth - 5, 20));
-  const spriteHeight = Math.max(1, Math.min(screenHeight - 1, 18));
-  const sprite = await sharp(publicAssetPath(sourceFile))
-    .resize(spriteWidth, spriteHeight, { kernel: sharp.kernel.nearest, fit: 'contain' })
-    .png()
-    .toBuffer()
-    .catch(() => null);
-  if (!sprite) return [];
-  const left = Math.round(Number(screen.left) || 181);
-  const top = Math.round(Number(screen.top) || 63);
-  const spriteLeft = left + Math.max(0, Math.floor((screenWidth - spriteWidth) / 2));
-  const spriteTop = top + Math.max(0, screenHeight - spriteHeight);
-  const glass = Buffer.from(`<svg width="384" height="216" xmlns="http://www.w3.org/2000/svg"><rect x="${left}" y="${top}" width="${screenWidth}" height="${screenHeight}" fill="#07110f" fill-opacity=".35"/><g stroke="#d8b86a" stroke-opacity=".24" stroke-width=".55">${Array.from({ length: 5 }, (_, index) => `<path d="M${left} ${top + 3 + index * 4}H${left + screenWidth}"/>`).join('')}</g><rect x="${left}" y="${top}" width="${screenWidth}" height="${screenHeight}" fill="none" stroke="#06100d" stroke-width="1"/></svg>`);
-  return [
-    { input: glass, left: 0, top: 0 },
-    { input: sprite, left: spriteLeft, top: spriteTop },
-  ];
+  return [];
 }
 
 function voiceFocusLayer(placement, character, isBork) {
@@ -4066,9 +4309,16 @@ function voiceFocusLayer(placement, character, isBork) {
 }
 
 function cueForActor(motion, actorId, timeMs) {
-  return (motion?.cues || [])
-    .filter((cue) => cue.actorId === actorId && timeMs >= cue.startMs && timeMs <= cue.endMs)
-    .sort((left, right) => Number(right.priority || 0) - Number(left.priority || 0) || Number(right.startMs || 0) - Number(left.startMs || 0))[0] || null;
+  const events = motion?.performanceTimeline?.events || motion?.cues || [];
+  const stateRank = { traveling: 5, speaking: 4, reacting: 3, listening: 2, idle: 1 };
+  return events
+    .filter((cue) => cue.actorId === actorId && timeMs >= Number(cue.startMs || 0) && timeMs <= Number(cue.endMs || 0))
+    .sort((left, right) => {
+      const stateDelta = (stateRank[right.baseState] || 0) - (stateRank[left.baseState] || 0);
+      if (stateDelta) return stateDelta;
+      const phaseDelta = (right.phase === 'overlay' ? 1 : 0) - (left.phase === 'overlay' ? 1 : 0);
+      return phaseDelta || Number(right.priority || 0) - Number(left.priority || 0) || Number(right.startMs || 0) - Number(left.startMs || 0) || String(left.id).localeCompare(String(right.id));
+    })[0] || null;
 }
 
 function escapeSvgText(value) {
@@ -4193,12 +4443,17 @@ function captionTextForFrame(draft, resources, timeMs) {
 }
 
 function clipKindForCue(cue, actorState, isBork) {
-  if (actorState.traveling) return 'walk';
-  if (isBork) return cue?.kind === 'bark-and-react' ? 'bark' : cue?.kind === 'listen-and-react' ? 'talk' : 'idle';
+  if (actorState.traveling || cue?.baseState === 'traveling') return 'walk';
+  if (isBork) {
+    if (cue?.action === 'bark' || cue?.kind === 'bark-and-react') return 'bark';
+    if (cue?.baseState === 'reacting' || cue?.action === 'react') return 'react';
+    if (cue?.baseState === 'listening' || cue?.action === 'listen') return 'listen';
+    return 'idle';
+  }
   if (!cue) return 'idle';
-  if (cue.kind === 'talk-and-gesture' || cue.kind === 'listen-and-react') return 'talk';
-  if (cue.kind === 'semantic-action' && /^(enter|exit|walk|cross|move)$/i.test(String(cue.action || ''))) return 'walk';
-  if (cue.kind === 'semantic-action' && String(cue.action || '').toLowerCase() !== 'idle') return 'talk';
+  if (cue.baseState === 'speaking' || cue.kind === 'talk-and-gesture' || (cue.kind === 'performance-overlay' && cue.baseState === 'speaking')) return 'talk';
+  if (cue.baseState === 'reacting' || cue.action === 'react') return 'react';
+  if (cue.baseState === 'listening' || cue.action === 'listen') return 'listen';
   return 'idle';
 }
 
@@ -4426,8 +4681,19 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const cue = cueForActor(draft.motion, actorId, timeMs);
     const actorState = actorFeetAt(layoutPlacement, timeSeconds, draft.motion, actorId);
     const isBork = actorId === 'bork';
-    const clip = characterClip(character, clipKindForCue(cue, actorState, isBork), cue?.clipAction || cue?.action || '');
-    const source = clip?.frames?.[Math.floor(timeSeconds * (character.playback?.fps || RENDER_FPS) + index * 1.5 + (draft.director.seed % 5)) % (clip.frames.length || 1)];
+    const replacementActive = resources.catalog.motionLibrary?.replacementActive === true;
+    const clip = characterClip(character, clipKindForCue(cue, actorState, isBork), cue?.clipAction || cue?.action || '', replacementActive);
+    if (replacementActive && !clip) throw new Error('Replacement motion coverage is missing for ' + actorId + ' action ' + String(cue?.clipAction || cue?.action || 'idle') + '.');
+    const clipFrameRate = Number(clip?.fps || character.playback?.fps || RENDER_FPS) || RENDER_FPS;
+    const elapsedMs = cue ? Math.max(0, timeMs - Number(cue.startMs || 0)) : timeMs;
+    const framePosition = Math.floor(elapsedMs / 1000 * clipFrameRate);
+    const frameOffset = clip?.loop === false ? 0 : stableTextHash(`${draft.id}:${actorId}:${cue?.id || 'idle'}`) % (clip?.frames?.length || 1);
+    const sourceIndex = clip?.frames?.length
+      ? clip.loop === false
+        ? Math.min(clip.frames.length - 1, framePosition)
+        : (framePosition + frameOffset) % clip.frames.length
+      : 0;
+    const source = clip?.frames?.[sourceIndex];
     if (!source?.file) continue;
     const sourcePath = publicAssetPath(source.file);
     const canonical = getCharacterGeometry(actorId);
@@ -4438,14 +4704,9 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
       draft.__renderClipGeometry.set(geometryKey, sourceGeometry);
     }
     const basePlacement = placementForFrame(layoutPlacement, actorId, sourceGeometry);
-    const purposefulCue = cue && (
-      cue.kind === 'talk-and-gesture'
-      || cue.kind === 'bark-and-react'
-      || (cue.kind === 'semantic-action' && /^(talk|interact|point|present|lift|shrug|react|turn)$/i.test(String(cue.action || '')))
-    );
-    const gestureShift = purposefulCue
-      ? Math.round(Math.sin(timeSeconds * 5 + Number(draft.motion.actors?.find((item) => item.actorId === actorId)?.phase || 0) * Math.PI * 2))
-      : 0;
+    // Authored clips and semantic state transitions own visible motion.
+    // Never move an idle/listening actor with a frame-time sine wave.
+    const gestureShift = 0;
     const stableFeet = !actorState.traveling ? draft.__stableActorFeet[actorId] : null;
     const desiredFeet = stableFeet
       ? { x: Number(stableFeet.x) + gestureShift, y: Number(stableFeet.y) }
@@ -4454,7 +4715,7 @@ async function actorLayersForFrame(draft, resources, frameIndex, { loadSprites =
     const sprite = loadSprites
       ? await sharp(sourcePath).resize(placement.sprite.width, placement.sprite.height, { kernel: sharp.kernel.nearest }).png().toBuffer()
       : null;
-    const voiceActive = activeCaptionSpeakerId === actorId || cue?.kind === 'talk-and-gesture' || cue?.kind === 'bark-and-react';
+    const voiceActive = activeCaptionSpeakerId === actorId || cue?.baseState === 'speaking' || cue?.kind === 'bark-and-react';
     actorLayers.push({ actorId, placement, depth: placement.depth, shadow: shadowLayer(placement.contactShadow), focus: voiceActive ? voiceFocusLayer(placement, character, isBork) : null, sprite, traveling: actorState.traveling, character, isBork, voiceActive, gestureShift });
   }
   separateRenderedActorLayers(actorLayers, draft.sceneId);
@@ -4593,6 +4854,10 @@ async function rehearseRenderGeometry(draft, resources) {
     sampledEveryFrame: true,
     maxForegroundActors,
     maxCollisionPairs,
+    performanceMetrics: draft.motion?.qualityMetrics || draft.motion?.performanceTimeline?.metrics || null,
+    performanceTimingSource: draft.motion?.performanceTimeline?.timingSource || null,
+    baseStatePolicy: draft.motion?.performanceTimeline?.baseStatePolicy || null,
+    authoredEventCount: draft.motion?.performanceTimeline?.events?.length || draft.motion?.cues?.length || 0,
     cameraSafe: !firstCameraViolation,
     shotPlanHonored: rehearsedShotIds.size > 0,
     shotsRehearsed: rehearsedShotIds.size,
@@ -4619,7 +4884,7 @@ async function composeFrame(draft, resources, frameIndex) {
     const owner = prop.attachment === 'speaker'
       ? actorLayers.find((actor) => actor.actorId === prop.speakerId)
       : null;
-    const layer = await propLayerForFrame(prop, owner, timeSeconds);
+    const layer = await propLayerForFrame(prop, owner);
     if (!layer) continue;
     (owner ? heldPropLayers : scenePropLayers).push(layer);
   }
@@ -4704,7 +4969,7 @@ function alignDraftToVoiceTimeline(draft, timeline) {
     draft.motion?.fps || RENDER_FPS,
     draft.writing?.stageDirections || draft.motion?.semanticDirections || [],
     draft.durationSeconds,
-    { props: draft.props, storyBeats: draft.story?.beats || [] },
+    { props: draft.props, storyBeats: draft.story?.beats || [], pacingProfile: draft.writing?.pacingProfile || draft.motion?.performanceTimeline?.pacingProfile || null, timingSource: 'measured-kokoro-audio' },
   );
   draft.motion.assetNeeds = priorAssetNeeds;
   draft.motion.clipResolutions = priorClipResolutions;
@@ -4712,8 +4977,8 @@ function alignDraftToVoiceTimeline(draft, timeline) {
 }
 
 async function synthesizeAudio(draft, resources, segmentDirectory) {
-  const musicMode = draft.music?.mode === 'bed' ? 'bed' : 'none';
-  const music = trackForId(resources, draft.music?.trackId);
+  const musicMode = 'none';
+  const music = null;
   let musicFile = null;
   if (musicMode === 'bed') {
     if (!music || music.status !== 'approved' || !music.file) throw new Error('The segment music track is not approved.');
@@ -4777,6 +5042,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
   const effectiveDurationSeconds = Math.max(0.18, (lastSpeechEndMs + SCRIPT_END_BUFFER_MS) / 1000);
   draft.durationSeconds = Number(effectiveDurationSeconds.toFixed(3));
   alignDraftToVoiceTimeline(draft, timeline);
+  const audioPlan = await resolveAudioForDraft(draft, resources);
   const truncatedSpeech = lineFiles.filter((line) => Number(line.duration) + 0.075 < Number(line.sourceDuration));
   if (truncatedSpeech.length) {
     throw new Error('Speech timing would truncate ' + truncatedSpeech.length + ' take(s); shorten the script or choose a longer episode.');
@@ -4785,7 +5051,7 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     throw new Error('Speech timing crossed the segment media boundary.');
   }
   const mixPath = path.join(segmentDirectory, 'mix.mp3');
-  const measurement = await mixAudio(draft, lineFiles, musicFile, mixPath);
+  const measurement = await mixAudio(draft, lineFiles, musicFile, mixPath, audioPlan);
   return {
     status: 'ready',
     lineFiles: lineFiles.map((line) => ({ id: line.id, speakerId: line.speakerId, text: line.text, startMs: line.startMs, endMs: line.endMs, file: relativeRuntimePath(line.filePath), duration: line.duration, sourceDuration: line.sourceDuration })),
@@ -4801,9 +5067,10 @@ async function synthesizeAudio(draft, resources, segmentDirectory) {
     durationSeconds: measurement.duration,
     bytes: measurement.bytes,
     provider: 'kokoro-loopback',
+    audioCuePlan: { schemaVersion: audioPlan.schemaVersion, status: audioPlan.status, optional: audioPlan.optional, cueCount: audioPlan.cues.length, cues: audioPlan.cues.map((cue) => ({ id: cue.id, kind: cue.kind, startMs: cue.startMs, endMs: cue.endMs, assetId: cue.asset?.id || cue.assetId, sourceLineId: cue.sourceLineId || null, purpose: cue.purpose, gainDb: cue.gainDb })), missing: audioPlan.missing.map((cue) => ({ id: cue.id, kind: cue.kind, assetId: cue.assetId, startMs: cue.startMs, endMs: cue.endMs, sourceLineId: cue.sourceLineId || null, purpose: cue.purpose, reason: cue.reason })) },
     music: music
       ? { mode: musicMode, usedInMix: musicMode === 'bed', id: music.id, title: music.title, provider: music.provider || 'internal', source: music.source, autoApproved: music.autoApproved === true }
-      : { mode: musicMode, usedInMix: false },
+      : { mode: musicMode, usedInMix: false, policy: AUDIO_MUSIC_POLICY },
   };
 }
 
@@ -4816,8 +5083,9 @@ function normalizeEpisodeMusicMode(value) {
 
 function normalizeSegmentMusicMode(value, seed = 1, index = 0) {
   const mode = normalizeEpisodeMusicMode(value);
+  if (mode === "bed") return "none";
   if (mode !== "auto") return mode;
-  return (Math.abs(Math.floor(Number(seed) || 1)) + Math.max(0, Math.floor(Number(index) || 0))) % 3 === 0 ? "bed" : "none";
+  return "none";
 }
 
 function castComboKey(castIds) {
@@ -4879,9 +5147,97 @@ function existingEpisodeTitleBodyKeys() {
   return new Set([
     ...(Array.isArray(state?.episodes) ? state.episodes : []).map((episode) => episode?.title),
     ...(Array.isArray(state?.continuity?.usedEpisodeTitleKeys) ? state.continuity.usedEpisodeTitleKeys : []),
+    ...(Array.isArray(state?.logs)
+      ? state.logs.filter((entry) => entry?.generationWho === 'cast').flatMap((entry) => [entry.episodeTitle, entry.title, entry.segmentTitle])
+      : []),
   ].map((title) => episodeTitleBodyKey(title)).filter(Boolean));
 }
 
+
+function isCastSegmentActivityEvent(event) {
+  return ['segment-generation-start', 'segment-approved', 'segment-quarantined'].includes(String(event || ''));
+}
+
+async function normalizeEpisodeActivityTitles() {
+  const activityEntries = (state?.logs || []).filter((entry) => isCastSegmentActivityEvent(entry?.event) && safeId(entry?.segmentId));
+  if (!activityEntries.length) return false;
+  const episodeTitles = new Map();
+  const segmentEpisodes = new Map();
+  const registerEpisode = (record) => {
+    const episodeId = safeEpisodeId(record?.id);
+    const title = stripText(record?.title, 120);
+    const generationWho = String(record?.generation?.who || record?.generationWho || '').trim().toLowerCase();
+    const isOrange = record?.mode === 'orange-idiot-only' || generationWho === 'orange';
+    if (!episodeId || !title || isOrange) return;
+    episodeTitles.set(episodeId, title);
+    for (const segmentId of Array.isArray(record?.segmentIds) ? record.segmentIds : []) {
+      const safeSegmentId = safeId(segmentId);
+      if (safeSegmentId) segmentEpisodes.set(safeSegmentId, { episodeId, title });
+    }
+  };
+  for (const episode of Array.isArray(state?.episodes) ? state.episodes : []) registerEpisode(episode);
+  const episodeEntries = await readdir(EPISODE_ROOT, { withFileTypes: true }).catch(() => []);
+  for (const entry of episodeEntries.filter((item) => item.isDirectory())) {
+    registerEpisode(await readJson(path.join(EPISODE_ROOT, entry.name, 'episode.json'), null));
+  }
+  const segmentRecords = new Map();
+  for (const entry of activityEntries) {
+    const segmentId = safeId(entry.segmentId);
+    if (!segmentId || segmentRecords.has(segmentId)) continue;
+    segmentRecords.set(segmentId, await readJson(path.join(SEGMENT_ROOT, segmentId, 'segment.json'), null));
+  }
+  let changed = false;
+  state.logs = state.logs.map((entry) => {
+    if (!isCastSegmentActivityEvent(entry?.event)) return entry;
+    const segmentId = safeId(entry.segmentId);
+    if (!segmentId) return entry;
+    const episodeId = safeEpisodeId(entry.episodeId);
+    const relation = segmentEpisodes.get(segmentId) || (episodeTitles.has(episodeId)
+      ? { episodeId, title: episodeTitles.get(episodeId) }
+      : null);
+    const segmentRecord = segmentRecords.get(segmentId);
+    const isCast = relation || (segmentRecord && segmentRecord.orangeIdiotOnly !== true);
+    if (!isCast) return entry;
+    const title = relation?.title || 'Cast segment ' + segmentId;
+    const previousDetail = String(entry.segmentTitle || entry.detail || entry.reason || '').trim();
+    const detail = String(entry.event).includes('quarantined')
+      ? 'Cast episode segment ' + segmentId + ' validation: ' + previousDetail
+      : 'Cast episode segment ' + segmentId + ' / ' + String(entry.event).replaceAll('-', ' ') + '.';
+    const next = {
+      ...entry,
+      title,
+      episodeTitle: relation?.title || null,
+      generationWho: 'cast',
+      segmentTitle: entry.segmentTitle || previousDetail,
+      detail,
+    };
+    if (JSON.stringify(next) !== JSON.stringify(entry)) changed = true;
+    return next;
+  });
+  return changed;
+}
+
+function annotateEpisodeActivityTitles(episodeId, episodeTitle, generationWho, segmentIds = []) {
+  if (String(generationWho || '').toLowerCase() !== 'cast' || !state?.logs) return false;
+  const id = String(episodeId || '').trim();
+  const title = stripText(episodeTitle, 120) || 'Cast episode ' + id;
+  const segmentSet = new Set(segmentIds.map((segmentId) => safeId(segmentId)).filter(Boolean));
+  let changed = false;
+  state.logs = state.logs.map((entry) => {
+    const matches = isCastSegmentActivityEvent(entry?.event)
+      && (String(entry.episodeId || '') === id || segmentSet.has(safeId(entry.segmentId)));
+    if (!matches) return entry;
+    const segmentId = safeId(entry.segmentId) || id;
+    const previousDetail = String(entry.segmentTitle || entry.detail || entry.reason || '').trim();
+    const detail = String(entry.event).includes('quarantined')
+      ? 'Cast episode segment ' + segmentId + ' validation: ' + previousDetail
+      : 'Cast episode segment ' + segmentId + ' / ' + String(entry.event).replaceAll('-', ' ') + '.';
+    const next = { ...entry, title, episodeTitle: title, generationWho: 'cast', segmentTitle: entry.segmentTitle || previousDetail, detail };
+    if (JSON.stringify(next) !== JSON.stringify(entry)) changed = true;
+    return next;
+  });
+  return changed;
+}
 
 function resolveGenerationWho(value, seed = 1, previousWho = null) {
   const normalized = String(value || '').trim().toLowerCase();
@@ -5046,12 +5402,10 @@ async function generateSegment(job) {
   const requestedCastIds = orangeIdiotOnly ? [] : (Array.isArray(job.castIds) && job.castIds.length ? job.castIds : template.castIds);
   const requestedTopicFocus = [...new Set((resources.bibles?.characters || []).filter((character) => requestedCastIds.includes(character.id)).flatMap((character) => Array.isArray(character.topicFocus) ? character.topicFocus : []).map((topic) => String(topic || "").trim().toLowerCase()).filter(Boolean))];
   const topicResearch = !orangeIdiotRequested ? await reserveCastTopicResearch(seed, requestedTopicFocus) : null;
-  const requestedSceneId = orangeIdiotOnly
+  const requestedSceneId = orangeIdiotRequested
     ? ORANGE_IDIOT_STANDALONE_SCENE_ID
-    : orangeIdiotRequested
-      ? ORANGE_IDIOT_SCENE_ID
-      : (typeof job.sceneId === 'string' ? job.sceneId : template.sceneId);
-  if (orangeIdiotRequested && ![ORANGE_IDIOT_SCENE_ID, ORANGE_IDIOT_STANDALONE_SCENE_ID].includes(requestedSceneId)) throw new Error('Orange Idiot appearances require the senior-lounge television or standalone Orange Idiot house scene.');
+    : (typeof job.sceneId === 'string' ? job.sceneId : template.sceneId);
+  if (orangeIdiotRequested && requestedSceneId !== ORANGE_IDIOT_STANDALONE_SCENE_ID) throw new Error('Orange Idiot appearances require the standalone Orange Idiot house scene.');
   let draft = buildSegmentDraft({
     templateId: template.id,
     seed,
@@ -5070,6 +5424,9 @@ async function generateSegment(job) {
   draft.orangePriorBroadcasts = (state.continuity.recentOrangeBroadcasts || []).slice(-8);
   draft.noveltySeed = String(seed);
   draft.music = { ...draft.music, mode: musicMode, required: false };
+  const activityIsCast = String(job.generationWho || '').toLowerCase() === 'cast';
+  const activityEpisodeId = safeEpisodeId(job.episodeId) || null;
+  const activityTitle = activityIsCast ? 'Cast episode ' + (activityEpisodeId || draft.id) : draft.title;
   const audienceSuggestions = audiencePromptPacket();
   draft.audienceSuggestions = audienceSuggestions;
   const segmentDirectory = path.join(SEGMENT_ROOT, draft.id);
@@ -5080,13 +5437,14 @@ async function generateSegment(job) {
     const musicPlan = await musicPreflight(draft, resources);
     draft.music = {
       ...draft.music,
-      trackId: musicPlan.selectedTrack.id,
-      status: 'approved',
-      file: musicPlan.selectedTrack.file,
-      provider: musicPlan.provider,
-      source: musicPlan.selectedTrack.source,
-      autoApproved: musicPlan.selectedTrack.autoApproved === true,
+      trackId: musicPlan.selectedTrack?.id || null,
+      status: musicPlan.selectedTrack ? 'approved' : 'disabled',
+      file: musicPlan.selectedTrack?.file || null,
+      provider: musicPlan.selectedTrack?.provider || musicPlan.provider || 'none',
+      source: musicPlan.selectedTrack?.source || 'opening theme and String guitar cues only',
+      autoApproved: musicPlan.selectedTrack?.autoApproved === true,
       preflight: musicPlan.palette,
+      policy: AUDIO_MUSIC_POLICY,
     };
     let directed = null;
     let noveltyFingerprint = "";
@@ -5126,13 +5484,17 @@ async function generateSegment(job) {
     draft.state = "generating";
     draft.director.warning = [directed.warning, musicPlan.musicWarning].filter(Boolean).join(" / ") || null;
     await atomicWrite(path.join(segmentDirectory, 'segment.json'), draft);
-    logEvent('segment-generation-start', draft.title, { segmentId: draft.id, director: directed.mode, musicProvider: musicPlan.provider, musicAutoApproved: musicPlan.provider === 'stable-audio-3-small-music' });
+    logEvent(
+      'segment-generation-start',
+      activityIsCast ? 'Cast episode segment ' + draft.id + ' / generation started.' : draft.title,
+      { segmentId: draft.id, episodeId: activityEpisodeId, generationWho: job.generationWho || null, title: activityTitle, segmentTitle: draft.title, director: directed.mode, musicProvider: musicPlan.provider, musicAutoApproved: musicPlan.provider === 'stable-audio-3-small-music' },
+    );
     await persistState();
     draft.audio = await synthesizeAudio(draft, resources, segmentDirectory);
     draft.audio.durationDeltaSeconds = assertMediaDuration('Segment mixed audio', draft.audio.durationSeconds, draft.durationSeconds);
     const rehearsal = await rehearseRenderGeometry(draft, resources);
     draft.rehearsal = rehearsal;
-    logEvent('segment-rehearsal-passed', 'Geometry-only rehearsal passed before final frame rendering.', { segmentId: draft.id, framesChecked: rehearsal.framesChecked, maxForegroundActors: rehearsal.maxForegroundActors, maxCollisionPairs: rehearsal.maxCollisionPairs, cameraSafe: rehearsal.cameraSafe, grounded: rehearsal.grounded });
+    logEvent('segment-rehearsal-passed', 'Geometry-only rehearsal passed before final frame rendering.', { segmentId: draft.id, episodeId: activityEpisodeId, generationWho: job.generationWho || null, framesChecked: rehearsal.framesChecked, maxForegroundActors: rehearsal.maxForegroundActors, maxCollisionPairs: rehearsal.maxCollisionPairs, cameraSafe: rehearsal.cameraSafe, grounded: rehearsal.grounded });
     draft.render = { status: 'rendering', videoFile: null, posterFile: null, fps: RENDER_FPS, width: 384, height: 216 };
     await atomicWrite(path.join(segmentDirectory, 'segment.json'), draft);
     const videoPath = path.join(segmentDirectory, 'segment.mp4');
@@ -5165,10 +5527,10 @@ async function generateSegment(job) {
           lastPlayedAt: null,
         },
       ].slice(-MAX_INVENTORY);
-      logEvent('segment-approved', draft.title, { segmentId: draft.id });
+      logEvent('segment-approved', activityIsCast ? 'Cast episode segment ' + draft.id + ' / segment approved.' : draft.title, { segmentId: draft.id, episodeId: activityEpisodeId, generationWho: job.generationWho || null, title: activityTitle, segmentTitle: draft.title });
     } else {
       draft.state = 'quarantined';
-      logEvent('segment-quarantined', contract.errors.join(' '), { segmentId: draft.id });
+      logEvent('segment-quarantined', activityIsCast ? 'Cast episode segment ' + draft.id + ' validation: ' + contract.errors.join(' ') : contract.errors.join(' '), { segmentId: draft.id, episodeId: activityEpisodeId, generationWho: job.generationWho || null, title: activityTitle, segmentTitle: draft.title });
     }
     delete draft.audienceSuggestions;
     state.continuity.recentTopics = [draft.category, ...(state.continuity.recentTopics || [])].slice(0, 20);
@@ -5191,7 +5553,7 @@ async function generateSegment(job) {
     draft.state = 'quarantined';
     delete draft.audienceSuggestions;
     draft.validation = { status: 'quarantined', errors: [stripText(error instanceof Error ? error.message : 'Generation failed', 500)], warnings: [], checkedAt: nowIso() };
-    logEvent('segment-quarantined', draft.validation.errors[0], { segmentId: draft.id });
+    logEvent('segment-quarantined', activityIsCast ? 'Cast episode segment ' + draft.id + ' validation: ' + draft.validation.errors[0] : draft.validation.errors[0], { segmentId: draft.id, episodeId: activityEpisodeId, generationWho: job.generationWho || null, title: activityTitle, segmentTitle: draft.title });
     await atomicWrite(path.join(segmentDirectory, 'segment.json'), draft);
     await persistState();
     return draft;
@@ -5430,15 +5792,15 @@ async function generateEpisode(body = {}, options = {}) {
       const wantsOrange = orangeIdiotRequested && (orangeIdiotOnly || index === orangeSegmentIndex);
       const draft = await generateSegment({
         templateId: template.id,
+        episodeId,
+        generationWho,
         seed: Math.abs(Math.floor(seed)) + index + 1,
         durationSeconds,
         musicMode: normalizeSegmentMusicMode(episodeMusicMode, seed, index),
-        sceneId: wantsOrange
-          ? (orangeIdiotOnly ? ORANGE_IDIOT_STANDALONE_SCENE_ID : ORANGE_IDIOT_SCENE_ID)
-          : (requestedScene || template.sceneId),
-        castIds: orangeIdiotOnly ? [] : (Array.isArray(body.castIds) && body.castIds.length ? body.castIds : template.castIds),
+        sceneId: wantsOrange ? ORANGE_IDIOT_STANDALONE_SCENE_ID : (requestedScene || template.sceneId),
+        castIds: wantsOrange ? [] : (Array.isArray(body.castIds) && body.castIds.length ? body.castIds : template.castIds),
         orangeIdiotRequested: wantsOrange,
-        orangeIdiotOnly,
+        orangeIdiotOnly: wantsOrange,
         orangeIdiotPosition,
         orangeIdiotResearch: wantsOrange ? orangeIdiotResearch : null,
         orangeIdiotResearchMode: wantsOrange ? body.orangeIdiotResearchMode : 'off',
@@ -5461,6 +5823,7 @@ async function generateEpisode(body = {}, options = {}) {
         ? `Bullshit Factory: Orange Idiot — ${drafts[0].title}`
         : `Bullshit Factory: ${drafts[0].title}`;
     episodeTitle = uniqueEpisodeTitle(rawEpisodeTitle, generationWho);
+    annotateEpisodeActivityTitles(episodeId, episodeTitle, generationWho, drafts.map((draft) => draft.id));
     await persistState();
     const themeTrack = trackForId(resources, 'bf-theme-main');
     if (!themeTrack || themeTrack.status !== 'approved' || !themeTrack.file) throw new Error('The approved Bullshit Factory opening theme is unavailable.');
@@ -5490,6 +5853,12 @@ async function generateEpisode(body = {}, options = {}) {
     const transcriptPath = path.join(episodeDirectory, 'transcript.txt');
     await writeFile(captionsPath, text.srt, 'utf8');
     await writeFile(transcriptPath, text.transcript, 'utf8');
+    const stringGuitarUsed = drafts.some((draft) => draft.audio?.audioCuePlan?.cues?.some((cue) => cue.assetId === 'bf-string-guitar'));
+    const stringGuitarAsset = resources.audioCatalog?.assets?.find((asset) => asset.id === 'bf-string-guitar') || null;
+    const episodeMusic = [
+      { id: themeTrack.id, title: themeTrack.title, provider: themeTrack.provider || 'internal', source: themeTrack.source, rightsHolder: themeTrack.rightsHolder, mode: 'opening-only', usedInMix: true },
+      ...(stringGuitarUsed ? [{ id: 'bf-string-guitar', title: stringGuitarAsset?.title || 'String Guitar Character Cue', provider: stringGuitarAsset?.provider || 'internal', source: stringGuitarAsset?.source || 'original local character cue', rightsHolder: stringGuitarAsset?.ownership || 'Bullshit Factory', mode: 'String-performance-cue', usedInMix: true }] : []),
+    ];
     const manifest = {
       ...episodeBase,
       state: 'ready-for-review',
@@ -5502,11 +5871,8 @@ async function generateEpisode(body = {}, options = {}) {
       durationPolicy: "3-second opening plus each segment ending 30 ms after its final measured vocal event",
       segments: drafts.map((draft, index) => ({ id: draft.id, title: draft.title, requestedDurationSeconds: durations[index] || draft.durationSeconds, durationSeconds: draft.durationSeconds, sceneId: draft.sceneId, castIds: draft.castIds, music: draft.music })),
       opening: { durationSeconds: OPENING_SECONDS, themeTrack: { id: themeTrack.id, title: themeTrack.title, provider: themeTrack.provider || 'internal', source: themeTrack.source, rightsHolder: themeTrack.rightsHolder, mode: 'opening-only' }, titleCardFile: relativeRuntimePath(opening.titleCardPath), videoFile: relativeRuntimePath(opening.path) },
-      music: [
-        { id: themeTrack.id, title: themeTrack.title, provider: themeTrack.provider || 'internal', source: themeTrack.source, rightsHolder: themeTrack.rightsHolder, mode: 'opening-only', usedInMix: true },
-        ...drafts.filter((draft) => draft.music?.mode === 'bed' && draft.music?.trackId).map((draft) => ({ id: draft.music.trackId, title: draft.music.title || draft.music.trackId, provider: draft.music.provider || 'internal', source: draft.music.source || 'local original', rightsHolder: 'Bullshit Factory', mode: 'bed', usedInMix: true })),
-      ],
-      providers: { director: drafts.map((draft) => draft.director.mode), voice: 'kokoro-loopback', renderer: 'sharp-ffmpeg', music: ['internal-opening-theme', ...new Set(drafts.filter((draft) => draft.music?.mode === 'bed').map((draft) => draft.music?.provider || 'internal'))] },
+      music: episodeMusic,
+      providers: { director: drafts.map((draft) => draft.director.mode), voice: 'kokoro-loopback', renderer: 'sharp-ffmpeg', music: [...new Set(['internal-opening-theme', ...(stringGuitarUsed ? [stringGuitarAsset?.provider || 'internal-string-guitar'] : [])])] },
       writing: {
         trainingVersions: [...new Set(drafts.map((draft) => draft.writing?.trainingVersion || 'missing'))],
         qualityScores: drafts.map((draft) => draft.writing?.qualityScore ?? null),
@@ -5516,7 +5882,7 @@ async function generateEpisode(body = {}, options = {}) {
         rewriteCounts: drafts.map((draft) => draft.writing?.rewriteCount || 0),
         fallbackUsed: drafts.map((draft) => draft.writing?.fallbackUsed === true),
       },
-      validation: { status: 'ready-for-review', grounding: 'feet-touch-ground', audio: 'complete', captions: 'complete', dogAudio: 'bark-only', music: 'opening-theme-plus-optional-original-beds', purposefulMotion: 'voice-and-stage-cue-locked', duration: 'ffprobe-matches-effective-opening-plus-segments', speech: 'serialized-at-shared-speed-with-30ms-post-speech-pad-without-truncation', checkedAt: nowIso() },
+      validation: { status: 'ready-for-review', grounding: 'feet-touch-ground', audio: 'complete', captions: 'complete', dogAudio: 'bark-only', music: AUDIO_MUSIC_POLICY, purposefulMotion: 'voice-and-stage-cue-locked', duration: 'ffprobe-matches-effective-opening-plus-segments', speech: 'serialized-at-shared-speed-with-30ms-post-speech-pad-without-truncation', checkedAt: nowIso() },
       files: { video: relativeRuntimePath(episodeVideoPath), poster: relativeRuntimePath(posterPath), opening: relativeRuntimePath(opening.path), titleCard: relativeRuntimePath(opening.titleCardPath), captions: relativeRuntimePath(captionsPath), transcript: relativeRuntimePath(transcriptPath) },
     };
     await atomicWrite(path.join(episodeDirectory, 'episode.json'), manifest);
@@ -5563,7 +5929,8 @@ async function generateEpisode(body = {}, options = {}) {
       return cancelled;
     }
     const quarantineReason = stripText(error instanceof Error ? error.message : 'Episode generation failed.', 500);
-    const failedTitle = episodeTitle || stripText(body.title, 120) || episodeId;
+    const failedTitle = episodeTitle || (generationWho === 'cast' ? 'Cast episode ' + episodeId : stripText(body.title, 120) || episodeId);
+    annotateEpisodeActivityTitles(episodeId, failedTitle, generationWho, []);
     const quarantined = { ...episodeBase, title: failedTitle, state: 'quarantined', error: quarantineReason, validation: { status: 'quarantined', errors: [quarantineReason], checkedAt: nowIso() } };
     await rm(episodeDirectory, { recursive: true, force: true }).catch(() => {});
     state.episodes = state.episodes.filter((episode) => episode.id !== episodeId);
@@ -6357,6 +6724,59 @@ function serializeJob(job) {
   return job ? { ...job } : null;
 }
 
+async function motionAuthoringStatus(resources) {
+  const registry = await readJson(MOTION_REGISTRY_PATH, { showId: 'bullshit-factory', status: 'missing', runtimePolicy: 'hybrid-pilot', clips: [] });
+  const ledger = await readJson(H3_LEDGER_PATH, { policy: {}, totals: {}, requests: [], rejections: [] });
+  const clips = Array.isArray(registry.clips) ? registry.clips : [];
+  const reviewed = clips.filter((clip) => clip?.status === 'accepted' && ['accepted', 'approved'].includes(clip?.reviewStatus));
+  const reviewPending = clips.filter((clip) => clip?.status === 'accepted' && !['accepted', 'approved'].includes(clip?.reviewStatus));
+  const requestSeconds = (Array.isArray(ledger.requests) ? ledger.requests : []).reduce((total, request) => total + (Number(request?.durationSeconds) || 0), 0);
+  const acceptedSeconds = (Array.isArray(ledger.requests) ? ledger.requests : []).filter((request) => request?.status === 'accepted').reduce((total, request) => total + (Number(request?.durationSeconds) || 0), 0);
+  const runtimeReplacementActive = registry.status === 'active' && registry.runtimePolicy === 'replacement' && reviewPending.length === 0 && resources.catalog.motionLibrary?.replacementActive === true;
+  const byCharacter = Object.fromEntries([...new Set(clips.map((clip) => clip?.characterId).filter(Boolean))].sort().map((characterId) => [characterId, clips.filter((clip) => clip.characterId === characterId && clip.status === 'accepted' && ['accepted', 'approved'].includes(clip.reviewStatus)).length]));
+  const orangeReviewedActions = reviewed.filter((clip) => clip.characterId === ORANGE_IDIOT_ID).map((clip) => clip.action).sort();
+  const orangePendingActions = reviewPending.filter((clip) => clip.characterId === ORANGE_IDIOT_ID).map((clip) => clip.action).sort();
+  return {
+    runtimeReplacementActive,
+    runtimeH3Calls: 0,
+    productionAllowsFal: false,
+    registry: {
+      path: '/bullshit-factory/production/motion-registry.json',
+      status: registry.status || 'missing',
+      runtimePolicy: registry.runtimePolicy || 'hybrid-pilot',
+      model: registry.model || 'minimax/h3-max/image-to-video',
+      clipCount: clips.length,
+      reviewedAccepted: reviewed.length,
+      reviewPending: reviewPending.length,
+      acceptedCoverageByCharacter: byCharacter,
+      orangeIdiot: {
+        requiredActions: ['talk', 'walk'],
+        reviewedActions: [...new Set(orangeReviewedActions)],
+        pendingActions: [...new Set(orangePendingActions)],
+        headTarget: 'camera',
+        pacing: 'left-to-right while speaking, then return to center',
+      },
+      activatedAt: registry.activatedAt || null,
+    },
+    authoring: {
+      offlineOnly: true,
+      runtimeCalls: 0,
+      model: 'minimax/h3-max/image-to-video',
+      hardBudgetUsd: Number(ledger.policy?.hardBudgetUsd || 30),
+      internalStopUsd: Number(ledger.policy?.internalStopUsd || 29),
+      estimatedSpendUsd: Number(ledger.totals?.estimatedSpendUsd || 0),
+      submittedRequests: Number(ledger.totals?.submittedRequests || 0),
+      generatedRequestSeconds: requestSeconds,
+      acceptedSeconds,
+      accepted: Number(ledger.totals?.accepted || 0),
+      rejected: Number(ledger.totals?.rejected || 0),
+      retries: Number(ledger.totals?.retries || 0),
+      rejectionRecords: Array.isArray(ledger.rejections) ? ledger.rejections.length : 0,
+      falKeyRequiredForProduction: false,
+    },
+  };
+}
+
 async function statusPayload() {
   const resources = await loadResources();
   const inventory = state.inventory;
@@ -6364,6 +6784,8 @@ async function statusPayload() {
   const quarantined = inventory.filter((item) => item.state === 'quarantined');
   const tracks = allowedMusicTracks(resources);
   const approvedTracks = tracks.filter((track) => track?.status === 'approved');
+  const audioCatalog = baseAudioCatalog(resources);
+  const audioSummary = audioCatalogSummary(audioCatalog);
   let musicBackend = { status: 'disabled' };
   if (MUSIC_ENABLED) {
     try {
@@ -6373,6 +6795,7 @@ async function statusPayload() {
     }
   }
   const writerUsesGroq = !['gemini', 'goblin', 'local', 'deterministic'].includes(SCRIPT_WRITER_PROVIDER);
+  const h3 = await motionAuthoringStatus(resources);
   return {
     service: 'bullshit-factory-production',
     status: state.control.status === 'running' ? 'running' : 'ready',
@@ -6403,14 +6826,22 @@ async function statusPayload() {
       billingPolicy: writerUsesGroq && GROQ_FREE_ONLY ? 'groq-free-tier-only-no-paid-retry' : 'free-configured-providers-only',
     },
     writing: { trainingVersion: resources.writingTraining?.schemaVersion || 'missing', sources: Array.isArray(resources.writingTraining?.sources) ? resources.writingTraining.sources.map((source) => source.id) : [], minimumScore: resources.writingTraining?.evaluation?.minimumScore || 0, dialogueLineRange: resources.writingTraining?.outputContract?.dialogueLineRange || [2, 64] },
-    animation: { role: 'semantic-animation-director', provider: ANIMATION_DIRECTOR_PROVIDER, model: ANIMATION_DIRECTOR_PROVIDER === 'gemini' || ANIMATION_DIRECTOR_PROVIDER === 'auto' ? GEMINI_ANIMATION_MODEL : ANIMATION_MODEL, configured: ANIMATION_DIRECTOR_PROVIDER === 'gemini' || ANIMATION_DIRECTOR_PROVIDER === 'auto' ? Boolean(GEMINI_API_KEY) : true, runtimeRenderer: 'deterministic-compositor', runtimeModel: ANIMATION_MODEL, maxConcurrentJobs: ANIMATION_MAX_CONCURRENT_JOBS, assetSource: 'locked Bullshit Factory character and scene catalog', trainingVersion: resources.animationTraining?.schemaVersion || 'missing', scope: resources.animationTraining?.showId || 'missing', requiredAnchors: resources.animationTraining?.anchorContract?.requiredAnchors || [], parserFields: resources.animationTraining?.parserSchema?.requiredFields || [], validationRules: Array.isArray(resources.animationTraining?.validationCriteria) ? resources.animationTraining.validationCriteria.map((criterion) => criterion.id) : [] },
+    animation: { role: 'semantic-animation-director', provider: ANIMATION_DIRECTOR_PROVIDER, model: ANIMATION_DIRECTOR_PROVIDER === 'gemini' || ANIMATION_DIRECTOR_PROVIDER === 'auto' ? GEMINI_ANIMATION_MODEL : ANIMATION_MODEL, configured: ANIMATION_DIRECTOR_PROVIDER === 'gemini' || ANIMATION_DIRECTOR_PROVIDER === 'auto' ? Boolean(GEMINI_API_KEY) : true, runtimeRenderer: 'deterministic-compositor', runtimeModel: ANIMATION_MODEL, maxConcurrentJobs: ANIMATION_MAX_CONCURRENT_JOBS, assetSource: 'locked Bullshit Factory character and scene catalog', trainingVersion: resources.animationTraining?.schemaVersion || 'missing', scope: resources.animationTraining?.showId || 'missing', requiredAnchors: resources.animationTraining?.anchorContract?.requiredAnchors || [], parserFields: resources.animationTraining?.parserSchema?.requiredFields || [], validationRules: Array.isArray(resources.animationTraining?.validationCriteria) ? resources.animationTraining.validationCriteria.map((criterion) => criterion.id) : [], replacementActive: h3.runtimeReplacementActive, runtimeH3Calls: h3.runtimeH3Calls },
+    h3,
     orangeIdiot: orangeIdiotStatus(),
     researchPools: researchPoolsStatus(),
     live: await liveStatus(),
-    tvOnly: { id: ORANGE_IDIOT_ID, displayName: resources.orangeIdiot?.displayName || 'Orange Idiot', mainCast: false, sceneId: ORANGE_IDIOT_SCENE_ID, standaloneSceneId: ORANGE_IDIOT_STANDALONE_SCENE_ID, view: 'south', preview: resources.orangeIdiot?.preview || null, trigger: 'operator-selected, scheduled, or standalone original parody broadcast', voice: { provider: 'kokoro-loopback', configured: Boolean(ORANGE_IDIOT_VOICE), voiceId: ORANGE_IDIOT_VOICE || null, mixSources: [ORANGE_IDIOT_VOICE], mixStrategy: 'single-stock-voice', style: `bm_daniel at ${ORANGE_IDIOT_TTS_SPEED.toFixed(2)}x speed with ${ORANGE_IDIOT_PITCH_MULTIPLIER.toFixed(2)}x pitch multiplier`, accent: 'bm_daniel stock voice with Orange Idiot pitch treatment', requiresCustomVoiceExport: false, pitchMultiplier: ORANGE_IDIOT_PITCH_MULTIPLIER } },
+    tvOnly: { id: ORANGE_IDIOT_ID, displayName: resources.orangeIdiot?.displayName || 'Orange Idiot', mainCast: false, sceneId: ORANGE_IDIOT_SCENE_ID, standaloneSceneId: ORANGE_IDIOT_STANDALONE_SCENE_ID, view: 'south', preview: resources.orangeIdiot?.preview || null, trigger: 'operator-selected standalone original parody broadcast', voice: { provider: 'kokoro-loopback', configured: Boolean(ORANGE_IDIOT_VOICE), voiceId: ORANGE_IDIOT_VOICE || null, mixSources: [ORANGE_IDIOT_VOICE], mixStrategy: 'single-stock-voice', style: ORANGE_IDIOT_VOICE_PROFILE.accent + '; ' + ORANGE_IDIOT_VOICE_PROFILE.pitch + '-pitched, ' + ORANGE_IDIOT_VOICE_PROFILE.timbre, delivery: ORANGE_IDIOT_VOICE_PROFILE.delivery, language: ORANGE_IDIOT_LANG, speed: ORANGE_IDIOT_TTS_SPEED, requiresCustomVoiceExport: false, pitchMultiplier: ORANGE_IDIOT_PITCH_MULTIPLIER } },
     audience: { queueDepth: audienceQueue().filter((suggestion) => suggestion.status === 'queued').length, lastAcceptedAt: state.audience.lastAcceptedAt, acceptedSources: ['website', 'youtube', 'tiktok', 'discord'], chatMessages: state.audience.chatMessages.length, lastChatMessageAt: state.audience.chatMessages.at(-1)?.createdAt || null, autonomousDiscordPosting: false },
      voice: { provider: 'kokoro-loopback', endpoint: 'loopback', configured: Boolean(TTS_ENDPOINT), serialized: true, speed: SHARED_SPEECH_SPEED, orangeSpeed: ORANGE_IDIOT_TTS_SPEED, calibratedWpm: SPEECH_CALIBRATED_WPM, castVoices: Object.keys(VOICE_BY_CHARACTER).length, customVoiceAuthoring: 'kokovoicelab', customVoiceFileConfigured: Boolean(process.env.BF_TTS_CUSTOM_VOICES_PATH), referenceWpm: SHARED_TTS_REFERENCE_WPM, customVoiceFallbacks: 'configured-in-tts-service', barkOnly: true },
     renderer: { provider: 'sharp-ffmpeg', canvas: '384x216', fps: RENDER_FPS, scaling: 'nearest-neighbor', serialized: true, timelineRendering: 'full-segment', maxSegmentSeconds: 300 },
+    audio: {
+      catalog: audioSummary,
+      policy: { targetLUFS: AUDIO_POLICY.targetLUFS, programTargetLUFS: AUDIO_POLICY.programTargetLUFS, truePeakDb: AUDIO_POLICY.truePeakDb, runtimeNetworkCalls: AUDIO_POLICY.runtimeNetworkCalls, stableAudioPreGenerationOnly: AUDIO_POLICY.stableAudioPreGenerationOnly, musicPolicy: AUDIO_MUSIC_POLICY },
+      queueDepth: state.audioGenerationQueue.length,
+      queue: state.audioGenerationQueue.slice(-40).map(({ key, status, kind, tags, purpose, requestedBySegmentId, queuedAt }) => ({ key, status, kind, tags, purpose, requestedBySegmentId, queuedAt })),
+      optionalMissingAssets: AUDIO_POLICY.optionalMissingAssets,
+    },
     music: {
       approved: approvedTracks.length,
       total: tracks.length,
@@ -6420,7 +6851,9 @@ async function statusPayload() {
       outsideSearch: 'disabled-unless-explicitly-requested',
       episodeModes: [...EPISODE_MUSIC_MODES],
       defaultEpisodeMode: 'auto',
-      autoPolicy: 'opening theme always; an original local bed on roughly one in three content segments',
+      autoPolicy: 'opening theme always; no content bed; String guitar cue only when a locked String performance calls for it',
+      contentMusicPolicy: AUDIO_MUSIC_POLICY,
+      legacyBedMode: 'accepted for API compatibility but normalized to none',
       stableAudio: { enabled: MUSIC_ENABLED, primary: MUSIC_PRIMARY, provider: 'stable-audio-3-small-music', backend: 'tflite-cpu', autoApproveOwnedOutput: true, generationSeconds: MUSIC_GENERATION_SECONDS, loopedForLongerSegments: true, status: musicBackend?.status || 'unavailable', queueDepth: musicBackend?.queueDepth || 0, cacheFiles: musicBackend?.cacheFiles || 0, error: musicBackend?.error || null },
       tracks: tracks.map((track) => ({ id: track.id, title: track.title, status: track.status, source: track.source, provider: track.provider || 'internal', autoApproved: track.autoApproved === true, file: track.file || null })),
     },
@@ -7118,6 +7551,8 @@ export {
   deterministicTopicStory,
   defaultState,
   ensureAdultLanguageBeats,
+  orangeIdiotPacingState,
+  orangeIdiotPacingX,
   episodeTitleBodyKey,
   episodeDurationSeconds,
   resolveGenerationWho,
@@ -7126,8 +7561,10 @@ export {
   selectContinuousDurationPreset,
   CONTINUOUS_DURATION_WEIGHTS,
   evaluateWritingCandidate,
+  ORANGE_IDIOT_VOICE_PROFILE,
   productionCatalogSummary,
   renderPixelGameFontText,
+  buildSpeechMixFilter,
   timedDialogue,
   validateSegmentContract,
 };

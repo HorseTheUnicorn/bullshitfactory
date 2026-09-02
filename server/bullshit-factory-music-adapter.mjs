@@ -1,10 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { execFile, spawn } from 'node:child_process';
 import { createReadStream } from 'node:fs';
-import { mkdir, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const MUSIC_PROVIDER = 'stable-audio-3-small-music';
 const DEFAULT_MODELS_ROOT = path.resolve(process.env.BF_MODELS_ROOT || path.join(process.cwd(), 'models'));
@@ -49,7 +52,11 @@ const CACHE_DIRECTORY = path.resolve(process.env.BULLSHIT_FACTORY_MUSIC_CACHE_DI
 const MAX_QUEUE = envNumber('BULLSHIT_FACTORY_MUSIC_MAX_QUEUE', DEFAULT_MAX_QUEUE, 1, 128);
 const GENERATION_TIMEOUT_MS = envNumber('BULLSHIT_FACTORY_MUSIC_GENERATION_TIMEOUT_MS', DEFAULT_GENERATION_TIMEOUT_MS, 30_000, 60 * 60 * 1000);
 const FFMPEG_PATH = String(process.env.BULLSHIT_FACTORY_FFMPEG_PATH || 'ffmpeg').trim() || 'ffmpeg';
+const FFPROBE_PATH = String(process.env.BULLSHIT_FACTORY_FFPROBE_PATH || 'ffprobe').trim() || 'ffprobe';
 const ADAPTER_TOKEN = String(process.env.BULLSHIT_FACTORY_MUSIC_TOKEN || '').trim();
+
+const MUSIC_KINDS = new Set(['bed', 'stinger', 'episode', 'sfx', 'ambience']);
+const DEFAULT_DURATIONS = Object.freeze({ bed: 30, stinger: 20, episode: 60, sfx: 20, ambience: 30 });
 
 const jobs = new Map();
 const pendingJobs = [];
@@ -76,8 +83,9 @@ function instrumentalPrompt(value, mood) {
 }
 
 function canonicalJob(input = {}) {
-  const kind = ['bed', 'stinger', 'episode'].includes(input.kind) ? input.kind : 'bed';
-  const defaultDurations = { bed: 30, stinger: 20, episode: 60 };
+  const requestedKind = String(input.kind || '').trim().toLowerCase();
+  const kind = MUSIC_KINDS.has(requestedKind) ? requestedKind : 'bed';
+  const defaultDurations = DEFAULT_DURATIONS;
   const requestedDuration = Number(input.durationSeconds ?? defaultDurations[kind]);
   if (!Number.isFinite(requestedDuration)) throw new Error('durationSeconds must be a number.');
   const durationSeconds = Math.min(MAX_GENERATION_SECONDS, Math.max(MIN_GENERATION_SECONDS, Math.round(requestedDuration)));

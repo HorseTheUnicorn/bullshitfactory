@@ -5,12 +5,13 @@
   "role": "TV interruption reader",
   "mainCast": false,
   "castVisibility": "tv-only",
-  "sceneId": "senior-lounge",
+  "sceneId": "orange-idiot-house",
   "standaloneSceneId": "orange-idiot-house",
   "standaloneBackground": "/bullshit-factory/scenes/orange-idiot-house.png",
   "view": "south",
-  "rotationPolicy": "south-only",
-  "preview": "/bullshit-factory/tv/orange-idiot/orange-idiot-south.png",
+  "rotationPolicy": "south-facing-camera-gaze; deterministic-left-to-right-pacing-while-speaking",
+  "preview": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-h3-source.png",
+  "h3SourceArt": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-h3-source.png",
   "source": {
     "sourceFolder": "tv/orange-idiot/assets/orange-idiot/Idle/rotations",
     "sourceView": "south",
@@ -21,17 +22,35 @@
     },
     "exportVersion": "3.1"
   },
-  "screenBehavior": {
-    "placement": "senior-lounge.television",
-    "standalonePlacement": "orange-idiot-house.center_stage",
-    "appearsOnlyWhen": "an operator selects a TV insert or standalone episode",
+  "broadcastBehavior": {
+    "placement": "orange-idiot-house.center_stage",
+    "appearsOnlyWhen": "an operator selects a standalone episode",
     "standaloneAppearance": "the full cut uses the new house scene with Orange Idiot centered over the source figure; no separate podium background",
+    "headTarget": "camera",
+    "gaze": "south-facing direct-to-camera",
+    "pacing": "left-to-right while speech is audible, then return to center",
+    "pacingPolicy": "the deterministic compositor owns scene-scale travel; H3 supplies reusable character motion",
     "never": [
       "floor placement",
       "dashboard cast grid",
       "walk-band placement",
       "autonomous speech scraping"
     ]
+  },
+  "animationContract": {
+    "provider": "fal",
+    "model": "minimax/h3-max/image-to-video",
+    "authoring": "offline-only; real 480P/5-second H3 talk and walk clips generated from the supplied PNG and operator-reviewed",
+    "motionRegistry": "/bullshit-factory/production/motion-registry.json",
+    "sourceArtSha256": "dc70a44707bb10dba2600c5628c83ddd32861dec2a45a924c52853526fc415a0",
+    "acceptedEntries": [
+      "h3-orange-idiot-talk-neutral-2c36c08e3dc4",
+      "h3-orange-idiot-walk-neutral-f1eebe4f6e78"
+    ],
+    "headTarget": "camera",
+    "talk": "south-facing short-burst delivery with pauses, repetitions, stretched vowels, abrupt emphasis changes, and bounded lateral pacing beats",
+    "walk": "south-facing lateral walk with head and eyes held on camera; no profile turn",
+    "runtimePolicy": "use the reviewed local H3 talk/walk clips while the replacement registry is active; use the deterministic local fallback only before activation or during rollback"
   },
   "voice": {
     "provider": "kokoro-loopback",
@@ -40,10 +59,13 @@
       "bm_daniel"
     ],
     "mixStrategy": "single-stock-voice",
-    "style": "bm_daniel at 0.76x pitch multiplier with shared 1.0 playback speed and measured 129 WPM reference pacing",
-    "accentTarget": "bm_daniel stock voice with Orange Idiot pitch treatment",
-    "authoring": "Kokoro stock voice rendered as one performance with duration-preserving pitch treatment",
-    "pitchMultiplier": 0.76,
+    "style": "low-to-mid-pitched, slightly nasal, raspy, breathy, mildly congested New York/Queens-inspired character delivery",
+    "accentTarget": "original New York/Queens-inspired character accent; not an imitation of a real person",
+    "timbre": "slightly nasal with restrained rasp, breath, and congestion",
+    "delivery": "short bursts with frequent pauses, repetitions, stretched vowels, and abrupt changes in emphasis",
+    "authoring": "Kokoro stock voice rendered as one performance with duration-preserving low-mid pitch and light presence treatment",
+    "pitchMultiplier": 0.82,
+    "language": "en-us",
     "speed": 1.0,
     "speechPolicy": "operator-supplied Trump speech excerpt only; do not fetch or invent speeches",
     "pacingReferenceWpm": 129
@@ -59,34 +81,11 @@
       "south": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-south.png",
       "west": "/bullshit-factory/tv/orange-idiot/assets/rotations/orange-idiot-west.png"
     },
-    "talking": {
-      "view": "south",
-      "animation": "Idle_custom-talking_with_slight_arm_movement_and_head_bob",
-      "source": "supplied south-facing GIF",
-      "fps": 5,
-      "frameDelayMs": 200,
-      "gif": "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-south.gif",
-      "frames": [
-        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
-        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
-        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
-        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
-        "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
-      ]
-    },
     "spritesheet": {
       "image": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-spritesheet/orange-idiot-idle.png",
       "metadata": "/bullshit-factory/tv/orange-idiot/assets/orange-idiot-spritesheet/orange-idiot-idle.json"
     }
   },
-  "talkingFrames": [
-    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-00.png",
-    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-01.png",
-    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-02.png",
-    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-03.png",
-    "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-gif-04.png"
-  ],
-  "talkingGif": "/bullshit-factory/tv/orange-idiot/assets/animations/orange-idiot-talking-south.gif",
   "speed": 1.0,
-  "style": "bm_daniel at 0.76x pitch multiplier with shared 1.0 playback speed and measured 129 WPM reference pacing"
+  "style": "low-to-mid-pitched, slightly nasal, raspy, breathy, mildly congested New York/Queens-inspired character delivery"
 }
